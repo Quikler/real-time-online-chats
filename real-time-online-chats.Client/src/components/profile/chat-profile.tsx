@@ -1,0 +1,6 @@
+const ChatProfile = () => {
+    return (
+        <>
+        </>
+    );
+};

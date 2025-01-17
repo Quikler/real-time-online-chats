@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "real-time-online-chats.Server", "real-time-online-chats.Server\real-time-online-chats.Server.csproj", "{CE6DD06E-88DC-450E-A14E-9C4A2EEEE4D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "real-time-online-chats.Api.IntegrationTests", "real-time-online-chats.Api.IntegrationTests\real-time-online-chats.Api.IntegrationTests.csproj", "{7684877F-1678-473E-8E1C-7EDD07491171}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE6DD06E-88DC-450E-A14E-9C4A2EEEE4D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE6DD06E-88DC-450E-A14E-9C4A2EEEE4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE6DD06E-88DC-450E-A14E-9C4A2EEEE4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE6DD06E-88DC-450E-A14E-9C4A2EEEE4D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7684877F-1678-473E-8E1C-7EDD07491171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7684877F-1678-473E-8E1C-7EDD07491171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7684877F-1678-473E-8E1C-7EDD07491171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7684877F-1678-473E-8E1C-7EDD07491171}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

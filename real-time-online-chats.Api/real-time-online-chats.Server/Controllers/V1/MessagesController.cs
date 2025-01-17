@@ -1,0 +1,116 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using real_time_online_chats.Server.Contracts.V1;
+using real_time_online_chats.Server.Contracts.V1.Requests.Message;
+using real_time_online_chats.Server.Contracts.V1.Responses.Message;
+using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.Extensions;
+using real_time_online_chats.Server.Services.Message;
+
+namespace real_time_online_chats.Server.Controllers.V1;
+
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+public class MessagesController : ControllerBase
+{
+    private readonly IMessageService _messageService;
+
+    public MessagesController(IMessageService chatService)
+    {
+        _messageService = chatService;
+    }
+
+    [HttpGet(ApiRoutes.Messages.GetAll)]
+    public async Task<IActionResult> GetAll()
+    {
+        var messages = await _messageService.GetMessagesAsync();
+        var response = messages.Select(m => new GetMessageResponse
+        {
+            Id = m.Id,
+            UserId = m.UserId,
+            Content = m.Content,
+        });
+        
+        return Ok(response);
+    }
+
+    [HttpGet(ApiRoutes.Messages.Get)]
+    public async Task<IActionResult> Get([FromRoute] Guid messageId)
+    {
+        var message = await _messageService.GetMessageByIdAsync(messageId);
+        if (message is null) return NotFound();
+        
+        var response = new GetMessageResponse
+        {
+            Id = message.Id,
+            UserId = message.UserId,
+            Content = message.Content,
+        };
+
+        return Ok(response);
+    }
+
+    [HttpPost(ApiRoutes.Messages.Create)]
+    public async Task<IActionResult> Create([FromBody] CreateMessageRequest request)
+    {
+        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
+
+        var message = new MessageEntity
+        {
+            UserId = userId,
+            Content = request.Content,
+            ContentType = request.ContentType,
+            ChatId = request.ChatId,
+        };
+
+        var created = await _messageService.CreateMessageAsync(message);
+        if (!created) return BadRequest(new { Message = "Failed to create message. Please try again." });
+        
+        var response = new GetMessageResponse
+        {
+            Id = message.Id,
+            UserId = message.UserId,
+            Content = message.Content,
+        };
+
+        return CreatedAtAction(nameof(Get), new { messageId = message.Id }, response);
+    }
+
+    [HttpPut(ApiRoutes.Messages.Update)]
+    public async Task<IActionResult> Update([FromRoute] Guid messageId, [FromBody] UpdateMessageRequest request)
+    {
+        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
+
+        var userOwnsMessage = await _messageService.UserOwnsMessageAsync(messageId, userId);
+        if (!userOwnsMessage) return Unauthorized();
+
+        var message = new MessageEntity
+        {
+            Id = messageId,
+            Content = request.Content,
+            ContentType = request.ContentType,
+        };
+
+        var updated = await _messageService.UpdateMessageAsync(message);
+        var response = new GetMessageResponse
+        {
+            Id = message.Id,
+            UserId = message.UserId,
+            Content = message.Content,
+        };
+
+        return updated ? Ok(response) : NotFound();
+    }
+
+    [HttpDelete(ApiRoutes.Messages.Delete)]
+    public async Task<IActionResult> Delete([FromRoute] Guid messageId)
+    {
+        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
+
+        var userOwnsMessage = await _messageService.UserOwnsMessageAsync(messageId, userId);
+        if (!userOwnsMessage) return Unauthorized();
+
+        var deleted = await _messageService.DeleteMessageAsync(messageId);
+        return deleted ? NoContent() : NotFound();
+    }
+}
