@@ -7,21 +7,16 @@ import ChatsSection from "../components/sections/chats-section";
 import MainLayout from "../layouts/main-layout";
 import WhyUsSection from "../components/sections/why-us-section";
 import ChatsHeaderSection from "../components/sections/chats-header-section";
-import { AuthProvider } from "../contexts/auth-context";
 import UserProfile from "../components/profile/user-profile";
 import AccountPage from "../components/pages/account/account-page";
 import ProtectedRoute from "./protected-routes";
 import NotFound from "../components/pages/errors/not-found";
-import CreateChatForm from "../components/pages/chats/create-chat-form";
+import MainChatPage from "../components/pages/chats/main-chat-page";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    ),
+    element: <App />,
     children: [
       {
         path: "",
@@ -66,8 +61,12 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: "create",
-            element: <CreateChatForm />,
+            path: ":chatId",
+            element: (
+              <ProtectedRoute>
+                <MainChatPage />
+              </ProtectedRoute>
+            ),
           },
         ],
       },

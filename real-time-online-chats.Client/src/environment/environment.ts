@@ -1,5 +1,5 @@
 const Environment = {
-    apiUrl: "http://localhost:5039/api",
+    apiUrl: "https://localhost:7207/api",
     apiVersion: "v1"
 };
 

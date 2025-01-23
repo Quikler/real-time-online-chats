@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Apple, Facebook, Google } from "../../assets/images/svgr/auth-with";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/auth-context";
 
@@ -24,10 +24,10 @@ interface SignUpFormDataErrors {
 }
 
 export default function SignUpForm() {
-  const { signupUser, isUserLoggedIn } = useAuth();
-  if (isUserLoggedIn()) {
-    return <Navigate to="/" />
-  }
+  const { signupUser } = useAuth();
+  // if (isUserLoggedIn()) {
+  //   return <Navigate to="/" />
+  // }
 
   const [formData, setFormData] = useState<SignupFormData>({
     email: "",

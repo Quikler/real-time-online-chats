@@ -112,13 +112,12 @@ export default function Header() {
                         </li>
                       </ul>
                       <div className="py-2 text-gray-200">
-                        <a
-                          href="#"
+                        <button
                           onClick={logoutUser}
-                          className="block px-4 py-2 hover:bg-gray-600"
+                          className="block px-4 py-2 w-full text-left hover:bg-gray-600"
                         >
                           Log out
-                        </a>
+                        </button>
                       </div>
                     </div>
                   )}

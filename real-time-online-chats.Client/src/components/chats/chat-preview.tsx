@@ -1,10 +1,12 @@
+import { Link } from "react-router-dom";
+
 const ChatPreview = () => {
   return (
     <div className="flex flex-col gap-2">
       <div className="relative bg-darkBlue-100 p-6">
-        <button className="absolute px-6 lg:px-12 lg:py-1 left-6 top-3 text-white bg-lightGreen-100 hover:bg-lightGreen-200">
+        <Link to='/chats/2ffe4a07-ea50-42d5-a309-2f172a37f0be' className="absolute px-6 lg:px-12 lg:py-1 left-6 top-3 text-white bg-lightGreen-100 hover:bg-lightGreen-200">
           Join
-        </button>
+        </Link>
         <div className="flex flex-col gap-4 pt-6">
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-2">

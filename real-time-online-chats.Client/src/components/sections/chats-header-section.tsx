@@ -6,7 +6,7 @@ export default function ChatsHeaderSection() {
       <div className="-z-10 w-full h-full flex overflow-hidden absolute right-0 top-0">
         <div
           style={{ backgroundSize: "100% 100%" }}
-          className="w-full bg-no-repeat bg-[url('./images/Lovepik_com-500361605-blue-banner-posters-background.jpg')]"
+          className="w-full bg-no-repeat bg-[url('/images/Lovepik_com-500361605-blue-banner-posters-background.jpg')]"
         ></div>
       </div>
 

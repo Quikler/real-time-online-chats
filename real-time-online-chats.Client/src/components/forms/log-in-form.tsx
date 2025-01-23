@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Apple, Facebook, Google } from "../../assets/images/svgr/auth-with";
 import Logo from "../common/logo";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/auth-context";
 import { toast } from "react-toastify";
 
@@ -21,10 +21,7 @@ interface LoginFormDataErrors {
 }
 
 export default function LogInForm() {
-  const { loginUser, isUserLoggedIn } = useAuth();
-  if (isUserLoggedIn()) {
-    return <Navigate to="/" />
-  }
+  const { loginUser } = useAuth();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -91,7 +88,7 @@ export default function LogInForm() {
     }
 
     loginUser(formData);
-  }
+  };
 
   return (
     <div className="bg-gradient-to-r from-darkBlue-100 via-purple-800 to-darkBlue-200 text-gray-800 lg:px-16 pt-12">

@@ -1,122 +1,19 @@
 import {
-  Children,
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
+  useMemo,
   useState,
 } from "react";
 import { UserProfile } from "../models/user";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/auth-service";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { LoginFormData } from "../components/forms/log-in-form";
 import { SignupFormData } from "../components/forms/sign-up-form";
-
-// interface AuthContextType {
-//   token: string | null | undefined;
-//   user: any;
-//   setToken: (token: string | null | undefined) => void;
-//   setUser: (user: any) => void;
-//   logout: () => void;
-//   isLoggedin: () => boolean;
-// }
-
-// const AuthContext = createContext<AuthContextType>({} as AuthContextType);
-
-// export const useUserAuth = () => {
-//   const authContext = useContext(AuthContext);
-
-//   if (!authContext) {
-//     throw new Error('useUserAuth must be used within a UserAuthProvider');
-//   }
-
-//   return authContext;
-// };
-
-// export const UserAuthProvider = ({ children }: { children: ReactNode }) => {
-//   const [token, setToken] = useState<string | undefined | null>();
-//   const [user, setUser] = useState<UserProfile | null>();
-
-//   // useEffect(() => {
-//   //   const fetchMe = async () => {
-//   //     console.log("Fetch me");
-
-//   //     try {
-//   //       const response = await api.get(AuthService.meUrl);
-//   //       setToken(response.data.token);
-//   //     } catch {
-//   //       setToken(null);
-//   //     }
-//   //   };
-
-//   //   fetchMe();
-//   // }, []);
-
-//   useLayoutEffect(() => {
-//     const authInterceptor = api.interceptors.request.use((config: any) => {
-//       config.headers.Authorization = !config._retry && token ?
-//         `Bearer ${token}`:
-//         config.headers.Authorization;
-//       return config;
-//     });
-
-//     return () => {
-//       api.interceptors.request.eject(authInterceptor);
-//     };
-//   }, [token]);
-
-//   useLayoutEffect(() => {
-//     const refreshInterceptor = api.interceptors.response.use(
-//       (response) => response,
-//       async (error) => {
-//         const originalRequest = error.config;
-
-//         if (
-//           error.response.status === 401 //&&
-//           //originalRequest.url === AuthService.refreshTokenUrl
-//         ) {
-//           try {
-//             const response = await api.post(AuthService.refreshTokenUrl);
-
-//             setToken(response.data.token);
-
-//             originalRequest.headers.Authorization = `Bearer ${response.data.token}`;
-//             originalRequest._retry = true;
-
-//             return api(originalRequest);
-//           } catch {
-//             setToken(null);
-//           }
-//         }
-
-//         return Promise.reject(error);
-//       },
-//     )
-
-//     return () => {
-//       api.interceptors.response.eject(refreshInterceptor);
-//     };
-//   });
-
-//   const logoutUser = () => {
-//     setToken(null);
-//     setUser(null);
-//   };
-
-//   const isUserLoggedIn = () => !!user;
-
-//   const value = {
-//     token,
-//     user,
-//     setToken,
-//     setUser,
-//     logout: logoutUser,
-//     isLoggedin: isUserLoggedIn,
-//   };
-
-//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-// };
+import api from "../utilities/axios-instance";
+import { AuthRoutes } from "../routes/api-routes";
 
 interface AuthContextType {
   token: string | null;
@@ -135,31 +32,98 @@ export const AuthProvider = ({ children }: Props) => {
   const navigate = useNavigate();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    const { observable, abort } = AuthService.me();
 
-    if (user && token) {
-      setUser(JSON.parse(user));
-      setToken(token);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
+    observable.subscribe({
+      next: (response) => {
+        setToken(response.data.token); // set jwt auth token into state
+        setUser({
+          firstName: response.data.user.firstName,
+          lastName: response.data.user.lastName,
+          email: response.data.user.email,
+        }); // set user into state
+      },
+      error: (error) => console.log("Me error", error),
+    });
 
-    setIsReady(true);
+    return () => abort();
+  }, []);
+
+  useLayoutEffect(() => {
+    const authInterceptor = api.interceptors.request.use((config: any) => {
+      console.group("[Interceptor] Request");
+      console.log("Token is", token);
+      console.groupEnd();
+
+      config.headers.Authorization =
+        !config._retry && token
+          ? `Bearer ${token}`
+          : config.headers.Authorization;
+      return config;
+    });
+
+    return () => api.interceptors.request.eject(authInterceptor);
+  }, [token]);
+
+  useLayoutEffect(() => {
+    const refreshInterceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          originalRequest.url !== AuthRoutes.refreshToken
+        ) {
+          console.group("[Interceptor] [Response]");
+          console.log("[Error]: 401");
+          try {
+            const response = await api.post(
+              AuthRoutes.refreshToken,
+              {},
+              { withCredentials: true }
+            );
+
+            setToken(response.data.token);
+
+            originalRequest.headers.Authorization = `Bearer ${response.data.token}`;
+            originalRequest._retry = true;
+
+            console.log("Token refreshed");
+
+            return api(originalRequest);
+          } catch (e: any) {
+            if (e.name !== "CanceledError") {
+              console.log("Token not refreshed");
+
+              setToken(null);
+              setUser(null);
+            }
+          } finally {
+            console.groupEnd();
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(refreshInterceptor);
+    };
   }, []);
 
   const signupUser = (formData: SignupFormData) => {
-    AuthService.signup(formData).subscribe({
+    AuthService.signup(formData).observable.subscribe({
       next: (response) => {
-        localStorage.setItem("token", response.data.token);
         const userObj = {
           email: response.data.user.email,
           firstName: response.data.user.firstName,
           lastName: response.data.user.lastName,
         };
-        localStorage.setItem("user", JSON.stringify(userObj));
 
         setToken(response.data.token);
         setUser(userObj);
@@ -171,15 +135,13 @@ export const AuthProvider = ({ children }: Props) => {
   };
 
   const loginUser = (formData: LoginFormData) => {
-    AuthService.login(formData).subscribe({
+    AuthService.login(formData).observable.subscribe({
       next: (response) => {
-        localStorage.setItem("token", response.data.token);
         const userObj = {
           email: response.data.user.email,
           firstName: response.data.user.firstName,
           lastName: response.data.user.lastName,
         };
-        localStorage.setItem("user", JSON.stringify(userObj));
 
         setToken(response.data.token);
         setUser(userObj);
@@ -193,27 +155,25 @@ export const AuthProvider = ({ children }: Props) => {
   const isUserLoggedIn = () => !!user;
 
   const logoutUser = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
     setUser(null);
     setToken(null);
     navigate("/");
+    AuthService.logout();
   };
 
-  const value = {
-    token: token,
-    user: user,
-    loginUser: loginUser,
-    signupUser: signupUser,
-    logoutUser: logoutUser,
-    isUserLoggedIn: isUserLoggedIn,
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {isReady ? children : null}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      token,
+      user,
+      loginUser,
+      signupUser,
+      logoutUser,
+      isUserLoggedIn,
+    }),
+    [token, user]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
