@@ -2,7 +2,7 @@ import { useState } from "react";
 import CreateChatForm, {
   CreateChatFormData,
 } from "../pages/chats/create-chat-form";
-import { ChatService } from "../../services/chat-service";
+import { ChatService } from "../../services/api/chat-service";
 import { toast } from "react-toastify";
 
 const UserProfile = () => {

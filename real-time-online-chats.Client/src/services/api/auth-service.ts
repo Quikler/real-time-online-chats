@@ -1,8 +1,8 @@
-import api from "../utilities/axios-instance";
-import { SignupFormData } from "../components/forms/sign-up-form";
-import { LoginFormData } from "../components/forms/log-in-form";
-import { AuthRoutes } from "../routes/api-routes";
-import { observableWithAbort } from "../helpers/wrappers";
+import api from "@services/axios/instance";
+import { SignupFormData } from "../../components/forms/sign-up-form";
+import { LoginFormData } from "../../components/forms/log-in-form";
+import { AuthRoutes } from "../../routes/api-routes";
+import { observableWithAbort } from "../../helpers/wrappers";
 
 export abstract class AuthService {
   static signup(data: SignupFormData) {

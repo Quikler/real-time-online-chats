@@ -8,11 +8,11 @@ import {
 } from "react";
 import { UserProfile } from "../models/user";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../services/auth-service";
+import { AuthService } from "../services/api/auth-service";
 import { toast } from "react-toastify";
 import { LoginFormData } from "../components/forms/log-in-form";
 import { SignupFormData } from "../components/forms/sign-up-form";
-import api from "../utilities/axios-instance";
+import api from "@services/axios/instance"
 import { AuthRoutes } from "../routes/api-routes";
 
 interface AuthContextType {
@@ -38,20 +38,22 @@ export const AuthProvider = ({ children }: Props) => {
 
     observable.subscribe({
       next: (response) => {
+        console.group("Me");
+        console.log(response.data);
+        console.groupEnd();
+        
         setToken(response.data.token); // set jwt auth token into state
-        setUser({
-          firstName: response.data.user.firstName,
-          lastName: response.data.user.lastName,
-          email: response.data.user.email,
-        }); // set user into state
+        setUser(response.data.user); // set user into state
       },
-      error: (error) => console.log("Me error", error),
+      error: () => {},
     });
 
     return () => abort();
   }, []);
 
   useLayoutEffect(() => {
+    if (!token) return ;
+
     const authInterceptor = api.interceptors.request.use((config: any) => {
       console.group("[Interceptor] Request");
       console.log("Token is", token);
@@ -105,25 +107,23 @@ export const AuthProvider = ({ children }: Props) => {
           } finally {
             console.groupEnd();
           }
-        }
+        } 
+        // else if (error.response &&
+        //   error.response.status === 403) {
+        //     router.navigate("")
+        //   }
 
         return Promise.reject(error);
       }
     );
 
-    return () => {
-      api.interceptors.response.eject(refreshInterceptor);
-    };
+    return () => api.interceptors.response.eject(refreshInterceptor);
   }, []);
 
   const signupUser = (formData: SignupFormData) => {
     AuthService.signup(formData).observable.subscribe({
       next: (response) => {
-        const userObj = {
-          email: response.data.user.email,
-          firstName: response.data.user.firstName,
-          lastName: response.data.user.lastName,
-        };
+        const userObj = response.data.user;
 
         setToken(response.data.token);
         setUser(userObj);
@@ -137,11 +137,7 @@ export const AuthProvider = ({ children }: Props) => {
   const loginUser = (formData: LoginFormData) => {
     AuthService.login(formData).observable.subscribe({
       next: (response) => {
-        const userObj = {
-          email: response.data.user.email,
-          firstName: response.data.user.firstName,
-          lastName: response.data.user.lastName,
-        };
+        const userObj = response.data.user;
 
         setToken(response.data.token);
         setUser(userObj);

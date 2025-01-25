@@ -1,7 +1,7 @@
-import api from "../utilities/axios-instance";
-import { handleError } from "../helpers/error-handler";
-import { CreateMessageRequest } from "../contracts/message-contract";
-import { observableWithAbort } from "../helpers/wrappers";
+import api from "@services/axios/instance";
+import { handleError } from "../../helpers/error-handler";
+import { CreateMessageRequest } from "../../contracts/message-contract";
+import { observableWithAbort } from "../../helpers/wrappers";
 
 export abstract class MessageService {
   static messageUrl = "messages";

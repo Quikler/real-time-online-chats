@@ -1,23 +1,42 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ChatService } from "../../../services/chat-service";
-import { toast } from "react-toastify";
-import { MessageService } from "../../../services/message-service";
+import { ChatService } from "../../../services/api/chat-service";
+import { MessageService } from "../../../services/api/message-service";
 import { CreateMessageRequest } from "../../../contracts/message-contract";
+import { router } from "../../../routes/router";
+import { useAuth } from "../../../contexts/auth-context";
+import { isNullOrWhitespace } from "../../../utils/helpers";
+import { LoaderScreen } from "@components/ui/Loader"
 
 export interface CreateMessageFormData {
   message: string;
+}
+
+interface MessageResult {
+  id: string;
+  content: string;
+  user: UserResponse;
+}
+
+interface UserResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
 }
 
 interface ChatData {
   title: string;
   ownerId: string;
   id: string;
+  messages: MessageResult[];
 }
 
 const MainChatPage = () => {
+  const { user } = useAuth();
   const { chatId } = useParams<{ chatId: string }>();
   const [chatData, setChatData] = useState<ChatData>();
+  const [isLoading, setIsLoading] = useState(true);
 
   const [formData, setFormData] = useState<CreateMessageFormData>({
     message: "",
@@ -34,17 +53,17 @@ const MainChatPage = () => {
 
   useEffect(() => {
     if (chatId) {
-      const { observable, abort } = ChatService.getChat(chatId);
+      const { observable, abort } = ChatService.getChatRestrict(chatId);
 
-      const subscription = observable.subscribe({
-        next: (response) => setChatData(response.data),
-        error: (error) => toast.error(error.message),
+      observable.subscribe({
+        next: (response) => {
+          setChatData(response.data);
+          setIsLoading(false);
+        },
+        error: () => router.navigate("/forbidden"),
       });
 
-      return () => {
-        subscription.unsubscribe();
-        abort();
-      };
+      return () => abort();
     }
   }, [chatId]);
 
@@ -52,6 +71,14 @@ const MainChatPage = () => {
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
+
+    if (isNullOrWhitespace(formData.message)) {
+      e.currentTarget.reportValidity();
+      return;
+    }
+
+    //const input = document.getElementById("mes") as HTMLInputElement;
+    //input.setCustomValidity()
 
     let request: CreateMessageRequest = {
       chatId: chatId!,
@@ -65,8 +92,10 @@ const MainChatPage = () => {
     });
   };
 
+  if (isLoading) return <LoaderScreen />;
+
   return (
-    <div className="flex flex-col bg-darkBlue-100 lg:px-16 pt-16">
+    <div className="flex flex-col bg-darkBlue-100 lg:px-16 pt-16 flex-grow">
       <div className="flex flex-col h-full flex-grow">
         <div className="bg-lightGreen-100 items-center gap-4 flex justify-between pt-16 px-6 pb-3">
           <div className="">
@@ -97,65 +126,50 @@ const MainChatPage = () => {
             </svg>
           </div>
         </div>
-        <div className="bg-maroon-100 text-white flex-grow">
-          <div className="p-4 flex justify-end">
-            <div className="flex gap-2">
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2 justify-end">
-                  <svg
-                    viewBox="0 0 2 2"
-                    fill="white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={16}
-                  >
-                    <circle cx="1" cy="1" r="1" />
-                  </svg>
-                  <p className="text-white">User1</p>
-                </div>
-                <div className="flex flex-col gap-2 text-black">
-                  <div className="bg-white py-2 px-3">
-                    <p>Hello guys</p>
-                  </div>
-                  <div className="bg-white py-2 px-3">
-                    <p>How are you? &lt;3</p>
-                  </div>
-                </div>
-              </div>
-              <img
-                className="w-12 h-12 rounded-full object-cover"
-                src="/images/test-profile.jpg"
-              />
-            </div>
-          </div>
-          <div className="p-4 flex">
-            <div className="flex gap-2">
-              <div className="flex flex-col gap-2 order-2">
+        <div className="bg-maroon-100 text-white flex-grow p-4">
+          {chatData?.messages.map((value, index) => {
+            return (
+              <div
+                key={index}
+                className={`p-4 flex ${
+                  value.user.id === user?.id ? "justify-end" : ""
+                }`}
+              >
                 <div className="flex gap-2">
-                  <svg
-                    viewBox="0 0 2 2"
-                    fill="white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={16}
+                  <div
+                    className={`flex flex-col gap-2 ${
+                      value.user.id === user?.id ? "" : "order-2"
+                    }`}
                   >
-                    <circle cx="1" cy="1" r="1" />
-                  </svg>
-                  <p className="text-white">User1</p>
-                </div>
-                <div className="flex flex-col gap-2 text-black">
-                  <div className="bg-white py-2 px-3">
-                    <p>Hello guys</p>
+                    <div
+                      className={`flex gap-2 items-center ${
+                        value.user.id === user?.id ? "justify-end" : ""
+                      }`}
+                    >
+                      <svg
+                        viewBox="0 0 2 2"
+                        fill="white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width={16}
+                      >
+                        <circle cx="1" cy="1" r="1" />
+                      </svg>
+                      <p className="text-white">{value.user.email}</p>
+                    </div>
+                    <div className="flex flex-col gap-2 text-black items-end">
+                      <div className="bg-white py-2 px-3">
+                        <p>{value.content}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-white py-2 px-3">
-                    <p>How are you? &lt;3</p>
-                  </div>
+                  <img
+                    className="w-12 h-12 rounded-full object-cover"
+                    src="/images/test-profile.jpg"
+                  />
                 </div>
               </div>
-              <img
-                className="w-12 h-12 rounded-full object-cover"
-                src="/images/test-profile.jpg"
-              />
-            </div>
-          </div>
+            );
+          })}
         </div>
         <div className="bg-lightGreen-100">
           <form
@@ -167,6 +181,7 @@ const MainChatPage = () => {
               <path d="M0 0h48v48h-48z" fill="none" />
             </svg>
             <input
+              required
               name="message"
               value={formData.message}
               onChange={handleChange}

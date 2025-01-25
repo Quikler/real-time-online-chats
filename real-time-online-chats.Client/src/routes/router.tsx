@@ -12,6 +12,8 @@ import AccountPage from "../components/pages/account/account-page";
 import ProtectedRoute from "./protected-routes";
 import NotFound from "../components/pages/errors/not-found";
 import MainChatPage from "../components/pages/chats/main-chat-page";
+import Forbidden from "../components/pages/errors/forbidden";
+import { LoaderScreen } from "../components/ui/Loader";
 
 export const router = createBrowserRouter([
   {
@@ -62,11 +64,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ":chatId",
-            element: (
-              <ProtectedRoute>
-                <MainChatPage />
-              </ProtectedRoute>
-            ),
+            element: <MainChatPage />,
           },
         ],
       },
@@ -87,4 +85,12 @@ export const router = createBrowserRouter([
     path: "*",
     element: <NotFound />,
   },
+  {
+    path: "forbidden",
+    element: <Forbidden />,
+  },
+  {
+    path: "loader",
+    element: <LoaderScreen />
+  }
 ]);
