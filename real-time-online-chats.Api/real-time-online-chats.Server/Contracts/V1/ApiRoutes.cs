@@ -12,6 +12,7 @@ public static class ApiRoutes
         public const string Login = BASE + "/identity/login";
         public const string Signup = BASE + "/identity/signup";
         public const string Refresh = BASE + "/identity/refresh";
+        public const string Logout = BASE + "/identity/logout";
         public const string Me = BASE + "/identity/me";
     }
 
@@ -19,10 +20,12 @@ public static class ApiRoutes
     {
         public const string GetAll = BASE + "/chats";
         public const string Get = BASE + "/chats/{chatId}";
-        public const string GetRestrict = BASE + "/chats/restrict/{chatId}";
+        public const string GetDetailed = BASE + "/chats/{chatId}/detailed";
         public const string Create = BASE + "/chats";
         public const string Update = BASE + "/chats/{chatId}";
         public const string Delete = BASE + "/chats/{chatId}";
+        public const string Join = BASE + "/chats/{chatId}/join";
+        public const string Leave = BASE + "/chats/{chatId}/leave";
     }
 
     public static class Messages

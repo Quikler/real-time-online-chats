@@ -6,17 +6,19 @@ namespace real_time_online_chats.Server.Extensions;
 
 public static class AuthExtensions
 {
-    public static Guid? GetUserId(this HttpContext httpContext)
+    public static bool TryGetUserId(this HttpContext httpContext, out Guid userId) => httpContext.User.TryGetUserId(out userId);
+
+    public static Guid? GetUserId(this ClaimsPrincipal claimsPrincipal)
     {
-        if (httpContext.User.Identity is null || !httpContext.User.Identity.IsAuthenticated) return null;
-        return Guid.TryParse(httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier), out Guid guid) ? guid : null;
+        if (claimsPrincipal.Identity is null || !claimsPrincipal.Identity.IsAuthenticated) return null;
+        return Guid.TryParse(claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier), out Guid guid) ? guid : null;
     }
 
-    public static bool TryGetUserId(this HttpContext httpContext, out Guid userId)
+    public static bool TryGetUserId(this ClaimsPrincipal claimsPrincipal, out Guid userId)
     {
         userId = Guid.Empty;
 
-        var res = httpContext.GetUserId();
+        var res = claimsPrincipal.GetUserId();
         if (res is null) return false;
 
         userId = res.Value;
@@ -29,7 +31,8 @@ public static class AuthExtensions
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.Add(TimeSpan.FromDays(180)),
         });
     }
 }

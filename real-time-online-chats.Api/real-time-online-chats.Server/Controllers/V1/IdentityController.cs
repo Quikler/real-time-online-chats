@@ -51,6 +51,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
             RefreshToken = authResponse.RefreshToken,
             User = new UserResponse 
             {
+                Id = authResponse.User.Id,
                 Email = authResponse.User.Email,
                 FirstName = authResponse.User.FirstName,
                 LastName = authResponse.User.LastName,
@@ -93,6 +94,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
             RefreshToken = authResponse.RefreshToken,
             User = new UserResponse 
             {
+                Id = authResponse.User.Id,
                 Email = authResponse.User.Email,
                 FirstName = authResponse.User.FirstName,
                 LastName = authResponse.User.LastName,
@@ -103,14 +105,6 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     [HttpPost(ApiRoutes.Identity.Refresh)]
     public async Task<IActionResult> Refresh()
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new AuthFailedResponse
-            {
-                Errors = ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage)),
-            });
-        }
-
         if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)) return Unauthorized();
         
         var authResponse = await _identityService.RefreshTokenAsync(refreshToken);
@@ -131,11 +125,19 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
             RefreshToken = authResponse.RefreshToken,
             User = new UserResponse 
             {
+                Id = authResponse.User.Id,
                 Email = authResponse.User.Email,
                 FirstName = authResponse.User.FirstName,
                 LastName = authResponse.User.LastName,
             }
         });
+    }
+
+    [HttpPost(ApiRoutes.Identity.Logout)]
+    public IActionResult Logout()
+    {
+        HttpContext.Response.Cookies.Delete("refreshToken");
+        return NoContent();
     }
 
     [HttpGet(ApiRoutes.Identity.Me)]
@@ -144,6 +146,26 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)) return Unauthorized();
         
         var me = await _identityService.MeAsync(refreshToken);
-        return Ok(me);
+
+        if (!me.Succeded)
+        {
+            return BadRequest(new AuthFailedResponse
+            {
+                Errors = me.Errors,
+            });
+        }
+
+        return Ok(new AuthSuccessResponse
+        {
+            Token = me.Token,
+            RefreshToken = me.RefreshToken,
+            User = new UserResponse 
+            {
+                Id = me.User.Id,
+                Email = me.User.Email,
+                FirstName = me.User.FirstName,
+                LastName = me.User.LastName,
+            }
+        });
     }
 }

@@ -4,6 +4,12 @@ namespace real_time_online_chats.Server.Domain;
 
 public class UserEntity : IdentityUser<Guid>
 {
+    public new string Email
+    {
+        get => base.Email ?? "";
+        set => base.Email = value;
+    }
+
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
 

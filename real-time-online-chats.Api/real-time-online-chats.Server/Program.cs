@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,7 @@ using real_time_online_chats.Server.Configurations;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.Extensions;
+using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Providers;
 using real_time_online_chats.Server.Services.Chat;
 using real_time_online_chats.Server.Services.Identity;
@@ -20,16 +22,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(CORS_POLICY, policy  =>
+    options.AddPolicy(CORS_POLICY, policy =>
     {
         policy
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
 builder.Services.AddControllers();
+
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<TokenProvider>();
 
@@ -70,19 +75,6 @@ builder.Services
 var jwtConfig = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>()
     ?? throw new InvalidOperationException("Configuration for JwtConfiguration is missing or invalid.");
 
-var tokenValidationParameters = new TokenValidationParameters
-{
-    ValidateIssuer = true,
-    ValidateAudience = true,
-    ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    ValidIssuer = "https://localhost:7183",
-    ValidAudience = "https://localhost:7183",
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtConfig.SecretKey))
-};
-
-builder.Services.AddSingleton(tokenValidationParameters);
-
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -92,7 +84,34 @@ builder.Services.AddAuthentication(options =>
     .AddJwtBearer(options =>
     {
         options.SaveToken = true;
-        options.TokenValidationParameters = tokenValidationParameters;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidIssuer = "https://localhost:7183",
+            ValidAudience = "https://localhost:7183",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtConfig.SecretKey))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/messageHub"))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -137,6 +156,8 @@ var app = builder.Build();
 app.UseCors(CORS_POLICY);
 
 app.MapControllers().RequireCors(CORS_POLICY);
+
+app.MapHub<MessageHub>("/messageHub").RequireCors(CORS_POLICY);
 
 app.UseAuthentication();
 app.UseAuthorization();

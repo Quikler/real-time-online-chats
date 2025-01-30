@@ -9,4 +9,6 @@ public class ChatEntity : BaseEntity
     
     public required string Title { get; set; }
     public List<MessageEntity> Messages { get; set; } = [];
+
+    public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 }

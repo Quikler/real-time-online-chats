@@ -33,15 +33,13 @@ public class ChatService : IChatService
 
     public async Task<ChatEntity?> GetChatByIdAsync(Guid chatId) => await _dbContext.Chats.FindAsync(chatId);
 
-    public async Task<ChatEntity?> GetChatRestrictByIdAsync(Guid chatId, Guid userId)
+    public async Task<ChatEntity?> GetChatByIdWithDetailsAsync(Guid chatId)
     {
-        var isMember = await UserExistInChatAsync(chatId, userId);
-        if (!isMember) return null;
-
         return await _dbContext.Chats
-            .AsNoTracking()
+            .Include(c => c.Owner)
             .Include(c => c.Members)
-            .Include(c => c.Messages)
+            .Include(c => c.Messages.OrderBy(m => m.CreationTime))
+                .ThenInclude(m => m.User)
             .FirstOrDefaultAsync(c => c.Id == chatId);
     }
 
@@ -55,7 +53,6 @@ public class ChatService : IChatService
     public async Task<bool> UpdateChatAsync(ChatEntity chat)
     {
         int rows = await _dbContext.Chats.Where(c => c.Id == chat.Id).ExecuteUpdateAsync(s => s
-            .SetProperty(c => c.OwnerId, chat.OwnerId)
             .SetProperty(c => c.Title, chat.Title)
         );
         return rows > 0;
@@ -67,26 +64,86 @@ public class ChatService : IChatService
         return rows > 0;
     }
 
-    public Task<bool> UserExistInChatAsync(Guid chatId, Guid userId)
+    public Task<bool> IsUserExistInChatAsync(Guid chatId, Guid userId)
     {
         return _dbContext.Chats
             .Where(c => c.Id == chatId)
-            .Select(c => c.Members.Any(m => m.Id == userId))
+            .Select(c => c.OwnerId == userId || c.Members.Any(m => m.Id == userId))
             .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> UserJoinChatAsync(Guid chatId, UserEntity user)
+    public async Task<bool> UserJoinChatAsync(Guid chatId, Guid userId)
     {
         var chat = await _dbContext.Chats
-            .Include(c => c.Members)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(c => c.Id == chatId);
 
-        if (chat is not null && !chat.Members.Exists(u => u.Id == user.Id))
+        if (chat is not null)
         {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user is null) return false;
+
             chat.Members.Add(user);
+            await _dbContext.SaveChangesAsync();
             return true;
         }
 
         return false;
+    }
+
+    public async Task<bool> UserLeaveChatAsync(Guid chatId, Guid userId)
+    {
+        // Find the user and include both OwnedChats and MemberChats
+        var user = await _dbContext.Users
+            .Include(u => u.OwnedChats)
+                .ThenInclude(oc => oc.Members)
+            .Include(u => u.MemberChats)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null) return false;
+
+        // Check if the user is the owner of the chat
+        var ownedChat = user.OwnedChats.FirstOrDefault(c => c.Id == chatId);
+        if (ownedChat is not null)
+        {
+            // User is the owner of the chat
+            // Find another member to transfer ownership to
+            var newOwner = ownedChat.Members.FirstOrDefault(u => u.Id != userId);
+            if (newOwner is null)
+            {
+                // No other members in the chat, so delete the chat
+                _dbContext.Chats.Remove(ownedChat);
+            }
+            else
+            {
+                // Transfer ownership to the new owner
+                ownedChat.OwnerId = newOwner.Id;
+                ownedChat.Owner = newOwner;
+
+                // Remove the chat from the current owner's OwnedChats
+                user.OwnedChats.Remove(ownedChat);
+
+                // Add the chat to the new owner's OwnedChats
+                newOwner.OwnedChats.Add(ownedChat);
+            }
+        }
+        else
+        {
+            // User is a member of the chat
+            var memberChat = user.MemberChats.FirstOrDefault(c => c.Id == chatId);
+            if (memberChat is null) return false; // User is not a member of the chat
+
+            // Remove the chat from the user's MemberChats
+            user.MemberChats.Remove(memberChat);
+        }
+
+        // Save changes to the database
+        int rows = await _dbContext.SaveChangesAsync();
+        return rows > 0;
+    }
+
+    public async Task<bool> IsUserOwnsChatAsync(Guid chatId, Guid userId)
+    {
+        var chat = await _dbContext.Chats.FindAsync(chatId);
+        return chat is not null && chat.OwnerId == userId;
     }
 }

@@ -8,4 +8,5 @@ public class MessageEntity : BaseEntity
     public ChatEntity Chat { get; set; } = null!;
     public required string Content { get; set; }
     public required string ContentType { get; set; }
+    public DateTime CreationTime { get; set; } = DateTime.UtcNow;
 }

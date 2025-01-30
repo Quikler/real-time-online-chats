@@ -90,7 +90,6 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
         }
     }
 
-
     public async Task<AuthResult> RefreshTokenAsync(string refreshToken)
     {
         try
@@ -101,12 +100,11 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
 
             if (storedRefreshToken is null || storedRefreshToken.ExpiryDate < DateTime.UtcNow) return new AuthResult
             {
-                Errors = ["Refresh token has expired"],
+                Errors = ["Refresh token has expired", $"refreskToken: {refreshToken} - Null: {storedRefreshToken is null}"],
             };
 
-            var token = _tokenProvider.CreateJwtSecurityToken(storedRefreshToken.User);
-
-            storedRefreshToken.Token = _tokenProvider.GenerateRefreshToken();
+            var newRefreshToken = _tokenProvider.GenerateRefreshToken();
+            storedRefreshToken.Token = newRefreshToken;
             storedRefreshToken.ExpiryDate = DateTime.UtcNow.Add(_jwtConfiguration.RefreshTokenLifetime);
 
             await _dbContext.SaveChangesAsync();
@@ -114,8 +112,15 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
             return new AuthResult
             {
                 Succeded = true,
-                RefreshToken = storedRefreshToken.Token,
-                Token = token,
+                RefreshToken = newRefreshToken,
+                Token = _tokenProvider.CreateJwtSecurityToken(storedRefreshToken.User),
+                User = new UserResult
+                {
+                    Id = storedRefreshToken.UserId,
+                    Email = storedRefreshToken.User.Email!,
+                    FirstName = storedRefreshToken.User.FirstName,
+                    LastName = storedRefreshToken.User.LastName,
+                },
             };
         }
         catch
@@ -148,6 +153,7 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
             RefreshToken = refreshToken.Token,
             User = new UserResult
             {
+                Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email!,
@@ -173,6 +179,7 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
             RefreshToken = rToken.Token,
             User = new UserResult
             {
+                Id = rToken.UserId,
                 FirstName = rToken.User.FirstName,
                 LastName = rToken.User.LastName,
                 Email = rToken.User.Email!,

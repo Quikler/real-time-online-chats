@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Message;
 using real_time_online_chats.Server.Contracts.V1.Responses.Message;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.Extensions;
+using real_time_online_chats.Server.Hubs;
+using real_time_online_chats.Server.Hubs.Clients;
 using real_time_online_chats.Server.Services.Message;
 
 namespace real_time_online_chats.Server.Controllers.V1;
@@ -14,10 +17,12 @@ namespace real_time_online_chats.Server.Controllers.V1;
 public class MessagesController : ControllerBase
 {
     private readonly IMessageService _messageService;
+    private readonly IHubContext<MessageHub, IMessageClient> _messageHub;
 
-    public MessagesController(IMessageService chatService)
+    public MessagesController(IMessageService chatService, IHubContext<MessageHub, IMessageClient> messagehub)
     {
         _messageService = chatService;
+        _messageHub = messagehub;
     }
 
     [HttpGet(ApiRoutes.Messages.GetAll)]
@@ -73,6 +78,8 @@ public class MessagesController : ControllerBase
             Content = message.Content,
         };
 
+        await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
+
         return CreatedAtAction(nameof(Get), new { messageId = message.Id }, response);
     }
 
@@ -82,7 +89,7 @@ public class MessagesController : ControllerBase
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
         var userOwnsMessage = await _messageService.UserOwnsMessageAsync(messageId, userId);
-        if (!userOwnsMessage) return Unauthorized();
+        if (!userOwnsMessage) return Forbid();
 
         var message = new MessageEntity
         {
@@ -92,14 +99,13 @@ public class MessagesController : ControllerBase
         };
 
         var updated = await _messageService.UpdateMessageAsync(message);
-        var response = new GetMessageResponse
+
+        return updated ? Ok(new GetMessageResponse
         {
             Id = message.Id,
             UserId = message.UserId,
             Content = message.Content,
-        };
-
-        return updated ? Ok(response) : NotFound();
+        }) : NotFound();
     }
 
     [HttpDelete(ApiRoutes.Messages.Delete)]
@@ -108,7 +114,7 @@ public class MessagesController : ControllerBase
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
         var userOwnsMessage = await _messageService.UserOwnsMessageAsync(messageId, userId);
-        if (!userOwnsMessage) return Unauthorized();
+        if (!userOwnsMessage) return Forbid();
 
         var deleted = await _messageService.DeleteMessageAsync(messageId);
         return deleted ? NoContent() : NotFound();
