@@ -1,84 +1,74 @@
 import api from "@services/axios/instance";
-import { SignupFormData } from "../../components/forms/sign-up-form";
-import { LoginFormData } from "../../components/forms/log-in-form";
 import { AuthRoutes } from "../../routes/api-routes";
-import { observableWithAbort } from "../../helpers/wrappers";
+import {
+  AuthSuccessResponse,
+  LoginRequest,
+  SignupRequest,
+} from "@src/models/dtos/Auth";
+import { AxiosRequestConfig } from "axios";
+import { throwIfErrorNotCancelError } from "@src/utils/helpers";
 
 export abstract class AuthService {
-  static signup(data: SignupFormData) {
-    return observableWithAbort((abortController, observer) => {
-      api
-        .post(AuthRoutes.signup, data, {
+  static async signup(
+    request: SignupRequest,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
+    try {
+      const response = await api.post<AuthSuccessResponse>(
+        AuthRoutes.signup,
+        request,
+        {
           withCredentials: true,
-          signal: abortController.signal,
-        })
-        .then((response) => {
-          observer.next(response);
-          observer.complete();
-        })
-        .catch((e) => {
-          if (e.name !== "CanceledError") {
-            observer.error(e);
-          }
-        });
-    });
+          signal: config?.signal,
+        }
+      );
+      return response.data;
+    } catch (e: any) {
+      throwIfErrorNotCancelError(e);
+    }
   }
 
-  static login(data: LoginFormData) {
-    return observableWithAbort((abortController, observer) => {
-      api
-        .post(AuthRoutes.login, data, {
+  static async login(
+    request: LoginRequest,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
+    try {
+      const response = await api.post<AuthSuccessResponse>(
+        AuthRoutes.login,
+        request,
+        {
           withCredentials: true,
-          signal: abortController.signal,
-        })
-        .then((response) => {
-          observer.next(response);
-          observer.complete();
-        })
-        .catch((e) => {
-          if (e.name !== "CanceledError") {
-            observer.error(e);
-          }
-        });
-    });
+          signal: config?.signal,
+        }
+      );
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
   }
 
-  static logout() {
-    return observableWithAbort((abortController, observer) => {
-      api
-        .post(
-          AuthRoutes.logout,
-          {},
-          { withCredentials: true, signal: abortController.signal }
-        )
-        .then((response) => {
-          observer.next(response);
-          observer.complete();
-        })
-        .catch((e) => {
-          if (e.name !== "CanceledError") {
-            observer.error(e);
-          }
-        });
-    });
+  static async logout(config?: AxiosRequestConfig<any> | undefined) {
+    try {
+      const response = await api.post<AuthSuccessResponse>(
+        AuthRoutes.logout,
+        {},
+        { withCredentials: true, signal: config?.signal }
+      );
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
   }
 
-  static me() {
-    return observableWithAbort((abortController, observer) => {
-      api
-        .get(AuthRoutes.me, {
-          withCredentials: true,
-          signal: abortController.signal,
-        })
-        .then((response) => {
-          observer.next(response);
-          observer.complete();
-        })
-        .catch((e) => {
-          if (e.name !== "CanceledError") {
-            observer.error(e);
-          }
-        });
-    });
+  static async me(config?: AxiosRequestConfig<any> | undefined) {
+    try {
+      const response = await api.get<AuthSuccessResponse>(AuthRoutes.me, {
+        withCredentials: true,
+        signal: config?.signal,
+      });
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
   }
 }

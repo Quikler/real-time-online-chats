@@ -1,8 +1,8 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import App from "../App";
 import HeaderSection from "../components/sections/header-section";
-import LogInForm from "../components/forms/log-in-form";
-import SignUpForm from "../components/forms/sign-up-form";
+import LoginPage from "../components/pages/login/LoginPage";
+import SignupPage from "@src/components/pages/signup/SignupPage";
 import ChatsSection from "../components/sections/chats-section";
 import MainLayout from "../layouts/main-layout";
 import WhyUsSection from "../components/sections/why-us-section";
@@ -11,7 +11,7 @@ import UserProfile from "../components/profile/user-profile";
 import AccountPage from "../components/pages/account/account-page";
 import ProtectedRoute from "./protected-routes";
 import NotFound from "../components/pages/errors/not-found";
-import MainChatPage from "../components/pages/chats/main-chat-page";
+import Chat from "../components/pages/chats/Chat";
 import Forbidden from "../components/pages/errors/forbidden";
 import { LoaderScreen } from "../components/ui/Loader";
 
@@ -33,7 +33,7 @@ export const router = createBrowserRouter([
         path: "login",
         element: (
           <MainLayout>
-            <LogInForm />
+            <LoginPage />
           </MainLayout>
         ),
       },
@@ -41,7 +41,7 @@ export const router = createBrowserRouter([
         path: "signup",
         element: (
           <MainLayout>
-            <SignUpForm />
+            <SignupPage />
           </MainLayout>
         ),
       },
@@ -64,7 +64,7 @@ export const router = createBrowserRouter([
           },
           {
             path: ":chatId",
-            element: <MainChatPage />,
+            element: <Chat />,
           },
         ],
       },

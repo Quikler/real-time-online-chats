@@ -10,6 +10,7 @@ export abstract class AuthRoutes {
 
 export abstract class ChatRoutes {
   static readonly base = `chats`;
+  static readonly detailed = `detailed`;
 }
 
 export abstract class MessageRoutes {

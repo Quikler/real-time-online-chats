@@ -1,36 +1,49 @@
 import { useEffect, useState } from "react";
-import Logo from "./common/logo";
-import { Link, useLocation } from "react-router-dom";
+import Logo from "./ui/Logo";
+import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
+import ButtonLink from "./ui/ButtonLink";
 
 export default function Header() {
   const { user, logoutUser, isUserLoggedIn } = useAuth();
 
-  const location = useLocation();
-
   const isLinkActive = (path: string) => location.pathname === path;
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 0);
+    const handleResize = () => setIsLargeScreen(window.innerWidth >= 1024);
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const getBackgroundColor = () => {
+    if (isScrolled || isMenuOpen) {
+      if (isLargeScreen) {
+        return isScrolled ? "bg-darkBlue-100" : "bg-transparent";
+      }
+      return "bg-darkBlue-200";
+    }
+    return "bg-transparent";
+  };
+
   return (
-    <header
-      className={`fixed z-[999] w-full ${
-        isScrolled || isMenuOpen ? "bg-darkBlue-200" : "bg-transparent"
-      }`}
-    >
+    <header className={`fixed z-[999] w-full ${getBackgroundColor()}`}>
       <nav
         className={`bg-transparent border-gray-200 px-4 lg:px-6 py-2.5 overflow-y-auto lg:h-auto ${
           isMenuOpen && "h-screen"
@@ -124,18 +137,16 @@ export default function Header() {
                 </div>
               ) : (
                 <div className="flex gap-2 items-center">
-                  <Link
-                    to="/login"
-                    className="text-white bg-lightGreen-100 hover:bg-lightGreen-200 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5"
-                  >
+                  <ButtonLink to="/login" className="font-medium text-sm">
                     Log in
-                  </Link>
-                  <Link
+                  </ButtonLink>
+                  <ButtonLink
+                    variant="secondary"
                     to="/signup"
-                    className="text-white bg-purple-100 hover:bg-purple-200 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5"
+                    className="font-medium text-sm"
                   >
                     Sign up
-                  </Link>
+                  </ButtonLink>
                 </div>
               )}
             </div>
@@ -171,9 +182,12 @@ export default function Header() {
               <ul className="flex flex-col my-4 lg:my-0 h-auto font-medium lg:flex-row lg:space-x-8 md:h-auto">
                 <li>
                   <Link
+                    onClick={toggleMenu}
                     to="/"
                     className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 ${
-                      isLinkActive("/") ? "text-white" : "text-gray-300 lg:hover:bg-transparent hover:bg-lightGreen-100 hover:text-white"
+                      isLinkActive("/")
+                        ? "text-white"
+                        : "text-gray-300 lg:hover:bg-transparent hover:bg-lightGreen-100 hover:text-white"
                     }`}
                   >
                     Home
@@ -181,9 +195,12 @@ export default function Header() {
                 </li>
                 <li>
                   <Link
+                    onClick={toggleMenu}
                     to="/chats"
                     className={`block py-2 pr-4 pl-3 rounded lg:bg-transparent lg:p-0 ${
-                      isLinkActive("/chats") ? "text-white" : "text-gray-300 lg:hover:bg-transparent hover:bg-lightGreen-100 hover:text-white"
+                      isLinkActive("/chats")
+                        ? "text-white"
+                        : "text-gray-300 lg:hover:bg-transparent hover:bg-lightGreen-100 hover:text-white"
                     }`}
                   >
                     Chats

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { MessageCircle } from "../../assets/images/svgr/common";
+import Button from "../ui/Button";
 
 export default function HeaderSection(
   props: React.HTMLAttributes<HTMLDivElement>
@@ -33,9 +34,9 @@ export default function HeaderSection(
           </p>
           <div>
             <Link to="chats">
-              <button className="text-white bg-lightGreen-100 hover:bg-lightGreen-200 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5">
+              <Button>
                 Get started
-              </button>
+              </Button>
             </Link>
           </div>
         </div>

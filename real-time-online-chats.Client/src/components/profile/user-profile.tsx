@@ -1,23 +1,19 @@
 import { useState } from "react";
-import CreateChatForm, {
-  CreateChatFormData,
-} from "../pages/chats/create-chat-form";
+import CreateChatForm, { CreateChatFormData } from "../pages/chats/CreateChatForm";
 import { ChatService } from "../../services/api/chat-service";
 import { toast } from "react-toastify";
+import Button from "../ui/Button";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);
 
-  const handleChatFormSubmit = (
-    e: React.FormEvent<HTMLFormElement>,
+  const handleChatFormSubmit = async (
+    _e: React.FormEvent<HTMLFormElement>,
     data: CreateChatFormData
   ) => {
-    ChatService.createChat(data).subscribe({
-      next: (response) => {
-        toast.success("Created chat successfully");
-      },
-      error: (error) => toast.error(error),
-    });
+    await ChatService.createChat(data)
+      .then((data) => toast.success(`Chat '${data?.title}' created successfully`))
+      .catch((e) => console.log(e));
   };
 
   return (
@@ -40,16 +36,8 @@ const UserProfile = () => {
           </div>
           <div className="flex flex-col sm:flex-row max-sm:gap-5 items-center justify-between mb-5">
             <div className="flex items-center gap-4 mx-auto">
-              <button
-                onClick={() => setIsChatFormOpen(!isChatFormOpen)}
-                className="rounded-lg font-medium hover:bg-lightGreen-200 bg-lightGreen-100 py-3 px-4 text-white"
-              >
-                Create chat
-              </button>
-
-              <button className="rounded-lg font-medium hover:bg-purple-200 bg-purple-100 py-3 px-4 text-white">
-                Edit Profile
-              </button>
+              <Button onClick={() => setIsChatFormOpen(!isChatFormOpen)}>Create chat</Button>
+              <Button variant="secondary">Edit Profile</Button>
             </div>
           </div>
           <h3 className="text-center font-bold text-3xl leading-10 text-gray-900 mb-3">

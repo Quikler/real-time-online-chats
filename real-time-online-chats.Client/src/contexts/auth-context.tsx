@@ -1,25 +1,17 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
-import { UserProfile } from "../models/user";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { UserProfile } from "../models/User";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/api/auth-service";
 import { toast } from "react-toastify";
-import { LoginFormData } from "../components/forms/log-in-form";
-import { SignupFormData } from "../components/forms/sign-up-form";
-import api from "@services/axios/instance"
+import api from "@services/axios/instance";
 import { AuthRoutes } from "../routes/api-routes";
+import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
 
 interface AuthContextType {
   token: string | null;
   user: UserProfile | null;
-  loginUser: (formData: LoginFormData) => void;
-  signupUser: (formData: SignupFormData) => void;
+  loginUser: (request: LoginRequest) => void;
+  signupUser: (request: SignupRequest) => void;
   logoutUser: () => void;
   isUserLoggedIn: () => boolean;
 }
@@ -32,44 +24,52 @@ export const AuthProvider = ({ children }: Props) => {
   const navigate = useNavigate();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Fetch user profile and set token
   useEffect(() => {
-    const { observable, abort } = AuthService.me();
+    const abortController = new AbortController();
 
-    observable.subscribe({
-      next: (response) => {
-        console.group("Me");
-        console.log(response.data);
-        console.groupEnd();
-        
-        setToken(response.data.token); // set jwt auth token into state
-        setUser(response.data.user); // set user into state
-      },
-      error: () => {},
-    });
+    AuthService.me({
+      signal: abortController.signal,
+    })
+      .then((data) => {
+        if (data) {
+          setToken(data.token);
+          setUser(data.user);
+        }
+        setIsAuthenticated(true); // Mark authentication as complete
+      })
+      .catch((e) => {
+        console.error("Fetch me:", e.message);
+        setIsAuthenticated(true); // Even if fetching fails, mark authentication as complete
+      });
 
-    return () => abort();
+    return () => abortController.abort();
   }, []);
 
+  // Set up request interceptor
   useLayoutEffect(() => {
-    if (!token) return ;
+    if (!isAuthenticated) return;
 
     const authInterceptor = api.interceptors.request.use((config: any) => {
-      console.group("[Interceptor] Request");
+      console.group("[Interceptor] [Request]");
       console.log("Token is", token);
       console.groupEnd();
 
       config.headers.Authorization =
-        !config._retry && token
-          ? `Bearer ${token}`
-          : config.headers.Authorization;
+        !config._retry && token ? `Bearer ${token}` : config.headers.Authorization;
       return config;
     });
 
     return () => api.interceptors.request.eject(authInterceptor);
-  }, [token]);
+  }, [token, isAuthenticated]);
 
+  // Set up response interceptor
   useLayoutEffect(() => {
+    if (!isAuthenticated) return;
+
     const refreshInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -83,11 +83,7 @@ export const AuthProvider = ({ children }: Props) => {
           console.group("[Interceptor] [Response]");
           console.log("[Error]: 401");
           try {
-            const response = await api.post(
-              AuthRoutes.refreshToken,
-              {},
-              { withCredentials: true }
-            );
+            const response = await api.post(AuthRoutes.refreshToken, {}, { withCredentials: true });
 
             setToken(response.data.token);
 
@@ -107,54 +103,58 @@ export const AuthProvider = ({ children }: Props) => {
           } finally {
             console.groupEnd();
           }
-        } 
-        // else if (error.response &&
-        //   error.response.status === 403) {
-        //     router.navigate("")
-        //   }
+        }
 
         return Promise.reject(error);
       }
     );
 
     return () => api.interceptors.response.eject(refreshInterceptor);
-  }, []);
+  }, [isAuthenticated]);
 
-  const signupUser = (formData: SignupFormData) => {
-    AuthService.signup(formData).observable.subscribe({
-      next: (response) => {
-        const userObj = response.data.user;
+  // Mark the app as ready only after all initialization is complete
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsReady(true);
+    }
+  }, [isAuthenticated]);
 
-        setToken(response.data.token);
-        setUser(userObj);
+  const signupUser = (request: SignupRequest) => {
+    AuthService.signup(request)
+      .then((response) => {
+        if (response) {
+          setToken(response.token);
+          setUser(response.user);
 
-        toast.success("Signed up successfully");
-      },
-      error: (error) => toast.error(error),
-    });
+          toast.success("Signed up successfully");
+        }
+      })
+      .catch((e) => toast.error(e));
   };
 
-  const loginUser = (formData: LoginFormData) => {
-    AuthService.login(formData).observable.subscribe({
-      next: (response) => {
-        const userObj = response.data.user;
+  const loginUser = (request: LoginRequest) => {
+    AuthService.login(request)
+      .then((response) => {
+        if (response) {
+          setToken(response.token);
+          setUser(response.user);
 
-        setToken(response.data.token);
-        setUser(userObj);
-
-        toast.success("Logged in successfully");
-      },
-      error: (error) => toast.error(error),
-    });
+          toast.success("Logged in successfully");
+        }
+      })
+      .catch((e) => toast.error(e));
   };
 
   const isUserLoggedIn = () => !!user;
 
   const logoutUser = () => {
-    setUser(null);
-    setToken(null);
-    navigate("/");
-    AuthService.logout();
+    AuthService.logout()
+      .then(() => {
+        setUser(null);
+        setToken(null);
+        navigate("/");
+      })
+      .catch((e) => toast.error(e));
   };
 
   const value = useMemo(
@@ -169,7 +169,8 @@ export const AuthProvider = ({ children }: Props) => {
     [token, user]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Render children only when the app is ready
+  return <AuthContext.Provider value={value}>{isReady ? children : null}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

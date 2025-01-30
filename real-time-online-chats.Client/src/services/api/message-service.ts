@@ -1,23 +1,22 @@
 import api from "@services/axios/instance";
-import { handleError } from "../../helpers/error-handler";
-import { CreateMessageRequest } from "../../contracts/message-contract";
-import { observableWithAbort } from "../../helpers/wrappers";
+import { CreateMessageRequest } from "../../models/dtos/Message";
+import { AxiosRequestConfig } from "axios";
+import { throwIfErrorNotCancelError } from "@src/utils/helpers";
 
 export abstract class MessageService {
   static messageUrl = "messages";
 
-  static createMessage(request: CreateMessageRequest) {
-    return observableWithAbort((abortController, observer) => {
-      api
-        .post(this.messageUrl, request, { signal: abortController.signal })
-        .then((response) => {
-          observer.next(response);
-          observer.complete();
-        })
-        .catch((error) => {
-          handleError(error);
-          observer.error(error);
-        });
-    });
+  static async createMessage(
+    request: CreateMessageRequest,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
+    try {
+      const response = await api.post(this.messageUrl, request, {
+        signal: config?.signal,
+      });
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
   }
 }
