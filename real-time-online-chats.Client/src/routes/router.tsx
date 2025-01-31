@@ -1,19 +1,19 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import App from "../App";
-import HeaderSection from "../components/sections/header-section";
-import LoginPage from "../components/pages/login/LoginPage";
-import SignupPage from "@src/components/pages/signup/SignupPage";
-import ChatsSection from "../components/sections/chats-section";
-import MainLayout from "../layouts/main-layout";
-import WhyUsSection from "../components/sections/why-us-section";
-import ChatsHeaderSection from "../components/sections/chats-header-section";
-import UserProfile from "../components/profile/user-profile";
-import AccountPage from "../components/pages/account/account-page";
+import UserProfile from "@src/components/profile/user-profile";
+import WhyUsSection from "@src/pages/root/WhyUs";
+import MainLayout from "@src/layouts/main-layout";
+import AccountPage from "@src/pages/account/account-page";
+import Chat from "@src/pages/chats/{chatId}/Chat";
+import Forbidden from "@src/pages/errors/forbidden";
+import NotFound from "@src/pages/errors/not-found";
+import LoginPage from "@src/pages/login/LoginPage";
+import SignupPage from "@src/pages/signup/SignupPage";
 import ProtectedRoute from "./protected-routes";
-import NotFound from "../components/pages/errors/not-found";
-import Chat from "../components/pages/chats/Chat";
-import Forbidden from "../components/pages/errors/forbidden";
-import { LoaderScreen } from "../components/ui/Loader";
+import App from "@src/App";
+import HeaderSection from "@src/pages/root/RootHeader";
+import { LoaderScreen } from "@src/components/ui/Loader";
+import ChatsHeaderSection from "@src/pages/chats/ChatsHeader";
+import ChatsSection from "@src/pages/chats/AvailableChats";
 
 export const router = createBrowserRouter([
   {
@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "chats",
+      path: "chats",
         element: (
           <MainLayout>
             <Outlet />

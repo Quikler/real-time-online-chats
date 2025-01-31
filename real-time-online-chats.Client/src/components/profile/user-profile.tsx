@@ -1,8 +1,8 @@
+import CreateChatForm, { CreateChatFormData } from "@src/pages/chats/CreateChatForm";
+import { ChatService } from "@services/api/chat-service";
 import { useState } from "react";
-import CreateChatForm, { CreateChatFormData } from "../pages/chats/CreateChatForm";
-import { ChatService } from "../../services/api/chat-service";
 import { toast } from "react-toastify";
-import Button from "../ui/Button";
+import Button from "@components/ui/Button";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);

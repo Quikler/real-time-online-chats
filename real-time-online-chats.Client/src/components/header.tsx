@@ -1,8 +1,10 @@
+import { useAuth } from "@src/contexts/auth-context";
 import { useEffect, useState } from "react";
-import Logo from "./ui/Logo";
 import { Link } from "react-router-dom";
-import { useAuth } from "../contexts/auth-context";
 import ButtonLink from "./ui/ButtonLink";
+import Logo from "./ui/Logo";
+import Button from "./ui/Button";
+import { ShortArrowDown } from "@src/assets/images/svgr/common";
 
 export default function Header() {
   const { user, logoutUser, isUserLoggedIn } = useAuth();
@@ -11,6 +13,8 @@ export default function Header() {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuActuallyOpen, setIsMenuActuallyOpen] = useState(false);
+
   const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -28,16 +32,27 @@ export default function Header() {
     };
   }, []);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      if (isScrolled) {
+        setIsMenuActuallyOpen(true)
+      } else if (isLargeScreen) {
+        setIsMenuActuallyOpen(false);
+      } else {
+        setIsMenuActuallyOpen(true);
+      }
+    } else if (isScrolled) {
+      setIsMenuActuallyOpen(true);
+    } else {
+      setIsMenuActuallyOpen(false);
+    }
+  }, [isMenuOpen, isScrolled, isLargeScreen]);
 
   const getBackgroundColor = () => {
-    if (isScrolled || isMenuOpen) {
-      if (isLargeScreen) {
-        return isScrolled ? "bg-darkBlue-100" : "bg-transparent";
-      }
-      return "bg-darkBlue-200";
+    if (isMenuActuallyOpen) {
+      return "bg-slate-800";
     }
     return "bg-transparent";
   };
@@ -55,30 +70,15 @@ export default function Header() {
             <div className="">
               {isUserLoggedIn() ? (
                 <div>
-                  <button
+                  <Button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     id="dropdownInformationButton"
                     data-dropdown-toggle="dropdownInformation"
-                    className="text-white bg-purple-100 hover:bg-purple-200 focus:outline-none font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 text-center inline-flex items-center"
                     type="button"
                   >
                     {user?.email}
-                    <svg
-                      className="w-2.5 h-2.5 ms-3"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 10 6"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="m1 1 4 4 4-4"
-                      />
-                    </svg>
-                  </button>
+                    <ShortArrowDown width="10" height="10" />
+                  </Button>
                   {/* Dropdown menu */}
                   {isUserMenuOpen && (
                     <div
@@ -87,39 +87,28 @@ export default function Header() {
                         isUserMenuOpen ? "" : "hidden"
                       }`}
                     >
-                      <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      <div className="px-4 py-3 text-sm text-white">
                         <div>
                           {user?.firstName} {user?.lastName}
                         </div>
-                        <div className="font-medium truncate">
-                          {user?.email}
-                        </div>
+                        <div className="font-medium truncate">{user?.email}</div>
                       </div>
                       <ul
                         className="py-2 text-sm text-gray-200"
                         aria-labelledby="dropdownInformationButton"
                       >
                         <li>
-                          <Link
-                            to="/profile"
-                            className="block px-4 py-2 hover:bg-gray-600"
-                          >
+                          <Link to="/profile" className="block px-4 py-2 hover:bg-gray-600">
                             Profile
                           </Link>
                         </li>
                         <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-600"
-                          >
+                          <a href="#" className="block px-4 py-2 hover:bg-gray-600">
                             Settings
                           </a>
                         </li>
                         <li>
-                          <a
-                            href="#"
-                            className="block px-4 py-2 hover:bg-gray-600"
-                          >
+                          <a href="#" className="block px-4 py-2 hover:bg-gray-600">
                             Earnings
                           </a>
                         </li>
@@ -140,11 +129,7 @@ export default function Header() {
                   <ButtonLink to="/login" className="font-medium text-sm">
                     Log in
                   </ButtonLink>
-                  <ButtonLink
-                    variant="secondary"
-                    to="/signup"
-                    className="font-medium text-sm"
-                  >
+                  <ButtonLink variant="secondary" to="/signup" className="font-medium text-sm">
                     Sign up
                   </ButtonLink>
                 </div>
@@ -174,8 +159,8 @@ export default function Header() {
 
           <div
             className={`${
-              isMenuOpen ? "flex" : "hidden"
-            } justify-between w-full lg:flex lg:w-auto lg:order-1 px-4 lg:px-5 py-2 lg:py-2.5`}
+              isMenuOpen ? "flex justify-between" : "hidden"
+            } w-full lg:flex lg:w-auto lg:order-1 px-4 lg:px-5 py-2 lg:py-2.5`}
             id="mobile-menu-2"
           >
             <div>
@@ -185,9 +170,11 @@ export default function Header() {
                     onClick={toggleMenu}
                     to="/"
                     className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 ${
+                      isMenuActuallyOpen ? "text-slate-400" : "text-slate-700"
+                    } ${
                       isLinkActive("/")
-                        ? "text-white"
-                        : "text-gray-300 lg:hover:bg-transparent hover:bg-lightGreen-100 hover:text-white"
+                        ? ""
+                        : "opacity-60 hover:opacity-100 lg:hover:bg-transparent hover:bg-lightGreen-100"
                     }`}
                   >
                     Home
@@ -197,10 +184,12 @@ export default function Header() {
                   <Link
                     onClick={toggleMenu}
                     to="/chats"
-                    className={`block py-2 pr-4 pl-3 rounded lg:bg-transparent lg:p-0 ${
+                    className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 ${
+                      isMenuActuallyOpen ? "text-slate-400" : "text-slate-700"
+                    } ${
                       isLinkActive("/chats")
-                        ? "text-white"
-                        : "text-gray-300 lg:hover:bg-transparent hover:bg-lightGreen-100 hover:text-white"
+                        ? ""
+                        : "opacity-60 hover:opacity-100 lg:hover:bg-transparent hover:bg-lightGreen-100"
                     }`}
                   >
                     Chats

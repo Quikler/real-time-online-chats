@@ -1,9 +1,8 @@
-import Logo from "../../ui/Logo";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../../contexts/auth-context";
 import LoginForm, { LoginFormData } from "./LoginForm";
-import { mapResponseToDTO } from "@src/utils/mappers";
 import { useState } from "react";
+import Logo from "@src/components/ui/Logo";
+import { useAuth } from "@src/contexts/auth-context";
 
 export default function LoginPage() {
   const { loginUser } = useAuth();
@@ -16,7 +15,7 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    loginUser(mapResponseToDTO(formData));
+    loginUser(formData);
   };
 
   return (

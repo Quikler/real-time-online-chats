@@ -1,9 +1,9 @@
 import api from "@services/axios/instance";
-import { CreateChatFormData } from "../../components/pages/chats/CreateChatForm";
-import { ChatRoutes } from "../../routes/api-routes";
+import { ChatRoutes } from "@src/routes/api-routes";
 import { AxiosRequestConfig } from "axios";
 import { CreateChatResponse } from "@src/models/dtos/Chat";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
+import { CreateChatFormData } from "@src/pages/chats/CreateChatForm";
 
 export abstract class ChatService {
   static async createChat(data: CreateChatFormData, config?: AxiosRequestConfig<any> | undefined) {

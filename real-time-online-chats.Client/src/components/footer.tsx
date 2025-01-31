@@ -16,7 +16,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full py-14 bg-darkBlue-200 text-white">
+    <footer className="w-full py-14 bg-slate-800 text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <Logo />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import ChatPreview from "../chats/chat-preview";
 import { ChatService } from "@src/services/api/chat-service";
-import { LoaderScreen } from "../ui/Loader";
+import ChatPreview from "@src/pages/chats/ChatPreview";
+import { LoaderScreen } from "@src/components/ui/Loader";
 
 export default function ChatsSection() {
   const [chats, setChats] = useState<{ id: string; title: string }[]>([]);
@@ -9,7 +9,7 @@ export default function ChatsSection() {
 
   useEffect(() => {
     const abortController = new AbortController();
-    ChatService.getChats(1, 10, { signal: abortController.signal })
+    ChatService.getChats(1, 9, { signal: abortController.signal })
       .then((data) => {
         setChats(data?.items);
         setLoading(false);
@@ -19,12 +19,15 @@ export default function ChatsSection() {
     return () => abortController.abort();
   }, []);
 
-  if (loading) return <LoaderScreen />
+  if (loading) return <LoaderScreen />;
 
   return (
-    <section className="bg-black w-full">
-      <div className="max-w-screen-xl mx-auto py-12 px-6 flex flex-col lg:gap-8 gap-4">
-        <p className="text-center text-5xl text-white">Available chats</p>
+    <section className="py-20 px-6 bg-slate-600 text-white">
+      <div className="max-w-screen-xl mx-auto flex flex-col lg:gap-8 gap-4">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-white">Available chats</h2>
+          <p className="text-lg opacity-80 mt-2">Discover new chats and friend around the world.</p>
+        </div>
         <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 lg:gap-x-20 gap-x-10 gap-y-5">
           {chats?.map((value, index) => (
             <ChatPreview key={index} id={value.id} title={value.title} />

@@ -153,3 +153,21 @@ export const Zap = (props: SVGProps<SVGSVGElement>) => (
     <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
   </svg>
 );
+
+export const ShortArrowDown = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 10 6"
+    {...props}
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="m1 1 4 4 4-4"
+    />
+  </svg>
+);

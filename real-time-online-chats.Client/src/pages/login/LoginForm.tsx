@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import useFormValidation from "@src/hooks/useFormValidation";
 import { toast } from "react-toastify";
 import Input from "@src/components/ui/Input";
-import { useState } from "react";
 
 export interface LoginFormData {
   email: string;

@@ -2,7 +2,6 @@ import Button from "@src/components/ui/Button";
 import Checkbox from "@src/components/ui/Checkbox";
 import Input from "@src/components/ui/Input";
 import useFormValidation from "@src/hooks/useFormValidation";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 

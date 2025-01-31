@@ -1,18 +1,23 @@
 import React from "react";
-import "./Loader.css";
 
 interface LoaderProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: string;
 }
 
-const Loader = ({ size, ...rest }: LoaderProps) => (
-  <div style={{ width: size, height: size }} className="loader" {...rest}></div>
-);
+const Loader = ({ size, ...rest }: LoaderProps) => {
+  return (
+    <div
+      className="border-[16px] border-gray-200 border-t-slate-600 rounded-full animate-spin"
+      style={{ width: size, height: size }}
+      {...rest}
+    ></div>
+  );
+};
 
 export default Loader;
 
 export const LoaderScreen = ({ size = "256px", ...rest }: LoaderProps) => (
-  <div className="bg-darkBlue-100 z-[999] fixed w-full flex items-center justify-center h-screen flex-grow">
+  <div className="bg-transparent z-[999] fixed w-full flex items-center justify-center h-screen flex-grow">
     <Loader size={size} {...rest} />
   </div>
 );
