@@ -16,7 +16,8 @@ using real_time_online_chats.Server.Services.Chat;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize]
 public class ChatsController : ControllerBase
 {
     private readonly IChatService _chatService;

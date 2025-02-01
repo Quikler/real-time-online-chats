@@ -16,6 +16,12 @@ public static class ApiRoutes
         public const string Me = BASE + "/identity/me";
     }
 
+    public static class Google
+    {
+        public const string Login = BASE + "/google/login";
+        public const string Signup = BASE + "/google/signup";
+    }
+
     public static class Chats
     {
         public const string GetAll = BASE + "/chats";

@@ -1,4 +1,6 @@
 using System.Text;
+using Google.Apis.Auth.AspNetCore3;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections;
@@ -13,6 +15,7 @@ using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Providers;
 using real_time_online_chats.Server.Services.Chat;
+using real_time_online_chats.Server.Services.Google;
 using real_time_online_chats.Server.Services.Identity;
 using real_time_online_chats.Server.Services.Message;
 
@@ -36,11 +39,12 @@ builder.Services.AddControllers();
 
 builder.Services.AddSignalR();
 
-builder.Services.AddScoped<TokenProvider>();
+builder.Services.AddSingleton<TokenProvider>();
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IGoogleService, GoogleService>();
 
 // Get DB_HOST env variable to determine in which host database will run (local - localhost, Docker - see in docker-compose.yml)
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
@@ -70,16 +74,36 @@ builder.Services
 
 builder.Services
     .Configure<SwaggerConfiguration>(builder.Configuration.GetSection(nameof(SwaggerConfiguration)))
-    .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)));
+    .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)))
+    .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"));
 
 var jwtConfig = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>()
     ?? throw new InvalidOperationException("Configuration for JwtConfiguration is missing or invalid.");
 
 builder.Services.AddAuthentication(options =>
     {
+        // // This forces challenge results to be handled by Google OpenID Handler, so there's no
+        // // need to add an AccountController that emits challenges for Login.
+        // options.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+        // // This forces forbid results to be handled by Google OpenID Handler, which checks if
+        // // extra scopes are required and does automatic incremental auth.
+        // options.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+        // // Default scheme that will handle everything else.
+        // // Once a user is authenticated, the OAuth2 token info is stored in cookies.
+        // options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddCookie()
+    .AddGoogle(options =>
+    {
+        var googleConfig = builder.Configuration.GetSection("Google").Get<GoogleConfiguration>()
+            ?? throw new InvalidOperationException("Configuration for GoogleConfiguration is missing or invalid.");
+
+        options.ClientId = googleConfig.ClientId;
+        options.ClientSecret = googleConfig.ClientSecret;
     })
     .AddJwtBearer(options =>
     {
@@ -159,6 +183,8 @@ app.MapControllers().RequireCors(CORS_POLICY);
 
 app.MapHub<MessageHub>("/messageHub").RequireCors(CORS_POLICY);
 
+app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -181,8 +207,6 @@ if (app.Environment.IsDevelopment())
     // Apply all ef core migrations before running application
     app.ApplyMigrations();
 }
-
-app.UseHttpsRedirection();
 
 app.Run();
 

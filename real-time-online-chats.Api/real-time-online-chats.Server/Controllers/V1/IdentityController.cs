@@ -49,7 +49,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         {
             Token = authResponse.Token,
             RefreshToken = authResponse.RefreshToken,
-            User = new UserResponse 
+            User = new UserResponse
             {
                 Id = authResponse.User.Id,
                 Email = authResponse.User.Email,
@@ -92,7 +92,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         {
             Token = authResponse.Token,
             RefreshToken = authResponse.RefreshToken,
-            User = new UserResponse 
+            User = new UserResponse
             {
                 Id = authResponse.User.Id,
                 Email = authResponse.User.Email,
@@ -106,7 +106,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     public async Task<IActionResult> Refresh()
     {
         if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)) return Unauthorized();
-        
+
         var authResponse = await _identityService.RefreshTokenAsync(refreshToken);
 
         if (!authResponse.Succeded)
@@ -123,7 +123,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         {
             Token = authResponse.Token,
             RefreshToken = authResponse.RefreshToken,
-            User = new UserResponse 
+            User = new UserResponse
             {
                 Id = authResponse.User.Id,
                 Email = authResponse.User.Email,
@@ -141,10 +141,10 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     }
 
     [HttpGet(ApiRoutes.Identity.Me)]
-    public async Task<IActionResult> Me() 
+    public async Task<IActionResult> Me()
     {
         if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)) return Unauthorized();
-        
+
         var me = await _identityService.MeAsync(refreshToken);
 
         if (!me.Succeded)
@@ -159,7 +159,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         {
             Token = me.Token,
             RefreshToken = me.RefreshToken,
-            User = new UserResponse 
+            User = new UserResponse
             {
                 Id = me.User.Id,
                 Email = me.User.Email,
