@@ -1,4 +1,4 @@
-import { ChatService } from "@src/services/api/chat-service";
+import { ChatService } from "@src/services/api/ChatService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Button from "../../components/ui/Button";

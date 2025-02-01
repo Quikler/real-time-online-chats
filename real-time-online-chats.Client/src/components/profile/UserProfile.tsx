@@ -1,11 +1,14 @@
 import CreateChatForm, { CreateChatFormData } from "@src/pages/chats/CreateChatForm";
-import { ChatService } from "@services/api/chat-service";
+import { ChatService } from "@src/services/api/ChatService";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import Button from "@components/ui/Button";
+import { useAuth } from "@src/contexts/AuthContext";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);
+
+  const { user } = useAuth();
 
   const handleChatFormSubmit = async (
     _e: React.FormEvent<HTMLFormElement>,
@@ -41,7 +44,7 @@ const UserProfile = () => {
             </div>
           </div>
           <h3 className="text-center font-bold text-3xl leading-10 text-gray-900 mb-3">
-            Dante Sparda
+            {user?.firstName} {user?.lastName}
           </h3>
           <p
             className="font-normal text-base leading-7 text-gray-500 text-justify mb-8"

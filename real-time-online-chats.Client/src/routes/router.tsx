@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import UserProfile from "@src/components/profile/user-profile";
+import UserProfile from "@src/components/profile/UserProfile";
 import WhyUsSection from "@src/pages/root/WhyUs";
 import MainLayout from "@src/layouts/main-layout";
 import AccountPage from "@src/pages/account/account-page";

@@ -5,19 +5,6 @@ export function isNullOrWhitespace(input?: string) {
   return !input || !input.trim();
 }
 
-export function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
-
-export function getRandomNumber(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
-
 export const handleError = (error: any) => {
   if (axios.isAxiosError(error)) {
     var err = error.response;
@@ -25,7 +12,7 @@ export const handleError = (error: any) => {
       for (let val of err?.data.errors) {
         toast.error(val);
       }
-    } else if (typeof err?.data.errors === 'object') {
+    } else if (typeof err?.data.errors === "object") {
       for (let e in err?.data.errors) {
         toast.error(err?.data.errors[e][0]);
       }
@@ -44,4 +31,15 @@ export const throwIfErrorNotCancelError = (error: any) => {
   if (!axios.isCancel(error)) {
     throw error;
   }
-}
+};
+
+export const loadScript = (src: string) => {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve(undefined);
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve(undefined);
+    script.onerror = (err) => reject(err);
+    document.body.appendChild(script);
+  });
+};

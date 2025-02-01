@@ -4,11 +4,11 @@ import Button from "@src/components/ui/Button";
 import ButtonLink from "@src/components/ui/ButtonLink";
 import Modal from "@src/components/ui/Modal";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
-import { MessageService } from "@src/services/api/message-service";
+import { MessageService } from "@src/services/api/MessageService";
 import { toast } from "react-toastify";
-import { useAuth } from "@src/contexts/auth-context";
+import { useAuth } from "@src/contexts/AuthContext";
 import { GetMessageResponse, CreateMessageRequest } from "@src/models/dtos/Message";
-import { ChatService } from "@src/services/api/chat-service";
+import { ChatService } from "@src/services/api/ChatService";
 import { isNullOrWhitespace } from "@src/utils/helpers";
 
 export interface CreateMessageFormData {

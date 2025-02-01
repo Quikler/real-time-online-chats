@@ -1,5 +1,4 @@
 import api from "@services/axios/instance";
-import { AuthRoutes } from "../../routes/api-routes";
 import {
   AuthSuccessResponse,
   LoginRequest,
@@ -7,6 +6,7 @@ import {
 } from "@src/models/dtos/Auth";
 import { AxiosRequestConfig } from "axios";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
+import { AuthRoutes } from "./ApiRoutes";
 
 export abstract class AuthService {
   static async signup(

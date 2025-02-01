@@ -1,4 +1,4 @@
-import { useAuth } from "@src/contexts/auth-context";
+import { useAuth } from "@src/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ButtonLink from "./ui/ButtonLink";

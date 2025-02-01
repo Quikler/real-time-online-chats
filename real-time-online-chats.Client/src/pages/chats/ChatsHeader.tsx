@@ -3,7 +3,7 @@ import Button from "@src/components/ui/Button";
 
 export default function ChatsHeaderSection() {
   return (
-    <section className="w-full h-screen flex justify-center items-center m-auto max-w-screen-xl">
+    <section className="w-full lg:h-screen lg:my-0 my-24 flex justify-center items-center m-auto max-w-screen-xl">
       <div className="flex flex-col gap-6 px-[10%] text-white w-full">
         <div className="flex items-center gap-6">
           <Users width={96} height={96} className="text-slate-700" />

@@ -1,8 +1,13 @@
 const Environment = {
-    apiUrl: "https://localhost:7207/api",
-    apiVersion: "v1"
+	rootApiUrl: "https://localhost:7207",
+	apiUrl: "api",
+	apiUrlVersioned: "",
+	apiVersion: "v1",
 };
 
-Environment.apiUrl += `/${Environment.apiVersion}`;
+Environment.apiUrl = `${Environment.rootApiUrl}/${Environment.apiUrl}`;
+Environment.apiUrlVersioned = `${Environment.apiUrl}/${Environment.apiVersion}`;
+
+console.log("Versioned api:",Environment.apiUrlVersioned);
 
 export default Environment;

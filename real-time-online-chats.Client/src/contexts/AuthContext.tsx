@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { UserProfile } from "../models/User";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../services/api/auth-service";
+import { AuthService } from "../services/api/AuthService";
 import { toast } from "react-toastify";
 import api from "@services/axios/instance";
-import { AuthRoutes } from "../routes/api-routes";
+import { AuthRoutes } from "../services/api/ApiRoutes";
 import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
 
 interface AuthContextType {

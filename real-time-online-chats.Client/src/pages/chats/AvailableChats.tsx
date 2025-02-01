@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChatService } from "@src/services/api/chat-service";
+import { ChatService } from "@src/services/api/ChatService";
 import ChatPreview from "@src/pages/chats/ChatPreview";
 import { LoaderScreen } from "@src/components/ui/Loader";
 

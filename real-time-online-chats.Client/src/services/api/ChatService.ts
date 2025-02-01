@@ -1,5 +1,5 @@
 import api from "@services/axios/instance";
-import { ChatRoutes } from "@src/routes/api-routes";
+import { ChatRoutes } from "@src/services/api/ApiRoutes";
 import { AxiosRequestConfig } from "axios";
 import { CreateChatResponse } from "@src/models/dtos/Chat";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
