@@ -5,7 +5,9 @@ using Microsoft.Extensions.Options;
 using real_time_online_chats.Server.Configurations;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.Helpers;
 using real_time_online_chats.Server.Providers;
+using real_time_online_chats.Server.Validation;
 
 namespace real_time_online_chats.Server.Services.Google;
 
@@ -23,52 +25,31 @@ public class GoogleService(
     private readonly TokenProvider _tokenProvider = tokenProvider;
     private readonly JwtConfiguration _jwtConfiguration = jwtConfiguration.Value;
 
-    public async Task<AuthResult> LoginAsync(GoogleJsonWebSignature.Payload payload)
+    public async Task<Result<AuthResult, AuthValidationFail>> LoginAsync(GoogleJsonWebSignature.Payload payload)
     {
         try
         {
             var user = await _userManager.FindByEmailAsync(payload.Email);
 
-            if (user is null)
-            {
-                return new AuthResult
-                {
-                    Errors = ["Invalid email or password."],
-                };
-            }
-
-            if (await _userManager.IsLockedOutAsync(user))
-            {
-                return new AuthResult
-                {
-                    Errors = ["Account is locked. Please try again later."]
-                };
-            }
+            if (user is null) return new AuthValidationFail("Invalid email or password.");
+            if (await _userManager.IsLockedOutAsync(user)) return new AuthValidationFail("Account is locked. Please try again later.");
 
             await _userManager.ResetAccessFailedCountAsync(user);
-            return await GenerateAuthResultForUserAsync(user);
+            return await AuthHelper.GenerateAuthResultForUserAsync(user, _tokenProvider, _dbContext, _jwtConfiguration.RefreshTokenLifetime);
         }
         catch
         {
-            return new AuthResult
-            {
-                Errors = ["An unexpected error occurred. Please try again later."]
-            };
+            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
         }
     }
 
-    public async Task<AuthResult> SignupAsync(GoogleJsonWebSignature.Payload payload)
+    public async Task<Result<AuthResult, AuthValidationFail>> SignupAsync(GoogleJsonWebSignature.Payload payload)
     {
         try
         {
             var existingUser = await _userManager.FindByEmailAsync(payload.Email);
-            if (existingUser is not null)
-            {
-                return new AuthResult
-                {
-                    Errors = ["Email is already registered."]
-                };
-            }
+            
+            if (existingUser is not null) return new AuthValidationFail("Email is already registered.");
 
             var newUser = new UserEntity
             {
@@ -78,24 +59,15 @@ public class GoogleService(
                 LastName = payload.FamilyName,
             };
 
-            var createdUserResult = await _userManager.CreateAsync(newUser);
+            var createdResult = await _userManager.CreateAsync(newUser);
 
-            if (!createdUserResult.Succeeded)
-            {
-                return new AuthResult
-                {
-                    Errors = createdUserResult.Errors.Select(e => e.Description),
-                };
-            }
+            if (!createdResult.Succeeded) return new AuthValidationFail(createdResult.Errors.Select(e => e.Description));
 
-            return await GenerateAuthResultForUserAsync(newUser);
+            return await AuthHelper.GenerateAuthResultForUserAsync(newUser, _tokenProvider, _dbContext, _jwtConfiguration.RefreshTokenLifetime);
         }
         catch
         {
-            return new AuthResult
-            {
-                Errors = ["An unexpected error occurred. Please try again later."]
-            };
+            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
         }
     }
 
@@ -115,34 +87,5 @@ public class GoogleService(
         {
             return null;
         }
-    }
-
-    private async Task<AuthResult> GenerateAuthResultForUserAsync(UserEntity user)
-    {
-        var token = _tokenProvider.CreateJwtSecurityToken(user);
-
-        var refreshToken = new RefreshTokenEntity
-        {
-            UserId = user.Id,
-            Token = _tokenProvider.GenerateRefreshToken(),
-            ExpiryDate = DateTime.UtcNow.Add(_jwtConfiguration.RefreshTokenLifetime),
-        };
-
-        await _dbContext.RefreshTokens.AddAsync(refreshToken);
-        await _dbContext.SaveChangesAsync();
-
-        return new AuthResult
-        {
-            Succeded = true,
-            Token = token,
-            RefreshToken = refreshToken.Token,
-            User = new UserResult
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email!,
-            }
-        };
     }
 }

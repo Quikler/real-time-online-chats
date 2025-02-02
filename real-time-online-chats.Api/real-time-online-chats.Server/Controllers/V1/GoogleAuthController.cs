@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Responses.Auth;
 using real_time_online_chats.Server.Extensions;
+using real_time_online_chats.Server.Mapping;
 using real_time_online_chats.Server.Services.Google;
 
 namespace real_time_online_chats.Server.Controllers.V1;
@@ -16,30 +17,16 @@ public class GoogleAuthController(IGoogleService googleService) : ControllerBase
         var payload = await _googleService.ValidateGoogleTokenAsync(credential);
         if (payload is null) return BadRequest("Invalid Google credential.");
 
-        var authResult = await _googleService.LoginAsync(payload);
+        var result = await _googleService.LoginAsync(payload);
 
-        if (!authResult.Succeded)
-        {
-            return BadRequest(new AuthFailedResponse
+        return result.Match<IActionResult>(
+            authResult => 
             {
-                Errors = authResult.Errors,
-            });
-        }
-
-        HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
-
-        return Ok(new AuthSuccessResponse
-        {
-            Token = authResult.Token,
-            RefreshToken = authResult.RefreshToken,
-            User = new UserResponse
-            {
-                Id = authResult.User.Id,
-                Email = authResult.User.Email,
-                FirstName = authResult.User.FirstName,
-                LastName = authResult.User.LastName,
-            }
-        });
+                HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
+                return Ok(authResult.ToResponse());
+            },
+            authValidationFail => BadRequest(new AuthFailResponse(authValidationFail.Errors))
+        );
     }
 
     [HttpGet(ApiRoutes.Google.Signup)]
@@ -48,29 +35,15 @@ public class GoogleAuthController(IGoogleService googleService) : ControllerBase
         var payload = await _googleService.ValidateGoogleTokenAsync(credential);
         if (payload is null) return BadRequest("Invalid Google credential.");
 
-        var authResult = await _googleService.SignupAsync(payload);
+        var result = await _googleService.SignupAsync(payload);
 
-        if (!authResult.Succeded)
-        {
-            return BadRequest(new AuthFailedResponse
+        return result.Match<IActionResult>(
+            authResult => 
             {
-                Errors = authResult.Errors,
-            });
-        }
-
-        HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
-
-        return Ok(new AuthSuccessResponse
-        {
-            Token = authResult.Token,
-            RefreshToken = authResult.RefreshToken,
-            User = new UserResponse
-            {
-                Id = authResult.User.Id,
-                Email = authResult.User.Email,
-                FirstName = authResult.User.FirstName,
-                LastName = authResult.User.LastName,
-            }
-        });
+                HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
+                return Ok(authResult.ToResponse());
+            },
+            authValidationFail => BadRequest(new AuthFailResponse(authValidationFail.Errors))
+        );
     }
 }

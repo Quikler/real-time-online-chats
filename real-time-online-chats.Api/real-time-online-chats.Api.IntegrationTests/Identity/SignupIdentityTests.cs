@@ -12,7 +12,7 @@ namespace real_time_online_chats.Api.IntegrationTests.Identity;
 
 public class SignupIdentityTests : BaseIntegrationTest
 {
-    private static UserSignupRequest GetValidUserSignupRequest() => new()
+    private static SignupUserRequest GetValidUserSignupRequest() => new()
         {
             Email = "test@test.com",
             Password = "123456789",

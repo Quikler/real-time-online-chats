@@ -82,16 +82,6 @@ var jwtConfig = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<J
 
 builder.Services.AddAuthentication(options =>
     {
-        // // This forces challenge results to be handled by Google OpenID Handler, so there's no
-        // // need to add an AccountController that emits challenges for Login.
-        // options.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
-        // // This forces forbid results to be handled by Google OpenID Handler, which checks if
-        // // extra scopes are required and does automatic incremental auth.
-        // options.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
-        // // Default scheme that will handle everything else.
-        // // Once a user is authenticated, the OAuth2 token info is stored in cookies.
-        // options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;

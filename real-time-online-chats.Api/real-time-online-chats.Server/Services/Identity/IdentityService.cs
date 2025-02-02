@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 using real_time_online_chats.Server.Configurations;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.Helpers;
 using real_time_online_chats.Server.Providers;
+using real_time_online_chats.Server.Validation;
 
 namespace real_time_online_chats.Server.Services.Identity;
 
@@ -16,18 +18,13 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
     private readonly AppDbContext _dbContext = dbContext;
     private readonly TokenProvider _tokenProvider = tokenProvider;
 
-    public async Task<AuthResult> SignupAsync(SignupUser signupUser)
+    public async Task<Result<AuthResult, AuthValidationFail>> SignupAsync(SignupUser signupUser)
     {
         try
         {
             var existingUser = await _userManager.FindByEmailAsync(signupUser.Email);
-            if (existingUser is not null)
-            {
-                return new AuthResult
-                {
-                    Errors = ["Email is already registered."]
-                };
-            }
+
+            if (existingUser is not null) return new AuthValidationFail("Email is already registered.");
 
             var newUser = new UserEntity
             {
@@ -35,62 +32,40 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
                 UserName = signupUser.Email,
             };
 
-            var createdUserResult = await _userManager.CreateAsync(newUser, signupUser.Password);
+            var createdResult = await _userManager.CreateAsync(newUser, signupUser.Password);
 
-            if (!createdUserResult.Succeeded)
+            if (!createdResult.Succeeded)
             {
-                return new AuthResult
-                {
-                    Errors = createdUserResult.Errors.Select(e => e.Description),
-                };
+                return new AuthValidationFail(createdResult.Errors.Select(e => e.Description));
             }
 
-            return await GenerateAuthResultForUserAsync(newUser);
+            return await AuthHelper.GenerateAuthResultForUserAsync(newUser, _tokenProvider, _dbContext, _jwtConfiguration.TokenLifetime);
         }
         catch
         {
-            return new AuthResult
-            {
-                Errors = ["An unexpected error occurred. Please try again later."]
-            };
+            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
         }
     }
 
-    public async Task<AuthResult> LoginAsync(LoginUser loginUser)
+    public async Task<Result<AuthResult, AuthValidationFail>> LoginAsync(LoginUser loginUser)
     {
         try
         {
             var user = await _userManager.FindByEmailAsync(loginUser.Email);
 
-            if (user is null || !await _userManager.CheckPasswordAsync(user, loginUser.Password))
-            {
-                return new AuthResult
-                {
-                    Errors = ["Invalid email or password."],
-                };
-            }
-
-            if (await _userManager.IsLockedOutAsync(user))
-            {
-                return new AuthResult
-                {
-                    Errors = ["Account is locked. Please try again later."]
-                };
-            }
+            if (user is null || !await _userManager.CheckPasswordAsync(user, loginUser.Password)) return new AuthValidationFail("Invalid email or password.");
+            if (await _userManager.IsLockedOutAsync(user)) return new AuthValidationFail("Account is locked. Please try again later.");
 
             await _userManager.ResetAccessFailedCountAsync(user);
-            return await GenerateAuthResultForUserAsync(user);
+            return await AuthHelper.GenerateAuthResultForUserAsync(user, _tokenProvider, _dbContext, _jwtConfiguration.TokenLifetime);
         }
         catch
         {
-            return new AuthResult
-            {
-                Errors = ["An unexpected error occurred. Please try again later."]
-            };
+            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
         }
     }
 
-    public async Task<AuthResult> RefreshTokenAsync(string refreshToken)
+    public async Task<Result<AuthResult, AuthValidationFail>> RefreshTokenAsync(string refreshToken)
     {
         try
         {
@@ -98,10 +73,7 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
                 .Include(r => r.User)
                 .FirstOrDefaultAsync(r => r.Token == refreshToken);
 
-            if (storedRefreshToken is null || storedRefreshToken.ExpiryDate < DateTime.UtcNow) return new AuthResult
-            {
-                Errors = ["Refresh token has expired", $"refreskToken: {refreshToken} - Null: {storedRefreshToken is null}"],
-            };
+            if (storedRefreshToken is null || storedRefreshToken.ExpiryDate < DateTime.UtcNow) return new AuthValidationFail("Refresh token has expired.");
 
             var newRefreshToken = _tokenProvider.GenerateRefreshToken();
             storedRefreshToken.Token = newRefreshToken;
@@ -109,81 +81,22 @@ public class IdentityService(UserManager<UserEntity> userManager, IOptions<JwtCo
 
             await _dbContext.SaveChangesAsync();
 
-            return new AuthResult
-            {
-                Succeded = true,
-                RefreshToken = newRefreshToken,
-                Token = _tokenProvider.CreateJwtSecurityToken(storedRefreshToken.User),
-                User = new UserResult
-                {
-                    Id = storedRefreshToken.UserId,
-                    Email = storedRefreshToken.User.Email!,
-                    FirstName = storedRefreshToken.User.FirstName,
-                    LastName = storedRefreshToken.User.LastName,
-                },
-            };
+            return AuthHelper.CreateAuthResult(storedRefreshToken.User, refreshToken, _tokenProvider);
         }
         catch
         {
-            return new AuthResult
-            {
-                Errors = ["An unexpected error occurred. Please try again later."]
-            };
+            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
         }
     }
 
-    private async Task<AuthResult> GenerateAuthResultForUserAsync(UserEntity user)
-    {
-        var token = _tokenProvider.CreateJwtSecurityToken(user);
-
-        var refreshToken = new RefreshTokenEntity
-        {
-            UserId = user.Id,
-            Token = _tokenProvider.GenerateRefreshToken(),
-            ExpiryDate = DateTime.UtcNow.Add(_jwtConfiguration.RefreshTokenLifetime),
-        };
-
-        await _dbContext.RefreshTokens.AddAsync(refreshToken);
-        await _dbContext.SaveChangesAsync();
-
-        return new AuthResult
-        {
-            Succeded = true,
-            Token = token,
-            RefreshToken = refreshToken.Token,
-            User = new UserResult
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email!,
-            }
-        };
-    }
-
-    public async Task<AuthResult> MeAsync(string refreshToken)
+    public async Task<Result<AuthResult, AuthValidationFail>> MeAsync(string refreshToken)
     {
         var rToken = await _dbContext.RefreshTokens
             .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.Token == refreshToken);
 
-        if (rToken is null) return new AuthResult
-        {
-            Errors = ["Refresh token is not found. Token has expired"],
-        };
+        if (rToken is null) return new AuthValidationFail("Refresh token is not found. Token has expired");
 
-        return new AuthResult
-        {
-            Succeded = true,
-            Token = _tokenProvider.CreateJwtSecurityToken(rToken.User),
-            RefreshToken = rToken.Token,
-            User = new UserResult
-            {
-                Id = rToken.UserId,
-                FirstName = rToken.User.FirstName,
-                LastName = rToken.User.LastName,
-                Email = rToken.User.Email!,
-            }
-        };
+        return AuthHelper.CreateAuthResult(rToken.User, refreshToken, _tokenProvider);
     }
 }
