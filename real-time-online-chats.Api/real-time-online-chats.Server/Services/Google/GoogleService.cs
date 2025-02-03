@@ -25,31 +25,31 @@ public class GoogleService(
     private readonly TokenProvider _tokenProvider = tokenProvider;
     private readonly JwtConfiguration _jwtConfiguration = jwtConfiguration.Value;
 
-    public async Task<Result<AuthResult, AuthValidationFail>> LoginAsync(GoogleJsonWebSignature.Payload payload)
+    public async Task<Result<AuthSuccess, AuthFailure>> LoginAsync(GoogleJsonWebSignature.Payload payload)
     {
         try
         {
             var user = await _userManager.FindByEmailAsync(payload.Email);
 
-            if (user is null) return new AuthValidationFail("Invalid email or password.");
-            if (await _userManager.IsLockedOutAsync(user)) return new AuthValidationFail("Account is locked. Please try again later.");
+            if (user is null) return new AuthFailure("Invalid email or password.");
+            if (await _userManager.IsLockedOutAsync(user)) return new AuthFailure("Account is locked. Please try again later.");
 
             await _userManager.ResetAccessFailedCountAsync(user);
             return await AuthHelper.GenerateAuthResultForUserAsync(user, _tokenProvider, _dbContext, _jwtConfiguration.RefreshTokenLifetime);
         }
         catch
         {
-            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
+            return new AuthFailure("An unexpected error occurred. Please try again later.");
         }
     }
 
-    public async Task<Result<AuthResult, AuthValidationFail>> SignupAsync(GoogleJsonWebSignature.Payload payload)
+    public async Task<Result<AuthSuccess, AuthFailure>> SignupAsync(GoogleJsonWebSignature.Payload payload)
     {
         try
         {
             var existingUser = await _userManager.FindByEmailAsync(payload.Email);
             
-            if (existingUser is not null) return new AuthValidationFail("Email is already registered.");
+            if (existingUser is not null) return new AuthFailure("Email is already registered.");
 
             var newUser = new UserEntity
             {
@@ -61,13 +61,13 @@ public class GoogleService(
 
             var createdResult = await _userManager.CreateAsync(newUser);
 
-            if (!createdResult.Succeeded) return new AuthValidationFail(createdResult.Errors.Select(e => e.Description));
+            if (!createdResult.Succeeded) return new AuthFailure(createdResult.Errors.Select(e => e.Description));
 
             return await AuthHelper.GenerateAuthResultForUserAsync(newUser, _tokenProvider, _dbContext, _jwtConfiguration.RefreshTokenLifetime);
         }
         catch
         {
-            return new AuthValidationFail("An unexpected error occurred. Please try again later.");
+            return new AuthFailure("An unexpected error occurred. Please try again later.");
         }
     }
 

@@ -5,7 +5,7 @@ namespace real_time_online_chats.Server.Mapping;
 
 public static class DomainToApiContract
 {
-    public static AuthSuccessResponse ToResponse(this AuthResult authResult) => new()
+    public static AuthSuccessResponse ToResponse(this AuthSuccess authResult) => new()
     {
         Token = authResult.Token,
         RefreshToken = authResult.RefreshToken,

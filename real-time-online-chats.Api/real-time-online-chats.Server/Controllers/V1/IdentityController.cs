@@ -18,7 +18,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new AuthValidationFail(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
+            return BadRequest(new AuthFailure(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
         }
 
         var signupUser = request.ToDomain();
@@ -40,7 +40,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new AuthValidationFail(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
+            return BadRequest(new AuthFailure(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
         }
 
         var loginUser = request.ToDomain();

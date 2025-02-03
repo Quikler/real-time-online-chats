@@ -120,6 +120,29 @@ public class ChatsController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet(ApiRoutes.Chats.GetOwned)]
+    public async Task<IActionResult> GetOwned([FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+    {
+        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
+
+        var paginationChats = await _chatService.GetOwnedChatsAsync(page, pageSize, userId);
+
+        var response = new PaginatedResponse<GetChatResponse>
+        {
+            TotalCount = paginationChats.TotalCount,
+            PageNumber = paginationChats.PageNumber,
+            PageSize = paginationChats.PageSize,
+            Items = paginationChats.Items.Select(c => new GetChatResponse
+            {
+                Id = c.Id,
+                OwnerId = c.OwnerId,
+                Title = c.Title,
+            }),
+        };
+
+        return Ok(response);
+    }
+
     [HttpPost(ApiRoutes.Chats.Create)]
     public async Task<IActionResult> Create([FromBody] CreateChatRequest request)
     {

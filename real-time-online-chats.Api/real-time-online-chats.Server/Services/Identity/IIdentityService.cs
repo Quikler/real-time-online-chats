@@ -5,8 +5,8 @@ namespace real_time_online_chats.Server.Services.Identity;
 
 public interface IIdentityService
 {
-    Task<Result<AuthResult, AuthValidationFail>> SignupAsync(SignupUser signupUser);
-    Task<Result<AuthResult, AuthValidationFail>> LoginAsync(LoginUser loginUser);
-    Task<Result<AuthResult, AuthValidationFail>> RefreshTokenAsync(string refreshToken);
-    Task<Result<AuthResult, AuthValidationFail>> MeAsync(string refreshToken);
+    Task<Result<AuthSuccess, AuthFailure>> SignupAsync(SignupUser signupUser);
+    Task<Result<AuthSuccess, AuthFailure>> LoginAsync(LoginUser loginUser);
+    Task<Result<AuthSuccess, AuthFailure>> RefreshTokenAsync(string refreshToken);
+    Task<Result<AuthSuccess, AuthFailure>> MeAsync(string refreshToken);
 }

@@ -4,14 +4,9 @@ using real_time_online_chats.Server.Domain;
 
 namespace real_time_online_chats.Server.Services.Chat;
 
-public class ChatService : IChatService
+public class ChatService(AppDbContext dbContext) : IChatService
 {
-    private readonly AppDbContext _dbContext;
-
-    public ChatService(AppDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly AppDbContext _dbContext = dbContext;
 
     public async Task<PaginatedResult<ChatEntity>> GetChatsAsync(int pageNumber, int pageSize)
     {
@@ -145,5 +140,30 @@ public class ChatService : IChatService
     {
         var chat = await _dbContext.Chats.FindAsync(chatId);
         return chat is not null && chat.OwnerId == userId;
+    }
+
+    public async Task<PaginatedResult<ChatEntity>> GetOwnedChatsAsync(int pageNumber, int pageSize, Guid userId)
+    {
+        var totalRecords = await _dbContext.Chats.CountAsync();
+
+        var chats = await _dbContext.Chats
+            .Where(c => c.OwnerId == userId)
+            .AsNoTracking()
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PaginatedResult<ChatEntity>
+        {
+            Items = chats,
+            TotalCount = totalRecords,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
+    public Task<PaginatedResult<ChatEntity>> GetOwnedChatsWithDetailsAsync(int pageNumber, int pageSize, Guid userId)
+    {
+        throw new NotImplementedException();
     }
 }

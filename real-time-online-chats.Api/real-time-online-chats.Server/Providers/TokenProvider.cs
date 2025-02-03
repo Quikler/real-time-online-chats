@@ -13,7 +13,7 @@ public class TokenProvider(IOptions<JwtConfiguration> jwtConfiguration)
 {
     private readonly JwtConfiguration _jwtConfiguration = jwtConfiguration.Value;
 
-    public string CreateJwtSecurityToken(UserEntity user)
+    public string CreateToken(UserEntity user)
     {
         List<Claim> claims = [
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // user id claim

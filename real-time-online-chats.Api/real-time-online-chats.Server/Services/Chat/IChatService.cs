@@ -8,6 +8,8 @@ public interface IChatService
     Task<PaginatedResult<ChatEntity>> GetChatsAsync(int pageNumber, int pageSize);
     Task<ChatEntity?> GetChatByIdAsync(Guid chatId);
     Task<ChatEntity?> GetChatByIdWithDetailsAsync(Guid chatId);
+    Task<PaginatedResult<ChatEntity>> GetOwnedChatsAsync(int pageNumber, int pageSize, Guid userId);
+    Task<PaginatedResult<ChatEntity>> GetOwnedChatsWithDetailsAsync(int pageNumber, int pageSize, Guid userId);
     Task<bool> CreateChatAsync(ChatEntity chat);
     Task<bool> UpdateChatAsync(ChatEntity chat);
     Task<bool> DeleteChatAsync(Guid chatId);

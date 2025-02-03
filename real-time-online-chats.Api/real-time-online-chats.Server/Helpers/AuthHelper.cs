@@ -6,7 +6,7 @@ namespace real_time_online_chats.Server.Helpers;
 
 public static class AuthHelper
 {
-    public static async Task<AuthResult> GenerateAuthResultForUserAsync(
+    public static async Task<AuthSuccess> GenerateAuthResultForUserAsync(
         UserEntity user,
         TokenProvider tokenProvider,
         AppDbContext dbContext,
@@ -22,14 +22,14 @@ public static class AuthHelper
         await dbContext.RefreshTokens.AddAsync(refreshToken);
         await dbContext.SaveChangesAsync();
 
-        return CreateAuthResult(user, refreshToken.Token, tokenProvider);
+        return CreateAuthSuccess(user, refreshToken.Token, tokenProvider);
     }
 
-    public static AuthResult CreateAuthResult(UserEntity user, string refreshToken, TokenProvider tokenProvider)
+    public static AuthSuccess CreateAuthSuccess(UserEntity user, string refreshToken, TokenProvider tokenProvider)
     {
-        return new AuthResult
+        return new AuthSuccess
         {
-            Token = tokenProvider.CreateJwtSecurityToken(user),
+            Token = tokenProvider.CreateToken(user),
             RefreshToken = refreshToken,
             User = new UserResult
             {
