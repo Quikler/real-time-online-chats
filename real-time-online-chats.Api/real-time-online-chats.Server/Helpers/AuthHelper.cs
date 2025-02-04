@@ -1,12 +1,14 @@
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.DTOs.Auth;
+using real_time_online_chats.Server.DTOs.User;
 using real_time_online_chats.Server.Providers;
 
 namespace real_time_online_chats.Server.Helpers;
 
 public static class AuthHelper
 {
-    public static async Task<AuthSuccess> GenerateAuthResultForUserAsync(
+    public static async Task<AuthSuccessDto> GenerateAuthResultForUserAsync(
         UserEntity user,
         TokenProvider tokenProvider,
         AppDbContext dbContext,
@@ -25,13 +27,13 @@ public static class AuthHelper
         return CreateAuthSuccess(user, refreshToken.Token, tokenProvider);
     }
 
-    public static AuthSuccess CreateAuthSuccess(UserEntity user, string refreshToken, TokenProvider tokenProvider)
+    public static AuthSuccessDto CreateAuthSuccess(UserEntity user, string refreshToken, TokenProvider tokenProvider)
     {
-        return new AuthSuccess
+        return new AuthSuccessDto
         {
             Token = tokenProvider.CreateToken(user),
             RefreshToken = refreshToken,
-            User = new UserSuccess
+            User = new UserGlobalDto
             {
                 Id = user.Id,
                 FirstName = user.FirstName,

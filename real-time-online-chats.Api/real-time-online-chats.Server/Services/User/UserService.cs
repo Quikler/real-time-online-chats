@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Data;
-using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.User;
 using real_time_online_chats.Server.Mapping;
 
@@ -10,7 +11,7 @@ public class UserService(AppDbContext dbContext) : IUserService
 {
     private readonly AppDbContext _dbContext = dbContext;
 
-    public async Task<Result<UserProfileDto, UserFailureDto>> GetUserProfileAsync(Guid userId)
+    public async Task<Result<UserProfileDto, FailureDto>> GetUserProfileAsync(Guid userId)
     {
         var user = await _dbContext.Users
             .AsNoTracking()
@@ -18,7 +19,7 @@ public class UserService(AppDbContext dbContext) : IUserService
             //.Include(u => u.OwnedChats)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (user is null) return new UserFailureDto("User not found");
+        if (user is null) return FailureDto.NotFound("User not found");
 
         return user.ToUserProfile();
     }

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
+using real_time_online_chats.Server.Contracts.V1.Responses;
 using real_time_online_chats.Server.Contracts.V1.Responses.Auth;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Mapping;
 using real_time_online_chats.Server.Services.Identity;
-using real_time_online_chats.Server.Validation;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
@@ -18,20 +18,20 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new AuthFailure(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
+            return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
         }
 
-        var signupUser = request.ToDomain();
+        var signupUser = request.ToDto();
 
         var result = await _identityService.SignupAsync(signupUser);
 
         return result.Match<IActionResult>(
-            authResult => 
+            authSuccessDto => 
             {
-                HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
-                return Ok(authResult.ToResponse());
+                HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
+                return Ok(authSuccessDto.ToResponse());
             },
-            authValidationFail => BadRequest(new AuthFailResponse(authValidationFail.Errors))
+            failure => BadRequest(new AuthFailResponse(failure.Errors))
         );
     }
 
@@ -40,20 +40,20 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new AuthFailure(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
+            return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
         }
 
-        var loginUser = request.ToDomain();
+        var loginUser = request.ToDto();
 
         var result = await _identityService.LoginAsync(loginUser);
 
         return result.Match<IActionResult>(
-            authResult => 
+            authSuccessDto => 
             {
-                HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
-                return Ok(authResult.ToResponse());
+                HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
+                return Ok(authSuccessDto.ToResponse());
             },
-            authValidationFail => BadRequest(new AuthFailResponse(authValidationFail.Errors))
+            failure => BadRequest(new AuthFailResponse(failure.Errors))
         );
     }
 
@@ -65,12 +65,12 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         var result = await _identityService.RefreshTokenAsync(refreshToken);
 
         return result.Match<IActionResult>(
-            authResult => 
+            authSuccessDto => 
             {
-                HttpContext.SetHttpOnlyRefreshToken(authResult.RefreshToken);
-                return Ok(authResult.ToResponse());
+                HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
+                return Ok(authSuccessDto.ToResponse());
             },
-            authValidationFail => BadRequest(new AuthFailResponse(authValidationFail.Errors))
+            failure => BadRequest(new AuthFailResponse(failure.Errors))
         );
     }
 
@@ -89,8 +89,8 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
         var result = await _identityService.MeAsync(refreshToken);
 
         return result.Match<IActionResult>(
-            authResult => Ok(authResult.ToResponse()),
-            authValidationFail => BadRequest(new AuthFailResponse(authValidationFail.Errors))
+            authSuccessDto => Ok(authSuccessDto.ToResponse()),
+            failure => BadRequest(new AuthFailResponse(failure.Errors))
         );
     }
 }

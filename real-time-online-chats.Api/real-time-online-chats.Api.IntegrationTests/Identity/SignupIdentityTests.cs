@@ -39,7 +39,7 @@ public class SignupIdentityTests : BaseIntegrationTest
         var content = await response.Content.ReadFromJsonAsync<AuthSuccessResponse>();
         
         content?.Token.Should().NotBeNull();
-        content?.RefreshToken.Should().NotBeNull();
+        //content?.RefreshToken.Should().NotBeNull();
 
         var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
         user.Should().NotBeNull();

@@ -1,4 +1,6 @@
 using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.DTOs;
+using real_time_online_chats.Server.DTOs.Chat;
 using real_time_online_chats.Server.DTOs.User;
 
 namespace real_time_online_chats.Server.Mapping;
@@ -31,6 +33,26 @@ public static class DomainToDTO
             Email = userEntity.Email,
             FirstName = userEntity.FirstName,
             LastName = userEntity.LastName,
+        };
+    }
+
+    public static PaginationDto<TResult> ToPagination<T, TResult>(this List<T> list, Func<T, TResult> itemsSelect, int totalRecords, int pageNumber, int pageSize)
+    {
+        return new PaginationDto<TResult>
+        {
+            TotalCount = totalRecords,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            Items = list.Select(itemsSelect)
+        };
+    }
+
+    public static ChatPreviewDto ToChatPreview(this ChatEntity chatEntity)
+    {
+        return new ChatPreviewDto
+        {
+            Id = chatEntity.Id,
+            Title = chatEntity.Title,
         };
     }
 }

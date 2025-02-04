@@ -45,6 +45,7 @@ builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IChatAuthorizationService, ChatAuthorizationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
 

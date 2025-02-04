@@ -1,6 +1,6 @@
 namespace real_time_online_chats.Server.DTOs.User;
 
-public class UserChatDto
+public class UserGlobalDto
 {
     public required Guid Id { get; set; }
     public required string Email { get; set; }

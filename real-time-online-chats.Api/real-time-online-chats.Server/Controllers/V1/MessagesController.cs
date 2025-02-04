@@ -29,10 +29,9 @@ public class MessagesController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var messages = await _messageService.GetMessagesAsync();
-        var response = messages.Select(m => new GetMessageResponse
+        var response = messages.Select(m => new MessageChatResponse
         {
             Id = m.Id,
-            UserId = m.UserId,
             Content = m.Content,
         });
         
@@ -45,10 +44,9 @@ public class MessagesController : ControllerBase
         var message = await _messageService.GetMessageByIdAsync(messageId);
         if (message is null) return NotFound();
         
-        var response = new GetMessageResponse
+        var response = new MessageChatResponse
         {
             Id = message.Id,
-            UserId = message.UserId,
             Content = message.Content,
         };
 
@@ -71,10 +69,9 @@ public class MessagesController : ControllerBase
         var created = await _messageService.CreateMessageAsync(message);
         if (!created) return BadRequest(new { Message = "Failed to create message. Please try again." });
         
-        var response = new GetMessageResponse
+        var response = new MessageChatResponse
         {
             Id = message.Id,
-            UserId = message.UserId,
             Content = message.Content,
         };
 
@@ -100,11 +97,11 @@ public class MessagesController : ControllerBase
 
         var updated = await _messageService.UpdateMessageAsync(message);
 
-        return updated ? Ok(new GetMessageResponse
+        return updated ? Ok(new MessageChatResponse
         {
             Id = message.Id,
-            UserId = message.UserId,
             Content = message.Content,
+            
         }) : NotFound();
     }
 

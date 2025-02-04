@@ -1,6 +1,6 @@
-namespace real_time_online_chats.Server.DTOs.User;
+namespace real_time_online_chats.Server.Contracts.V1.Responses.User;
 
-public class UserChatDto
+public class UserChatResponse
 {
     public required Guid Id { get; set; }
     public required string Email { get; set; }

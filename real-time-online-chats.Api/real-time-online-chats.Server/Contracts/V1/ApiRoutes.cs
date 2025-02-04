@@ -26,7 +26,7 @@ public static class ApiRoutes
     {
         public const string GetAll = BASE + "/chats";
         public const string Get = BASE + "/chats/{chatId}";
-        public const string GetOwned = BASE + "/chats/owned";
+        public const string GetAllOwned = BASE + "/chats/owned";
         public const string GetDetailed = BASE + "/chats/{chatId}/detailed";
         public const string GetOwnedDetailed = BASE + "/chats/owned/detailed";
         public const string Create = BASE + "/chats";

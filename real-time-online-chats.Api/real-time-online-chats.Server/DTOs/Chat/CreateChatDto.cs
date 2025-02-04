@@ -1,6 +1,6 @@
-namespace real_time_online_chats.Server.Contracts.V1.Requests.Chat;
+namespace real_time_online_chats.Server.DTOs.Chat;
 
-public class CreateChatRequest
+public class CreateChatDto
 {
     public required string Title { get; set; }
     public IEnumerable<Guid> UsersIdToAdd { get; set; } = [];

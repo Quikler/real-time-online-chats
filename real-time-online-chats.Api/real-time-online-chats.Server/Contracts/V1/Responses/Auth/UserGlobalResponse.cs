@@ -1,6 +1,6 @@
 namespace real_time_online_chats.Server.Contracts.V1.Responses.Auth;
 
-public class UserResponse
+public class UserGlobalResponse
 {
     public required Guid Id { get; set; }
     public required string Email { get; set; }

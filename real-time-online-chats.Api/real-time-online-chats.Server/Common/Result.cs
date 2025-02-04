@@ -1,4 +1,4 @@
-namespace real_time_online_chats.Server.Domain;
+namespace real_time_online_chats.Server.Common;
 
 public readonly struct Result<TValue, TError>
 {

@@ -15,7 +15,7 @@ public class MessageHub(IChatService chatService) : Hub<IMessageClient>
     public async Task<bool> JoinChatGroup(Guid chatId)
     {
         if (Context.User is null || !Context.User.TryGetUserId(out var userId)) return false;
-        if (!await _chatService.IsUserExistInChatAsync(chatId, userId)) return false;
+        //if (!await _chatService.IsUserExistInChatAsync(chatId, userId)) return false;
 
         await Groups.AddToGroupAsync(Context.ConnectionId, chatId.ToString());
         return true;

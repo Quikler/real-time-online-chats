@@ -1,100 +1,157 @@
 using Microsoft.EntityFrameworkCore;
+using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.DTOs;
+using real_time_online_chats.Server.DTOs.Chat;
+using real_time_online_chats.Server.DTOs.Message;
+using real_time_online_chats.Server.DTOs.User;
+using real_time_online_chats.Server.Mapping;
 
 namespace real_time_online_chats.Server.Services.Chat;
 
-public class ChatService(AppDbContext dbContext) : IChatService
+public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatAuthorizationService) : IChatService
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private readonly IChatAuthorizationService _chatAuthorizationService = chatAuthorizationService;
 
-    public async Task<PaginatedResult<ChatEntity>> GetChatsAsync(int pageNumber, int pageSize)
+    public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize)
     {
-        var totalRecords = await _dbContext.Chats.CountAsync();
-        var chats = await _dbContext.Chats
+        int totalRecords = await _dbContext.Chats.CountAsync();
+        List<ChatEntity> chats = await _dbContext.Chats
             .AsNoTracking()
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        return new PaginatedResult<ChatEntity>
+        return chats.ToPagination(c => c.ToChatPreview(), totalRecords, pageNumber, pageSize);
+    }
+
+    public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetAllOwnedChatsAsync(int pageNumber, int pageSize, Guid userId)
+    {
+        int totalRecords = await _dbContext.Chats.CountAsync(c => c.OwnerId == userId);
+        List<ChatEntity> chats = await _dbContext.Chats
+            .Where(c => c.OwnerId == userId)
+            .AsNoTracking()
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return chats.ToPagination(c => c.ToChatPreview(), totalRecords, pageNumber, pageSize);
+    }
+
+    public Task<PaginationDto<ChatPreviewDto>> GetOwnedChatsWithDetailsAsync(int pageNumber, int pageSize, Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId)
+    {
+        ChatEntity? chat = await _dbContext.Chats
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(c => c.Owner)
+            .Include(c => c.Members)
+            .Include(c => c.Messages.Where(m => m.ChatId == chatId).OrderBy(m => m.CreationTime))
+                .ThenInclude(m => m.User)
+            .FirstOrDefaultAsync(c => c.Id == chatId);
+
+        // ChatEntity? chat = await _dbContext.Chats
+        //     .AsNoTracking()
+        //     .Include(c => c.Owner)
+        //     .Include(c => c.Members)
+        //         .ThenInclude(m => m.Messages.Where(m => m.ChatId == chatId).OrderBy(m => m.CreationTime))
+        //     .FirstOrDefaultAsync(c => c.Id == chatId);
+
+        if (chat is null) return FailureDto.NotFound("Chat not found");
+
+        return new ChatDetailedDto
         {
-            Items = chats,
-            TotalCount = totalRecords,
-            PageNumber = pageNumber,
-            PageSize = pageSize
+            Id = chat.Id,
+            OwnerId = chat.OwnerId,
+            Title = chat.Title,
+            Messages = chat.Messages.Select(m => new MessageChatDto
+            {
+                Id = m.Id,
+                User = new UserChatDto
+                {
+                    Id = m.UserId,
+                    Email = m.User.Email,
+                    FirstName = m.User.FirstName,
+                    LastName = m.User.LastName,
+                },
+                Content = m.Content,
+            }),
+            Users = chat.Members.Append(chat.Owner).Select(m => new UserChatDto
+            {
+                Id = m.Id,
+                Email = m.Email,
+                FirstName = m.FirstName,
+                LastName = m.LastName,
+            })
         };
     }
 
-    public async Task<ChatEntity?> GetChatByIdAsync(Guid chatId) => await _dbContext.Chats.FindAsync(chatId);
-
-    public async Task<ChatEntity?> GetChatByIdWithDetailsAsync(Guid chatId)
+    public async Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto)
     {
-        return await _dbContext.Chats
-            .Include(c => c.Owner)
-            .Include(c => c.Members)
-            .Include(c => c.Messages.OrderBy(m => m.CreationTime))
-                .ThenInclude(m => m.User)
-            .FirstOrDefaultAsync(c => c.Id == chatId);
-    }
+        ChatEntity chat = createChatDto.ToChat();
 
-    public async Task<bool> CreateChatAsync(ChatEntity chat)
-    {
         await _dbContext.Chats.AddAsync(chat);
         int rows = await _dbContext.SaveChangesAsync();
-        return rows > 0;
+
+        return rows == 0 ? FailureDto.BadRequest("Cannot create chat") : chat.ToChatPreview();
     }
 
-    public async Task<bool> UpdateChatAsync(ChatEntity chat)
+    public async Task<Result<bool, FailureDto>> UpdateChatAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId)
     {
-        int rows = await _dbContext.Chats.Where(c => c.Id == chat.Id).ExecuteUpdateAsync(s => s
-            .SetProperty(c => c.Title, chat.Title)
-        );
-        return rows > 0;
-    }
+        if (!await _chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
 
-    public async Task<bool> DeleteChatAsync(Guid chatId)
-    {
-        int rows = await _dbContext.Chats.Where(c => c.Id == chatId).ExecuteDeleteAsync();
-        return rows > 0;
-    }
-
-    public Task<bool> IsUserExistInChatAsync(Guid chatId, Guid userId)
-    {
-        return _dbContext.Chats
+        int rows = await _dbContext.Chats
             .Where(c => c.Id == chatId)
-            .Select(c => c.OwnerId == userId || c.Members.Any(m => m.Id == userId))
-            .FirstOrDefaultAsync();
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(c => c.Title, updateChatDto.Title)
+            );
+
+        return rows == 0 ? FailureDto.BadRequest("Cannot update chat") : true;
     }
 
-    public async Task<bool> UserJoinChatAsync(Guid chatId, Guid userId)
+    public async Task<Result<bool, FailureDto>> DeleteChatAsync(Guid chatId, Guid userId)
+    {
+        if (!await _chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
+
+        int rows = await _dbContext.Chats
+            .Where(c => c.Id == chatId)
+            .ExecuteDeleteAsync();
+        
+        return rows == 0 ? FailureDto.BadRequest("Cannot delete chat") : true;
+    }
+
+    public async Task<Result<bool, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
     {
         var chat = await _dbContext.Chats
             .FirstOrDefaultAsync(c => c.Id == chatId);
 
-        if (chat is not null)
-        {
-            var user = await _dbContext.Users.FindAsync(userId);
-            if (user is null) return false;
+        if (chat is null) return FailureDto.NotFound("Chat not found");
 
-            chat.Members.Add(user);
-            await _dbContext.SaveChangesAsync();
-            return true;
-        }
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user is null) return FailureDto.NotFound("User not found");
 
-        return false;
+        chat.Members.Add(user);
+        int rows = await _dbContext.SaveChangesAsync();
+
+        return rows == 0 ? FailureDto.BadRequest("Cannot join chat") : true;
     }
 
-    public async Task<bool> UserLeaveChatAsync(Guid chatId, Guid userId)
+    public async Task<Result<bool, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId)
     {
         // Find the user and include both OwnedChats and MemberChats
         var user = await _dbContext.Users
-            .Include(u => u.OwnedChats)
-                .ThenInclude(oc => oc.Members)
+            .Include(u => u.OwnedChats.Where(c => c.Id == chatId))
+                .ThenInclude(oc => oc.Members.Take(1))
             .Include(u => u.MemberChats)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (user is null) return false;
+        if (user is null) return FailureDto.NotFound("User not found");
 
         // Check if the user is the owner of the chat
         var ownedChat = user.OwnedChats.FirstOrDefault(c => c.Id == chatId);
@@ -102,7 +159,7 @@ public class ChatService(AppDbContext dbContext) : IChatService
         {
             // User is the owner of the chat
             // Find another member to transfer ownership to
-            var newOwner = ownedChat.Members.FirstOrDefault(u => u.Id != userId);
+            var newOwner = ownedChat.Members.FirstOrDefault();
             if (newOwner is null)
             {
                 // No other members in the chat, so delete the chat
@@ -117,15 +174,16 @@ public class ChatService(AppDbContext dbContext) : IChatService
                 // Remove the chat from the current owner's OwnedChats
                 user.OwnedChats.Remove(ownedChat);
 
-                // Add the chat to the new owner's OwnedChats
+                // Add the chat to the new owner's OwnedChats and remove it from MemberChats because he's a new owner
                 newOwner.OwnedChats.Add(ownedChat);
+                newOwner.MemberChats.Remove(ownedChat);
             }
         }
         else
         {
             // User is a member of the chat
             var memberChat = user.MemberChats.FirstOrDefault(c => c.Id == chatId);
-            if (memberChat is null) return false; // User is not a member of the chat
+            if (memberChat is null) return FailureDto.BadRequest("User doesn't exist in the chat"); // User is not a member of the chat
 
             // Remove the chat from the user's MemberChats
             user.MemberChats.Remove(memberChat);
@@ -133,36 +191,11 @@ public class ChatService(AppDbContext dbContext) : IChatService
 
         // Save changes to the database
         int rows = await _dbContext.SaveChangesAsync();
-        return rows > 0;
+        
+        return rows == 0 ? FailureDto.BadRequest("Cannot leave the chat") : true;
     }
 
-    public async Task<bool> IsUserOwnsChatAsync(Guid chatId, Guid userId)
-    {
-        var chat = await _dbContext.Chats.FindAsync(chatId);
-        return chat is not null && chat.OwnerId == userId;
-    }
-
-    public async Task<PaginatedResult<ChatEntity>> GetOwnedChatsAsync(int pageNumber, int pageSize, Guid userId)
-    {
-        var totalRecords = await _dbContext.Chats.CountAsync();
-
-        var chats = await _dbContext.Chats
-            .Where(c => c.OwnerId == userId)
-            .AsNoTracking()
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return new PaginatedResult<ChatEntity>
-        {
-            Items = chats,
-            TotalCount = totalRecords,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
-    }
-
-    public Task<PaginatedResult<ChatEntity>> GetOwnedChatsWithDetailsAsync(int pageNumber, int pageSize, Guid userId)
+    public Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId)
     {
         throw new NotImplementedException();
     }
