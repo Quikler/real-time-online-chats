@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-      path: "chats",
+        path: "chats",
         element: (
           <MainLayout>
             <Outlet />
@@ -72,12 +72,10 @@ export const router = createBrowserRouter([
         path: "profile",
         element: (
           <MainLayout>
-            <ProtectedRoute>
-              <AccountPage />
-            </ProtectedRoute>
+            <AccountPage />
           </MainLayout>
         ),
-        children: [{ path: "", element: <UserProfile /> }],
+        children: [{ path: ":userId", element: <UserProfile /> }],
       },
     ],
   },
@@ -91,6 +89,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "loader",
-    element: <LoaderScreen />
-  }
+    element: <LoaderScreen />,
+  },
 ]);

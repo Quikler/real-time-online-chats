@@ -10,7 +10,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <>
       <Header />
-      <main id="main">{children}</main>
+      <main id="main" style={{ backgroundColor: "slategray" }}>{children}</main>
       <Footer />
     </>
   );

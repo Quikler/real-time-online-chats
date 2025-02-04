@@ -18,6 +18,7 @@ using real_time_online_chats.Server.Services.Chat;
 using real_time_online_chats.Server.Services.Google;
 using real_time_online_chats.Server.Services.Identity;
 using real_time_online_chats.Server.Services.Message;
+using real_time_online_chats.Server.Services.User;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -42,6 +43,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<TokenProvider>();
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();

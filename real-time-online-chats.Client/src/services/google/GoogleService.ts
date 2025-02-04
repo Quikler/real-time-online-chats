@@ -11,19 +11,19 @@ export abstract class GoogleService {
       );
       return response.data;
     } catch (e: any) {
-      throw new Error(e.message);
+      throw e;
     }
   }
 
-  static async signup(credential: string, config?: AxiosRequestConfig<any>) {
-    try {
-      const response = await api.get(
-        `google/signup?credential=${credential}`,
-        { withCredentials: true, ...config }
-      );
-      return response.data;
-    } catch (e: any) {
-      throw new Error(e.message);
-    }
-  }
+  // static async signup(credential: string, config?: AxiosRequestConfig<any>) {
+  //   try {
+  //     const response = await api.get(
+  //       `google/signup?credential=${credential}`,
+  //       { withCredentials: true, ...config }
+  //     );
+  //     return response.data;
+  //   } catch (e: any) {
+  //     throw e;
+  //   }
+  // }
 }

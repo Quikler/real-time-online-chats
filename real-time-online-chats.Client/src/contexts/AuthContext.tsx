@@ -1,11 +1,17 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { UserProfile } from "../models/User";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../services/api/AuthService";
 import { toast } from "react-toastify";
 import api from "@services/axios/instance";
 import { AuthRoutes } from "../services/api/ApiRoutes";
 import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
+
+type UserProfile = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+};
 
 interface AuthContextType {
   token: string | null;

@@ -44,4 +44,9 @@ public static class ApiRoutes
         public const string Update = BASE + "/messages/{messageId}";
         public const string Delete = BASE + "/messages/{messageId}";
     }
+
+    public static class Users
+    {
+        public const string GetProfile = BASE + "/users/{userId}/profile";
+    }
 }

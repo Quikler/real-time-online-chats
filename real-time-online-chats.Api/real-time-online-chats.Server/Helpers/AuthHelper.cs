@@ -31,7 +31,7 @@ public static class AuthHelper
         {
             Token = tokenProvider.CreateToken(user),
             RefreshToken = refreshToken,
-            User = new UserResult
+            User = new UserSuccess
             {
                 Id = user.Id,
                 FirstName = user.FirstName,

@@ -11,8 +11,15 @@ export abstract class AuthRoutes {
 export abstract class ChatRoutes {
   static readonly base = `chats`;
   static readonly detailed = `detailed`;
+
+  static readonly owned = `${this.base}/owned`;
 }
 
 export abstract class MessageRoutes {
   static readonly base = `messages`;
+}
+
+export abstract class UserRoutes {
+  static readonly base = `users`;
+  static readonly profile = `profile`;
 }

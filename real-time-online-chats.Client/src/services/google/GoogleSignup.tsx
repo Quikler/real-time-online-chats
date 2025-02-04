@@ -4,12 +4,12 @@ import { initGoogleGSIScript, initGoogleAuth, renderGoogleButton } from "./googl
 
 const GoogleSignup = () => {
   const googleAuthCallback = (response: any) => {
-    GoogleService.signup(response.credential)
+    GoogleService.login(response.credential)
       .then((data) => console.log(data))
-      .catch((e) => console.error("google error", e.message));
+      .catch((e) => console.error("[Google] error:", e));
   };
 
-  const googleButtonStyle = { };
+  const googleButtonStyle = {};
 
   useEffect(() => {
     if (window.google) {
@@ -17,7 +17,7 @@ const GoogleSignup = () => {
       renderGoogleButton(googleButtonStyle);
     } else {
       initGoogleGSIScript(() => {
-        initGoogleAuth(googleAuthCallback)
+        initGoogleAuth(googleAuthCallback);
         renderGoogleButton(googleButtonStyle);
       });
     }

@@ -98,7 +98,7 @@ export default function Header() {
                         aria-labelledby="dropdownInformationButton"
                       >
                         <li>
-                          <Link to="/profile" className="block px-4 py-2 hover:bg-gray-600">
+                          <Link to={`/profile/${user?.id}`} className="block px-4 py-2 hover:bg-gray-600">
                             Profile
                           </Link>
                         </li>

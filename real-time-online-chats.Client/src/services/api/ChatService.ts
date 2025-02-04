@@ -40,6 +40,18 @@ export abstract class ChatService {
     }
   }
 
+  static async getOwnedChats(page: number, pageSize: number, config?: AxiosRequestConfig<any> | undefined) {
+    try {
+      const response = await api.get(
+        `${ChatRoutes.owned}?page=${page}&pageSize=${pageSize}`,
+        config
+      );
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
+  }
+
   static async getChatDetailed(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
     try {
       const response = await api.get(`${ChatRoutes.base}/${chatId}/${ChatRoutes.detailed}`, config);

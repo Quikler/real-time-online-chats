@@ -12,7 +12,7 @@ public static class DomainToApiContract
         User = authResult.User.ToResponse(),
     };
 
-    public static UserResponse ToResponse(this UserResult userResult) => new()
+    public static UserResponse ToResponse(this UserSuccess userResult) => new()
     {
         Id = userResult.Id,
         FirstName = userResult.FirstName,

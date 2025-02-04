@@ -1,14 +1,33 @@
 import CreateChatForm, { CreateChatFormData } from "@src/pages/chats/CreateChatForm";
 import { ChatService } from "@src/services/api/ChatService";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import Button from "@components/ui/Button";
-import { useAuth } from "@src/contexts/AuthContext";
+import { useParams } from "react-router-dom";
+import FriendPreview from "./FriendPreview";
+import UserCard from "./UserCard";
+import { UserService } from "@src/services/api/UserService";
+import { UserProfileType } from "./types";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);
 
-  const { user } = useAuth();
+  const { userId } = useParams<{ userId: string }>();
+
+  const [userProfile, setUserProfile] = useState<UserProfileType>();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const abortController = new AbortController();
+
+    UserService.getUserProfile(userId, { signal: abortController.signal })
+      .then((data) => {
+        setUserProfile(data);
+      })
+      .catch((e) => console.error("Error fetching profile:", e.message));
+
+    return () => abortController.abort();
+  }, [userId]);
 
   const handleChatFormSubmit = async (
     _e: React.FormEvent<HTMLFormElement>,
@@ -27,34 +46,54 @@ const UserProfile = () => {
         onSubmit={handleChatFormSubmit}
       />
 
-      <section className="relative pt-36 pb-24">
-        <div className="w-full bg-darkBlue-200 absolute top-0 left-0 z-0 h-60 object-cover" />
-        <div className="w-full max-w-7xl mx-auto px-6 md:px-8">
-          <div className="flex items-center justify-center relative z-10 mb-2.5">
-            <img
-              src="/images/test-profile.jpg"
-              alt="user-avatar-image"
-              className="border-4 border-solid w-56 h-56 border-white rounded-full object-cover"
-            />
+      <section className="relative flex flex-col gap-8 m-16 max-w-7xl mx-auto">
+        <div className="flex gap-8 lg:flex-row flex-col">
+          <UserCard
+            className="w-full flex-grow"
+            firstName={userProfile?.firstName}
+            lastName={userProfile?.lastName}
+            email={userProfile?.email}
+            activityStatus={userProfile?.activityStatus}
+            casualStatus={userProfile?.casualStatus}
+            moodStatus={userProfile?.moodStatus}
+            workStatus={userProfile?.workStatus}
+            gamingStatus={userProfile?.gamingStatus}
+            avatarUrl="/images/test-profile.jpg"
+            socialLinks={{ github: "test", facebook: "" }}
+          />
+
+          <div className="flex w-full flex-grow flex-col gap-6 p-8 bg-slate-700 rounded-2xl shadow-lg">
+            <section className="relative flex flex-col gap-12 m-auto">
+              <h2 className="text-4xl font-bold text-white text-center">About Me</h2>
+              <div className="flex gap-8 lg:flex-row flex-col">
+                <div className="w-full flex flex-col gap-6 p-8 bg-slate-600 rounded-2xl shadow-lg">
+                  <p className="text-white leading-relaxed text-opacity-90">
+                    {userProfile?.aboutMe != null ? (
+                      <>{userProfile.aboutMe}</>
+                    ) : (
+                      <>There is nothing yet...</>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
-          <div className="flex flex-col sm:flex-row max-sm:gap-5 items-center justify-between mb-5">
-            <div className="flex items-center gap-4 mx-auto">
-              <Button onClick={() => setIsChatFormOpen(!isChatFormOpen)}>Create chat</Button>
-              <Button variant="secondary">Edit Profile</Button>
-            </div>
-          </div>
-          <h3 className="text-center font-bold text-3xl leading-10 text-gray-900 mb-3">
-            {user?.firstName} {user?.lastName}
-          </h3>
-          <p
-            className="font-normal text-base leading-7 text-gray-500 text-justify mb-8"
-            style={{ textAlignLast: "center" }}
-          >
-            A social media influencer and singer i vopshe pizdaty chuvak
-          </p>
-          <div className="flex flex-col items-center justify-center gap-5">
-            <p className="text-3xl leading-10 text-gray-900 ">Owner in chats</p>
-          </div>
+        </div>
+
+        <div className="bg-slate-700 rounded-2xl shadow-lg p-8">
+          <p className="font-semibold text-2xl text-white text-center mb-8">Friends</p>
+          <ul className="flex flex-col gap-6">
+            {userProfile?.friends.map((value, index) => (
+              <li key={index}>
+                <FriendPreview
+                  firstName={value.firstName}
+                  lastName={value.lastName}
+                  email={value.email}
+                  id={value.id}
+                />
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </>

@@ -6,7 +6,7 @@ const GoogleLogin = () => {
   const googleAuthCallback = (response: any) => {
     GoogleService.login(response.credential)
       .then((data) => console.log(data))
-      .catch((e) => console.error("google error", e.message));
+      .catch((e) => console.error("[Google] error:", e.message));
   };
 
   const googleButtonStyle = { type: "icon", shape: "circle" };
