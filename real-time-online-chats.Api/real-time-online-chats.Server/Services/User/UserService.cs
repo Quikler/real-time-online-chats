@@ -11,6 +11,22 @@ public class UserService(AppDbContext dbContext) : IUserService
 {
     private readonly AppDbContext _dbContext = dbContext;
 
+    public async Task<Result<UserGlobalDto, FailureDto>> GetUserGlobalAsync(Guid userId)
+    {
+        var userGlobalDto = await _dbContext.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new UserGlobalDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+            })
+            .FirstOrDefaultAsync();
+
+        return userGlobalDto is null ? FailureDto.NotFound("User not found") : userGlobalDto;
+    }
+
     public async Task<Result<UserProfileDto, FailureDto>> GetUserProfileAsync(Guid userId)
     {
         var user = await _dbContext.Users

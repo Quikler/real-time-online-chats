@@ -7,5 +7,6 @@ namespace real_time_online_chats.Server.Services.User;
 
 public interface IUserService
 {
+    Task<Result<UserGlobalDto, FailureDto>> GetUserGlobalAsync(Guid userId);
     Task<Result<UserProfileDto, FailureDto>> GetUserProfileAsync(Guid userId);
 }

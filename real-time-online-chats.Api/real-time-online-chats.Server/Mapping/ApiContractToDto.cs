@@ -1,8 +1,10 @@
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
 using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
+using real_time_online_chats.Server.Contracts.V1.Requests.Message;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs.Auth;
 using real_time_online_chats.Server.DTOs.Chat;
+using real_time_online_chats.Server.DTOs.Message;
 
 namespace real_time_online_chats.Server.Mapping;
 
@@ -44,6 +46,25 @@ public static class ApiContractToDto
         return new UpdateChatDto
         {
             Title = request.Title,
+        };
+    }
+
+    public static CreateMessageDto ToDto(this CreateMessageRequest request, Guid userId)
+    {
+        return new CreateMessageDto
+        {
+            ChatId = request.ChatId,
+            Content = request.Content,
+            UserId = userId,
+        };
+    }
+    
+    public static UpdateMessageDto ToDto(this UpdateMessageRequest request, Guid userId)
+    {
+        return new UpdateMessageDto
+        {
+            Content = request.Content,
+            UserId = userId,
         };
     }
 }

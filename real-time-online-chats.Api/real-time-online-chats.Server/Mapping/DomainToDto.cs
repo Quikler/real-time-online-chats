@@ -1,6 +1,7 @@
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.Chat;
+using real_time_online_chats.Server.DTOs.Message;
 using real_time_online_chats.Server.DTOs.User;
 
 namespace real_time_online_chats.Server.Mapping;
@@ -36,6 +37,28 @@ public static class DomainToDTO
         };
     }
 
+    public static UserGlobalDto ToUserGlobal(this UserEntity userEntity)
+    {
+        return new UserGlobalDto
+        {
+            Id = userEntity.Id,
+            Email = userEntity.Email,
+            FirstName = userEntity.FirstName,
+            LastName = userEntity.LastName,
+        };
+    }
+
+    public static UserChatDto ToUserChat(this UserEntity userEntity)
+    {
+        return new UserChatDto
+        {
+            Id = userEntity.Id,
+            Email = userEntity.Email,
+            FirstName = userEntity.FirstName,
+            LastName = userEntity.LastName,
+        };
+    }
+
     public static PaginationDto<TResult> ToPagination<T, TResult>(this List<T> list, Func<T, TResult> itemsSelect, int totalRecords, int pageNumber, int pageSize)
     {
         return new PaginationDto<TResult>
@@ -53,6 +76,16 @@ public static class DomainToDTO
         {
             Id = chatEntity.Id,
             Title = chatEntity.Title,
+        };
+    }
+
+    public static MessageChatDto ToMessageChat(this MessageEntity messageEntity)
+    {
+        return new MessageChatDto
+        {
+            Id = messageEntity.Id,
+            Content = messageEntity.Content,
+            User = messageEntity.User.ToUserChat(),
         };
     }
 }

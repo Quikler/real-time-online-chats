@@ -47,6 +47,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IChatAuthorizationService, ChatAuthorizationService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IMessageAuthorizationService, MessageAuthorizationService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
 
 // Get DB_HOST env variable to determine in which host database will run (local - localhost, Docker - see in docker-compose.yml)

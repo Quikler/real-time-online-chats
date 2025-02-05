@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Message;
 using real_time_online_chats.Server.Contracts.V1.Responses.Message;
@@ -9,48 +10,48 @@ using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Hubs.Clients;
+using real_time_online_chats.Server.Mapping;
 using real_time_online_chats.Server.Services.Message;
+using real_time_online_chats.Server.Services.User;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-public class MessagesController : ControllerBase
+public class MessagesController(IMessageService chatService, IHubContext<MessageHub, IMessageClient> messagehub, IUserService userService) : ControllerBase
 {
-    private readonly IMessageService _messageService;
-    private readonly IHubContext<MessageHub, IMessageClient> _messageHub;
+    private readonly IMessageService _messageService = chatService;
+    private readonly IUserService _userService = userService;
+    private readonly IHubContext<MessageHub, IMessageClient> _messageHub = messagehub;
 
-    public MessagesController(IMessageService chatService, IHubContext<MessageHub, IMessageClient> messagehub)
-    {
-        _messageService = chatService;
-        _messageHub = messagehub;
-    }
+    // [HttpGet(ApiRoutes.Messages.GetAll)]
+    // public async Task<IActionResult> GetAll()
+    // {
+    //     var messages = await _messageService.GetMessagesAsync();
+    //     var response = messages.Select(m => new MessageChatResponse
+    //     {
+    //         Id = m.Id,
+    //         Content = m.Content,
+    //     });
 
-    [HttpGet(ApiRoutes.Messages.GetAll)]
-    public async Task<IActionResult> GetAll()
-    {
-        var messages = await _messageService.GetMessagesAsync();
-        var response = messages.Select(m => new MessageChatResponse
-        {
-            Id = m.Id,
-            Content = m.Content,
-        });
-        
-        return Ok(response);
-    }
+    //     return Ok(response);
+    // }
 
     [HttpGet(ApiRoutes.Messages.Get)]
     public async Task<IActionResult> Get([FromRoute] Guid messageId)
     {
-        var message = await _messageService.GetMessageByIdAsync(messageId);
-        if (message is null) return NotFound();
-        
-        var response = new MessageChatResponse
-        {
-            Id = message.Id,
-            Content = message.Content,
-        };
+        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        return Ok(response);
+        var result = await _messageService.GetMessageByIdAsync(messageId, userId);
+        
+        return result.Match<IActionResult>(
+            messageChatDto => Ok(messageChatDto.ToResponse()),
+            failure => failure.FailureCode switch
+            {
+                FailureCode.Forbidden => Forbid(),
+                FailureCode.NotFound => NotFound(failure.ToResponse()),
+                _ => StatusCode(StatusCodes.Status500InternalServerError),
+            }
+        );
     }
 
     [HttpPost(ApiRoutes.Messages.Create)]
@@ -58,26 +59,28 @@ public class MessagesController : ControllerBase
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var message = new MessageEntity
-        {
-            UserId = userId,
-            Content = request.Content,
-            ContentType = request.ContentType,
-            ChatId = request.ChatId,
-        };
+        var result = await _messageService.CreateMessageAsync(request.ToDto(userId));
 
-        var created = await _messageService.CreateMessageAsync(message);
-        if (!created) return BadRequest(new { Message = "Failed to create message. Please try again." });
-        
-        var response = new MessageChatResponse
-        {
-            Id = message.Id,
-            Content = message.Content,
-        };
+        return await result.Match<Task<IActionResult>>(
+            async messageChatDto =>
+            {
+                var response = messageChatDto.ToResponse();
 
-        await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
+                await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
+                return CreatedAtAction(nameof(Get), new { messageId = response.Id }, response);
+            },
+            failure => 
+            {
+                IActionResult failureResponse = failure.FailureCode switch
+                {
+                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                    FailureCode.NotFound => NotFound(failure.ToResponse()),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
 
-        return CreatedAtAction(nameof(Get), new { messageId = message.Id }, response);
+                return Task.FromResult(failureResponse);
+            }
+        );
     }
 
     [HttpPut(ApiRoutes.Messages.Update)]
@@ -85,35 +88,51 @@ public class MessagesController : ControllerBase
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var userOwnsMessage = await _messageService.UserOwnsMessageAsync(messageId, userId);
-        if (!userOwnsMessage) return Forbid();
+        var result = await _messageService.UpdateMessageAsync(messageId, request.ToDto(userId));
 
-        var message = new MessageEntity
-        {
-            Id = messageId,
-            Content = request.Content,
-            ContentType = request.ContentType,
-        };
+        return await result.Match<Task<IActionResult>>(
+            async messageChatDto =>
+            {
+                var response = messageChatDto.ToResponse();
 
-        var updated = await _messageService.UpdateMessageAsync(message);
+                await _messageHub.Clients.Group(request.ChatId.ToString()).UpdateMessage(response);
+                return Ok(response);
+            },
+            failure => 
+            {
+                IActionResult failureResponse = failure.FailureCode switch
+                {
+                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                    FailureCode.Forbidden => Forbid(),
+                    FailureCode.NotFound => NotFound(failure.ToResponse()),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
 
-        return updated ? Ok(new MessageChatResponse
-        {
-            Id = message.Id,
-            Content = message.Content,
-            
-        }) : NotFound();
+                return Task.FromResult(failureResponse);
+            }
+        );
     }
 
     [HttpDelete(ApiRoutes.Messages.Delete)]
-    public async Task<IActionResult> Delete([FromRoute] Guid messageId)
+    public async Task<IActionResult> Delete([FromRoute] Guid messageId, [FromQuery] Guid chatId)
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var userOwnsMessage = await _messageService.UserOwnsMessageAsync(messageId, userId);
-        if (!userOwnsMessage) return Forbid();
+        var result = await _messageService.DeleteMessageAsync(messageId, userId);
+        
+        if (result.IsSuccess)
+        {
+            await _messageHub.Clients.Group(chatId.ToString()).DeleteMessage(chatId);
+        }
 
-        var deleted = await _messageService.DeleteMessageAsync(messageId);
-        return deleted ? NoContent() : NotFound();
+        return result.Match<IActionResult>(
+            guid => NoContent(),
+            failure => failure.FailureCode switch
+            {
+                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                FailureCode.Forbidden => Forbid(),
+                _ => StatusCode(StatusCodes.Status500InternalServerError),
+            }
+        );
     }
 }

@@ -128,7 +128,10 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
 
     public async Task<Result<bool, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
     {
+        if (await _chatAuthorizationService.IsUserExistInChatAsync(chatId, userId)) return true;
+
         var chat = await _dbContext.Chats
+            //.Include(c => c.Members)
             .FirstOrDefaultAsync(c => c.Id == chatId);
 
         if (chat is null) return FailureDto.NotFound("Chat not found");
