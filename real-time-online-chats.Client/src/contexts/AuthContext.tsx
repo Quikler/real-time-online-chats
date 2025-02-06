@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../services/api/AuthService";
 import { toast } from "react-toastify";
 import api from "@services/axios/instance";
-import { AuthRoutes } from "../services/api/ApiRoutes";
 import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
+import { AuthRoutes } from "@src/services/api/ApiRoutes";
+import { AuthService } from "@src/services/api/AuthService";
 
-type UserProfile = {
+export type UserProfile = {
   id: string;
   firstName: string | null;
   lastName: string | null;
@@ -14,8 +14,8 @@ type UserProfile = {
 };
 
 interface AuthContextType {
-  token: string | null;
-  user: UserProfile | null;
+  token: string | null | undefined;
+  user: UserProfile | null | undefined;
   loginUser: (request: LoginRequest) => void;
   signupUser: (request: SignupRequest) => void;
   logoutUser: () => void;
@@ -29,9 +29,8 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider = ({ children }: Props) => {
   const navigate = useNavigate();
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null | undefined>(undefined);
   const [isReady, setIsReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Fetch user profile and set token
   useEffect(() => {
@@ -45,11 +44,11 @@ export const AuthProvider = ({ children }: Props) => {
           setToken(data.token);
           setUser(data.user);
         }
-        setIsAuthenticated(true); // Mark authentication as complete
       })
       .catch((e) => {
-        console.error("Fetch me:", e.message);
-        setIsAuthenticated(true); // Even if fetching fails, mark authentication as complete
+        console.log("[Me] Error:", e.message);
+        setToken(null);
+        setUser(null);
       });
 
     return () => abortController.abort();
@@ -57,8 +56,6 @@ export const AuthProvider = ({ children }: Props) => {
 
   // Set up request interceptor
   useLayoutEffect(() => {
-    if (!isAuthenticated) return;
-
     const authInterceptor = api.interceptors.request.use((config: any) => {
       config.headers.Authorization =
         !config._retry && token ? `Bearer ${token}` : config.headers.Authorization;
@@ -66,12 +63,10 @@ export const AuthProvider = ({ children }: Props) => {
     });
 
     return () => api.interceptors.request.eject(authInterceptor);
-  }, [token, isAuthenticated]);
+  }, [token]);
 
   // Set up response interceptor
   useLayoutEffect(() => {
-    if (!isAuthenticated) return;
-
     const refreshInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -82,8 +77,7 @@ export const AuthProvider = ({ children }: Props) => {
           error.response.status === 401 &&
           originalRequest.url !== AuthRoutes.refreshToken
         ) {
-          console.group("[Interceptor] [Response]");
-          console.log("[Error]: 401");
+          console.log("[Interceptor][Response] Error 401.");
           try {
             const response = await api.post(AuthRoutes.refreshToken, {}, { withCredentials: true });
 
@@ -92,18 +86,16 @@ export const AuthProvider = ({ children }: Props) => {
             originalRequest.headers.Authorization = `Bearer ${response.data.token}`;
             originalRequest._retry = true;
 
-            console.log("Token refreshed");
+            console.log("[Interceptor][Response]: Token refreshed");
 
             return api(originalRequest);
           } catch (e: any) {
             if (e.name !== "CanceledError") {
-              console.log("Token not refreshed");
+              console.log("[Interceptor][Response]: Token not refreshed");
 
               setToken(null);
               setUser(null);
             }
-          } finally {
-            console.groupEnd();
           }
         }
 
@@ -112,14 +104,15 @@ export const AuthProvider = ({ children }: Props) => {
     );
 
     return () => api.interceptors.response.eject(refreshInterceptor);
-  }, [isAuthenticated]);
+  }, []);
 
-  // Mark the app as ready only after all initialization is complete
+  // Mark the app as ready only if user cannot be fetched from server (missing refreshToken)
+  // OR if user is logged in (refreshToken presented and user info retrieved with JWT token)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user === null || isUserLoggedIn()) {
       setIsReady(true);
     }
-  }, [isAuthenticated]);
+  }, [user]);
 
   const signupUser = (request: SignupRequest) => {
     AuthService.signup(request)
@@ -127,8 +120,6 @@ export const AuthProvider = ({ children }: Props) => {
         if (response) {
           setToken(response.token);
           setUser(response.user);
-
-          toast.success("Signed up successfully");
         }
       })
       .catch((e) => toast.error(e));
@@ -140,8 +131,6 @@ export const AuthProvider = ({ children }: Props) => {
         if (response) {
           setToken(response.token);
           setUser(response.user);
-
-          toast.success("Logged in successfully");
         }
       })
       .catch((e) => toast.error(e));
