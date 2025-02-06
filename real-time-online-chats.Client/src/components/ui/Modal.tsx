@@ -1,3 +1,4 @@
+import React from "react";
 import { twMerge } from "tailwind-merge";
 
 type ModalProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -7,47 +8,47 @@ type ModalProps = React.HTMLAttributes<HTMLDivElement> & {
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const Modal = ({ title, children, isModalOpen, setIsModalOpen, className, ...rest }: ModalProps) => {
-  // Reusable styles for the modal background
-  const modalBackgroundStyles = `fixed inset-0 bg-darkBlue-200 transition-opacity z-40 ${
-    isModalOpen ? "opacity-75 backdrop-blur-sm" : "opacity-0 pointer-events-none"
+const Modal = ({
+  title,
+  children,
+  isModalOpen,
+  setIsModalOpen,
+  className,
+  ...rest
+}: ModalProps) => {
+  const modalBackgroundStyles = `fixed inset-0 bg-slate-900/50 transition-opacity z-40 ${
+    isModalOpen ? "opacity-100 backdrop-blur-sm" : "opacity-0 pointer-events-none"
   }`;
 
-  // Reusable styles for the modal container
   const modalContainerStyles = `${
     isModalOpen ? "flex" : "hidden"
-  } overflow-y-auto overflow-x-hidden lg:pt-0 pt-10 fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`;
+  } overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`;
 
-  // Reusable styles for the modal content
-  const modalContentStyles = "relative bg-darkBlue-100 rounded-lg shadow-lg";
+  const modalContentStyles = "relative bg-slate-800 rounded-lg shadow-lg w-full max-w-md";
 
-  // Reusable styles for the close button
   const closeButtonStyles =
-    "text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white";
+    "text-slate-400 bg-transparent hover:bg-slate-700 hover:text-slate-200 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center";
 
   return (
     <>
-      {/* Darkening background */}
-      <div className={modalBackgroundStyles}></div>
+      <div className={modalBackgroundStyles} onClick={() => setIsModalOpen(false)}></div>
 
-      {/* Main modal */}
       <div
-        id="authentication-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!isModalOpen}
         tabIndex={-1}
-        aria-hidden="true"
         className={modalContainerStyles}
       >
-        <div className="relative p-4 pt-16 w-full max-w-md max-h-full">
-          {/* Modal content */}
+        <div className="relative p-4 w-full max-w-md max-h-full">
           <div className={modalContentStyles}>
-            {/* Modal header */}
-            <div className="flex items-center justify-between p-4 md:p-5 rounded-t">
-              <h3 className="text-xl font-semibold text-white">{title}</h3>
+            <div className="flex items-center justify-between p-4 md:p-5 border-b border-slate-700 rounded-t">
+              <h3 className="text-xl font-semibold text-slate-200">{title}</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 type="button"
                 className={closeButtonStyles}
-                data-modal-hide="authentication-modal"
+                aria-label="Close modal"
               >
                 <svg
                   className="w-3 h-3"
@@ -64,12 +65,10 @@ const Modal = ({ title, children, isModalOpen, setIsModalOpen, className, ...res
                     d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                   />
                 </svg>
-                <span className="sr-only">Close modal</span>
               </button>
             </div>
 
-            {/* Modal body */}
-            <div className={twMerge(`p-4 md:p-5 ${className}`)} {...rest}>
+            <div className={twMerge("p-4 md:p-5", className)} {...rest}>
               {children}
             </div>
           </div>

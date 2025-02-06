@@ -29,7 +29,7 @@ const UserProfile = () => {
     return () => abortController.abort();
   }, [userId]);
 
-  const handleChatFormSubmit = async (
+  const handleCreateChatFormSubmit = async (
     _e: React.FormEvent<HTMLFormElement>,
     data: CreateChatFormData
   ) => {
@@ -43,7 +43,7 @@ const UserProfile = () => {
       <CreateChatForm
         isChatFormOpen={isChatFormOpen}
         setIsChatFormOpen={setIsChatFormOpen}
-        onSubmit={handleChatFormSubmit}
+        onSubmit={handleCreateChatFormSubmit}
       />
 
       <section className="relative flex flex-col gap-8 m-16 max-w-7xl mx-auto">

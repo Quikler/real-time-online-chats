@@ -1,23 +1,23 @@
 export type UserProfileType = {
-	id: string,
-	email: string,
-	firstName: string,
-	lastName: string,
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
 
-	aboutMe: string,
+  aboutMe: string;
 
-	activityStatus: string,
-	casualStatus: string,
-	moodStatus: string,
-	workStatus: string,
-	gamingStatus: string,
+  activityStatus: string;
+  casualStatus: string;
+  moodStatus: string;
+  workStatus: string;
+  gamingStatus: string;
 
-	friends: UserFriendType[];
+  friends: UserFriendType[];
 };
 
 export type UserFriendType = {
-	id: string,
-	email: string,
-	firstName: string,
-	lastName: string,
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
 };

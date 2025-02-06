@@ -62,15 +62,15 @@ export const router = createBrowserRouter([
               </>
             ),
           },
-          {
-            path: ":chatId",
-            element: (
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            ),
-          },
         ],
+      },
+      {
+        path: "chats/:chatId", // Moved outside the `MainLayout` wrapper
+        element: (
+          <ProtectedRoute>
+            <Chat />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "profile",
