@@ -60,10 +60,6 @@ export const AuthProvider = ({ children }: Props) => {
     if (!isAuthenticated) return;
 
     const authInterceptor = api.interceptors.request.use((config: any) => {
-      console.group("[Interceptor] [Request]");
-      console.log("Token is", token);
-      console.groupEnd();
-
       config.headers.Authorization =
         !config._retry && token ? `Bearer ${token}` : config.headers.Authorization;
       return config;

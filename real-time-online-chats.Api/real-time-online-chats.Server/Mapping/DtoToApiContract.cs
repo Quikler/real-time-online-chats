@@ -91,8 +91,9 @@ public static class DtoToApiContract
             Id = chatDetailedDto.Id,
             Title = chatDetailedDto.Title,
             OwnerId = chatDetailedDto.OwnerId,
+            CreationTime = chatDetailedDto.CreationTime,
             Messages = chatDetailedDto.Messages.Select(m => m.ToResponse()),
-            Users = chatDetailedDto.Users.Select(u => u.ToResponse())
+            Users = chatDetailedDto.Users.Select(u => u.ToResponse()),
         };
     }
 

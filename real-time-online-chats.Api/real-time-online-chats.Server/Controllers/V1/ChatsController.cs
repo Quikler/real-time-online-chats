@@ -10,6 +10,7 @@ using real_time_online_chats.Server.Contracts.V1.Responses;
 using real_time_online_chats.Server.Contracts.V1.Responses.Chat;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs.Chat;
+using real_time_online_chats.Server.DTOs.User;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Hubs.Clients;
@@ -135,18 +136,23 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
 
         var result = await _chatService.UserJoinChatAsync(chatId, userId);
         
-        if (result.IsSuccess)
-        {
-            await _messageHub.Clients.Group(chatId.ToString()).JoinChat(userId);
-        }
-        
-        return result.Match<IActionResult>(
-            success => Ok(),
-            failure => failure.FailureCode switch
+        return await result.Match<Task<IActionResult>>(
+            async userChatDto =>
             {
-                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                FailureCode.NotFound => NotFound(failure.ToResponse()),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
+                var response = userChatDto.ToResponse();
+                await _messageHub.Clients.Group(chatId.ToString()).JoinChat(response);
+                return Ok(response);
+            },
+            failure => 
+            {
+                IActionResult failureResult = failure.FailureCode switch
+                {
+                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                    FailureCode.NotFound => NotFound(failure.ToResponse()),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
+
+                return Task.FromResult(failureResult);
             }
         );
     }
@@ -158,18 +164,24 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
 
         var result = await _chatService.UserLeaveChatAsync(chatId, userId);
 
-        if (result.IsSuccess)
-        {
-            await _messageHub.Clients.Group(chatId.ToString()).LeaveChat(userId);
-        }
-
-        return result.Match<IActionResult>(
-            success => Ok(),
-            failure => failure.FailureCode switch
+        return await result.Match<Task<IActionResult>>(
+            async userChatDto =>
             {
-                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                FailureCode.NotFound => NotFound(failure.ToResponse()),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
+                var response = userChatDto.ToResponse();
+
+                await _messageHub.Clients.Group(chatId.ToString()).LeaveChat(response);
+                return Ok(response);
+            },
+            failure =>
+            {
+                IActionResult failureResult = failure.FailureCode switch
+                {
+                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                    FailureCode.NotFound => NotFound(failure.ToResponse()),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
+
+                return Task.FromResult(failureResult);
             }
         );
     }

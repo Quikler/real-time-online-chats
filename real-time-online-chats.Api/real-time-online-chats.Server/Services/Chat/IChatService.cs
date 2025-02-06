@@ -3,6 +3,7 @@ using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.Chat;
+using real_time_online_chats.Server.DTOs.User;
 
 namespace real_time_online_chats.Server.Services.Chat;
 
@@ -17,7 +18,7 @@ public interface IChatService
     Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto);
     Task<Result<bool, FailureDto>> UpdateChatAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId);
     Task<Result<bool, FailureDto>> DeleteChatAsync(Guid chatId, Guid userId);
-    Task<Result<bool, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId);
-    Task<Result<bool, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId);
+    Task<Result<UserChatDto, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId);
+    Task<Result<UserChatDto, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId);
     Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId);
 }

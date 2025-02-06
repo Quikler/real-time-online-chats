@@ -7,7 +7,7 @@ import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import { MessageService } from "@src/services/api/MessageService";
 import { toast } from "react-toastify";
 import { useAuth } from "@src/contexts/AuthContext";
-import { GetMessageResponse, CreateMessageRequest } from "@src/models/dtos/Message";
+import { CreateMessageRequest } from "@src/models/dtos/Message";
 import { ChatService } from "@src/services/api/ChatService";
 import { isNullOrWhitespace } from "@src/utils/helpers";
 
@@ -33,18 +33,19 @@ interface ChatData {
   ownerId: string;
   id: string;
   creationTime: Date;
-  messages: MessageResult[];
-  users: UserResponse[];
+  // messages: MessageResult[];
+  // users: UserResponse[];
 }
 
 const Chat = () => {
   const { user, token } = useAuth();
   const { chatId } = useParams<{ chatId: string }>();
-  const [chatData, setChatData] = useState<ChatData>();
+
+  const [messages, setMessages] = useState<MessageResult[]>();
+  const [users, setUsers] = useState<UserResponse[]>();
+  const [chatInfo, setChatInfo] = useState<ChatData>();
 
   const navigate = useNavigate();
-
-  const [connection, setConnection] = useState<HubConnection>();
 
   const [messageFormData, setMessageFormData] = useState<CreateMessageFormData>({
     message: "",
@@ -62,10 +63,7 @@ const Chat = () => {
   const handleChatLeave = () => {
     if (chatId) {
       ChatService.leaveChat(chatId)
-        .then(() => {
-          toast.success("Leaved chat successfully");
-          navigate("/chats");
-        })
+        .then(() => navigate("/chats"))
         .catch((e) => console.error("Error leaving chat:", e.message));
     }
   };
@@ -81,146 +79,184 @@ const Chat = () => {
     }
   };
 
-  useEffect(() => {
-    // Only initialize SignalR connection if token is available
-    if (!token) {
-      console.log("Token is not available yet.");
-      return;
-    }
+  const fetchChat = (chatId: string, signal: AbortSignal) => {
+    ChatService.getChatDetailed(chatId, { signal: signal })
+      .then((data) => {
+        setChatInfo({
+          id: data.id,
+          title: data.title,
+          ownerId: data.ownerId,
+          creationTime: data.creationTime,
+        });
 
-    const abortController = new AbortController();
+        setMessages(data.messages);
 
-    // Retrieve chat data
-    if (chatId) {
-      ChatService.getChatDetailed(chatId, { signal: abortController.signal })
-        .then((data) => setChatData(data))
-        .catch((e) => console.log(e.message));
-    }
-
-    // Initialize SignalR connection with the server
-    const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7207/messageHub", {
-        accessTokenFactory: () => token,
+        setUsers(data.users);
+        //setChatData(data)
       })
-      .withAutomaticReconnect()
-      .build();
+      .catch((e) => console.log(e.message));
+  };
 
-    setConnection(newConnection);
+  const [connection, setConnection] = useState<HubConnection>();
 
-    // Cleanup function
-    return () => {
-      abortController.abort();
-      if (newConnection) {
+  useEffect(
+    () => {
+      // Only initialize SignalR connection if token is available
+      // if (!token) {
+      //   console.log("Token is not available yet.");
+      //   return;
+      // }
+
+      const newConnection = new HubConnectionBuilder()
+        .withUrl("https://localhost:7207/messageHub", {
+          //accessTokenFactory: () => token,
+        })
+        .withStatefulReconnect()
+        .withAutomaticReconnect()
+        .build();
+
+      setConnection(newConnection);
+
+      const abortController = new AbortController();
+
+      if (chatId) {
+        fetchChat(chatId, abortController.signal);
+      }
+
+      // Initialize SignalR connection with the server
+      return () => {
+        abortController.abort();
         newConnection
           .stop()
           .then(() => console.log("[SignalR]: Connection stopped"))
-          .catch((e) => console.error("[SignalR]: Error stopping connection", e.message));
-      }
-    };
-  }, [token]);
+          .catch((e) => console.error("[SignalR]: Error stoping connection:", e.message));
+      };
+    },
+    [
+      /*token*/
+    ]
+  );
 
   useEffect(() => {
-    if (connection) {
+    if (!connection) return;
+
+    startConnection();
+
+    connection.onreconnected(async () => {
+      console.log("[SignalR]: Connection reestablished");
+
+      await connection
+        .invoke("JoinChatGroup", chatId)
+        .then(() => console.log(`${chatId} - Joined chat group`))
+        .catch((e) => console.error("Cannot join chat:", e.message));
+
+      //registerEventHandlers(connection);
+    });
+
+    // Cleanup function
+    return () => {
       connection
-        .start()
-        .then(() => {
-          connection
-            .invoke("JoinChatGroup", chatId)
-            .then(() => console.log("Joined chat group:", chatId))
-            .catch((e) => e.message);
-
-          connection.on("SendMessage", (message: GetMessageResponse) => {
-            console.log("SendMessage:", message);
-
-            setChatData((prevChatData) => {
-              if (!prevChatData) {
-                console.error("chatData is not available");
-                return prevChatData; // Return the previous state if it's undefined
-              }
-
-              // Find the sender in the latest state
-              const sender = prevChatData.users.find((u) => u.id === message.userId);
-
-              const newMessage: MessageResult = {
-                id: message.userId,
-                content: message.content,
-                user: {
-                  id: message.userId,
-                  email: sender?.email,
-                  firstName: sender?.firstName!,
-                  lastName: sender?.lastName!,
-                },
-              };
-
-              // Return the updated state
-              return {
-                ...prevChatData,
-                messages: [...prevChatData.messages, newMessage],
-              };
-            });
-          });
-
-          connection.on("JoinChat", (userId: string) => {
-            setChatData((prevChatData) => {
-              if (!prevChatData) {
-                console.error("chatData is not available");
-                return prevChatData; // Return the previous state if it's undefined
-              }
-
-              // Find the sender in the latest state
-              const user = prevChatData.users.find((u) => u.id === userId);
-
-              const newMessage: MessageResult = {
-                id: userId,
-                content: `<!-- User ${user?.email} joined chat -->`,
-                user: {
-                  id: userId,
-                  email: user?.email,
-                  firstName: user?.firstName!,
-                  lastName: user?.lastName!,
-                },
-              };
-
-              // Return the updated state
-              return {
-                ...prevChatData,
-                messages: [...prevChatData.messages, newMessage],
-              };
-            });
-          });
-
-          connection.on("LeaveChat", (userId: string) => {
-            setChatData((prevChatData) => {
-              if (!prevChatData) {
-                console.error("chatData is not available");
-                return prevChatData; // Return the previous state if it's undefined
-              }
-
-              // Find the sender in the latest state
-              const user = prevChatData.users.find((u) => u.id === userId);
-
-              const newMessage: MessageResult = {
-                id: userId,
-                content: `<!-- User ${user?.email} left the chat -->`,
-                user: {
-                  id: userId,
-                  email: user?.email,
-                  firstName: user?.firstName!,
-                  lastName: user?.lastName!,
-                },
-              };
-
-              // Return the updated state
-              return {
-                ...prevChatData,
-                messages: [...prevChatData.messages, newMessage],
-              };
-            });
-          });
-        })
-        .catch((e) => console.error("[SignalR]:", e.message));
-    }
+        .stop()
+        .then(() => console.log("[SignalR]: Connection stopped"))
+        .catch((e) => console.error("[SignalR]: Error stopping connection", e.message));
+    };
   }, [connection]);
+
+  const startConnection = async () => {
+    if (!connection) return;
+
+    try {
+      await connection
+        .start()
+        .then(() => console.log("[SignalR]: Connection started"))
+        .catch((e) => console.error("[SignalR]: Error starting connection:", e.message));
+
+      if (chatId)
+        await connection
+          .invoke("JoinChatGroup", chatId)
+          .then(() => console.log(`${chatId} - Joined chat group`))
+          .catch((e) => console.error("Cannot join chat:", e.message));
+
+      registerEventHandlers(connection); // Rebind events
+
+      console.log(`${chatId} - Joined chat group`);
+    } catch (e: any) {
+      console.error("[SignalR]:", e.message);
+    }
+  };
+
+  const registerEventHandlers = (connection: HubConnection) => {
+    connection.on("SendMessage", (message: MessageResult) => {
+      console.log("SendMessage:", message);
+
+      setMessages((prevMessages) => {
+        if (!prevMessages) {
+          console.error("chatData is not available");
+          return prevMessages; // Return the previous state if it's undefined
+        }
+
+        const newMessage: MessageResult = {
+          id: message.id,
+          content: message.content,
+          user: {
+            id: message.user.id,
+            email: message.user.email,
+            firstName: message.user.firstName,
+            lastName: message.user.lastName,
+          },
+        };
+
+        // Return the updated state
+        return [...prevMessages, newMessage];
+      });
+    });
+
+    connection.on("JoinChat", (user: UserResponse) => {
+      setMessages((prevMessages) => {
+        if (!prevMessages) {
+          console.error("chatData is not available");
+          return prevMessages; // Return the previous state if it's undefined
+        }
+
+        const newMessage: MessageResult = {
+          id: (Math.random() + 1).toString(36),
+          content: `<!-- User ${user?.email} joined chat -->`,
+          user: {
+            id: user.id,
+            email: user?.email,
+            firstName: user?.firstName!,
+            lastName: user?.lastName!,
+          },
+        };
+
+        // Return the updated state
+        return [...prevMessages, newMessage];
+      });
+    });
+
+    connection.on("LeaveChat", (user: UserResponse) => {
+      setMessages((prevMessages) => {
+        if (!prevMessages) {
+          console.error("chatData is not available");
+          return prevMessages; // Return the previous state if it's undefined
+        }
+
+        const newMessage: MessageResult = {
+          id: (Math.random() + 1).toString(36),
+          content: `<!-- User ${user?.email} left the chat -->`,
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName!,
+            lastName: user.lastName!,
+          },
+        };
+
+        // Return the updated state
+        return [...prevMessages, newMessage];
+      });
+    });
+  };
 
   const handleCreateMessageFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -257,7 +293,7 @@ const Chat = () => {
             ←
           </ButtonLink>
           <div className="text-white flex flex-col flex-grow">
-            <p className="text-3xl">{chatData?.title}</p>
+            <p className="text-3xl">{chatInfo?.title}</p>
             <p className="text-lg">3/52 members online</p>
           </div>
           <div className="w-auto">
@@ -266,16 +302,16 @@ const Chat = () => {
             </Button>
             <Modal
               className="flex  flex-col gap-2"
-              title={chatData?.title}
+              title={chatInfo?.title}
               isModalOpen={isModalOpen}
               setIsModalOpen={setIsModalOpen}
             >
               <ul className="text-white">
-                {chatData?.users.map((value, index) => (
+                {users?.map((value, index) => (
                   <li
                     key={index}
                     className={`flex cursor-default overflow-ellipsis items-center gap-3 p-2 border-b-2 border-darkBlue-200 ${
-                      chatData.ownerId === value.id
+                      chatInfo?.ownerId === value.id
                         ? "bg-green-500 hover:bg-green-600"
                         : "hover:bg-darkBlue-200"
                     }`}
@@ -292,7 +328,7 @@ const Chat = () => {
                 <Button variant="primary" onClick={handleChatLeave}>
                   Leave
                 </Button>
-                {user?.id === chatData?.ownerId && (
+                {user?.id === chatInfo?.ownerId && (
                   <Button variant="danger" onClick={handleChatDelete}>
                     Delete chat
                   </Button>
@@ -302,7 +338,7 @@ const Chat = () => {
           </div>
         </div>
         <div className="bg-maroon-100 text-white flex-grow p-4">
-          {chatData?.messages.map((value, index) => {
+          {messages?.map((value, index) => {
             return (
               <div
                 key={index}

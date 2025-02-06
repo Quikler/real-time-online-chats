@@ -70,6 +70,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
             Id = chat.Id,
             OwnerId = chat.OwnerId,
             Title = chat.Title,
+            CreationTime = chat.CreationTime,
             Messages = chat.Messages.Select(m => new MessageChatDto
             {
                 Id = m.Id,
@@ -122,13 +123,21 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         int rows = await _dbContext.Chats
             .Where(c => c.Id == chatId)
             .ExecuteDeleteAsync();
-        
+
         return rows == 0 ? FailureDto.BadRequest("Cannot delete chat") : true;
     }
 
-    public async Task<Result<bool, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
+    public async Task<Result<UserChatDto, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
     {
-        if (await _chatAuthorizationService.IsUserExistInChatAsync(chatId, userId)) return true;
+        if (await _chatAuthorizationService.IsUserExistInChatAsync(chatId, userId))
+        {
+            var userChatDto = await _dbContext.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.ToUserChat())
+                .FirstOrDefaultAsync();
+
+            return userChatDto is null ? FailureDto.NotFound("User not found") : userChatDto;
+        }
 
         var chat = await _dbContext.Chats
             //.Include(c => c.Members)
@@ -142,10 +151,10 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         chat.Members.Add(user);
         int rows = await _dbContext.SaveChangesAsync();
 
-        return rows == 0 ? FailureDto.BadRequest("Cannot join chat") : true;
+        return rows == 0 ? FailureDto.BadRequest("Cannot join chat") : user.ToUserChat();
     }
 
-    public async Task<Result<bool, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId)
+    public async Task<Result<UserChatDto, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId)
     {
         // Find the user and include both OwnedChats and MemberChats
         var user = await _dbContext.Users
@@ -163,12 +172,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
             // User is the owner of the chat
             // Find another member to transfer ownership to
             var newOwner = ownedChat.Members.FirstOrDefault();
-            if (newOwner is null)
-            {
-                // No other members in the chat, so delete the chat
-                _dbContext.Chats.Remove(ownedChat);
-            }
-            else
+            if (newOwner is not null)
             {
                 // Transfer ownership to the new owner
                 ownedChat.OwnerId = newOwner.Id;
@@ -180,6 +184,11 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
                 // Add the chat to the new owner's OwnedChats and remove it from MemberChats because he's a new owner
                 newOwner.OwnedChats.Add(ownedChat);
                 newOwner.MemberChats.Remove(ownedChat);
+            }
+            else
+            {
+                // No other members in the chat, so delete the chat
+                _dbContext.Chats.Remove(ownedChat);
             }
         }
         else
@@ -194,8 +203,8 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
 
         // Save changes to the database
         int rows = await _dbContext.SaveChangesAsync();
-        
-        return rows == 0 ? FailureDto.BadRequest("Cannot leave the chat") : true;
+
+        return rows == 0 ? FailureDto.BadRequest("Cannot leave the chat") : user.ToUserChat();
     }
 
     public Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId)
