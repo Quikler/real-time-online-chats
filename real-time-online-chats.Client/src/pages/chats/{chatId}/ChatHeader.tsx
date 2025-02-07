@@ -38,7 +38,7 @@ const ChatHeader = ({ users, chatInfo, onChatLeave, onChatDelete }: ChatHeaderPr
           ⋮
         </Button>
         <Modal
-          className="flex flex-col gap-4 p-6 bg-slate-700 shadow-lg"
+          className="flex flex-col gap-4 p-6 shadow-lg"
           title={chatInfo?.title}
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}

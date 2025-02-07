@@ -4,27 +4,32 @@ import { twMerge } from "tailwind-merge";
 
 type MessageContentProps = React.HTMLAttributes<HTMLDivElement> & {
   messageChat: MessageChat;
-  
 };
 
 const MessageContent = ({ messageChat, className, ...rest }: MessageContentProps) => {
   const { user } = useAuth();
 
+  const isUserMessageOwner = messageChat.user.id === user?.id;
+
   return (
     <div
-      {...rest}
-      className={twMerge(
-        `flex flex-col gap-1 ${messageChat.user.id === user?.id ? "items-end" : "items-start"}`,
-        className
-      )}
+      className={`flex items-center gap-2 ${isUserMessageOwner ? "justify-end" : "justify-start"}`}
     >
-      <p
-        className={`p-3 text-lg rounded-lg break-all ${
-          messageChat.user.id === user?.id ? "bg-slate-700 text-white" : "bg-slate-500 text-white"
-        }`}
+      <div
+        {...rest}
+        className={twMerge(
+          `flex flex-col gap-1 ${isUserMessageOwner ? "items-end" : "items-start"}`,
+          className
+        )}
       >
-        {messageChat.content}
-      </p>
+        <p
+          className={`p-3 text-lg rounded-lg break-all ${
+            isUserMessageOwner ? "bg-slate-700 text-white" : "bg-slate-500 text-white"
+          }`}
+        >
+          {messageChat.content}
+        </p>
+      </div>
     </div>
   );
 };

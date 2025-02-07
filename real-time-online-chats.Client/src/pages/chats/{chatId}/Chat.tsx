@@ -51,6 +51,10 @@ const Chat = () => {
         );
         setMessages((prev) => [...prev, message]);
       });
+
+      connection.on("DeleteMessage", (messageId: string) => {
+        setMessages((prev) => prev.filter(message => message.id !== messageId));
+      });
     };
 
     registerSignalREventHandlers(connection);
@@ -111,6 +115,14 @@ const Chat = () => {
       .catch((e) => console.log(e));
   };
 
+  const handleMessageDelete = () => {
+
+  };
+
+  const handleMessageEdit = () => {
+
+  };
+
   return (
     <div className="flex flex-col bg-slate-600 lg:px-16 flex-grow" style={{ minHeight: "720px" }}>
       <ChatHeader
@@ -135,7 +147,7 @@ const Chat = () => {
               key={index}
               className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${isCurrentUser ? "justify-end" : "justify-start"}`}
             >
-              <Message
+              <Message chatId={chatInfo?.id!} onDelete={handleMessageDelete} onEdit={handleMessageEdit}
                 messageChat={message}
                 isCurrentUser={isCurrentUser}
                 showUserInfo={showUserInfo}

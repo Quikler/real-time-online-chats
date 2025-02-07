@@ -8,3 +8,8 @@ export interface GetMessageResponse {
 	userId: string,
 	content: string,
 }
+
+export interface UpdateMessageRequest {
+	content: string;
+	chatId: string;
+}
