@@ -14,14 +14,16 @@ const useChatDetailed = (chatId?: string) => {
 
     ChatService.getChatDetailed(chatId, { signal: abortController.signal })
       .then((data) => {
-        setChatInfo({
-          id: data.id,
-          title: data.title,
-          ownerId: data.ownerId,
-          creationTime: data.creationTime,
-        });
-        setMessages(data.messages);
-        setUsers(data.users);
+        if (data) {
+          setChatInfo({
+            id: data.id,
+            title: data.title,
+            ownerId: data.ownerId,
+            creationTime: data.creationTime,
+          });
+          setMessages(data.messages);
+          setUsers(data.users);
+        }
       })
       .catch((e) => console.error("Error fetching chat data:", e.message));
 

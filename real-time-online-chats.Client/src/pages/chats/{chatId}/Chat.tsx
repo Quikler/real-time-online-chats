@@ -12,6 +12,7 @@ import { createMessageChatFromUserChat } from "./{chatId}.helpers";
 import useChatDetailed from "./hooks/useChatDetailed";
 import useMessageHubConnection from "./hooks/useMessageHubConnection";
 import ChatHeader from "./ChatHeader";
+import Message from "./Message";
 
 export interface CreateMessageFormData {
   message: string;
@@ -112,48 +113,36 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col bg-slate-600 lg:px-16 flex-grow" style={{ minHeight: "720px" }}>
-      <ChatHeader chatInfo={chatInfo} users={users} onChatDelete={handleChatDelete} onChatLeave={handleChatLeave} />
+      <ChatHeader
+        chatInfo={chatInfo}
+        users={users}
+        onChatDelete={handleChatDelete}
+        onChatLeave={handleChatLeave}
+      />
 
-      <ul className="flex-grow flex flex-col p-6 overflow-y-auto pt-40 pb-32 gap-8">
-        {messages?.map((value, index) => (
-          <li
-            ref={index === messages.length - 1 ? lastMessageRef : undefined}
-            key={index}
-            className={`flex gap-3 ${value.user.id === user?.id ? "justify-end" : "justify-start"}`}
-          >
-            <img
-              src="/images/test-profile.jpg"
-              className={`w-10 h-10 rounded-full object-cover ${
-                value.user.id === user?.id ? "order-2" : ""
-              }`}
-            />
-            <div className="flex flex-col gap-3 max-w-[80%]">
-              <p
-                className={`text-xl text-white text-opacity-80 flex gap-4 ${
-                  value.user.id === user?.id ? "font-medium self-end" : ""
-                }`}
-              >
-                {value.user.email}
-              </p>
+      <ul className="flex-grow flex flex-col p-6 overflow-y-auto pt-40 pb-32">
+        {messages?.map((message, index) => {
+          // If previous message's user id is equal to current
+          const isCurrentUserPrevious = index > 0 && message.user.id === messages[index - 1].user.id;
+          
+          const isCurrentUser = message.user.id === user?.id;
 
-              <div
-                className={`flex flex-col gap-1 ${
-                  value.user.id === user?.id ? "items-end" : "items-start"
-                }`}
-              >
-                <p
-                  className={`p-3 text-lg rounded-lg break-all ${
-                    value.user.id === user?.id
-                      ? "bg-slate-700 text-white"
-                      : "bg-slate-500 text-white"
-                  }`}
-                >
-                  {value.content}
-                </p>
-              </div>
-            </div>
-          </li>
-        ))}
+          const showUserInfo = !isCurrentUserPrevious;
+
+          return (
+            <li
+              ref={index === messages.length - 1 ? lastMessageRef : undefined}
+              key={index}
+              className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${isCurrentUser ? "justify-end" : "justify-start"}`}
+            >
+              <Message
+                messageChat={message}
+                isCurrentUser={isCurrentUser}
+                showUserInfo={showUserInfo}
+              />
+            </li>
+          );
+        })}
       </ul>
 
       <div className="fixed bottom-0 right-0 left-0 w-full bg-slate-700 p-4">

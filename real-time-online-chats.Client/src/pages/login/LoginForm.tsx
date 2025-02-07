@@ -121,28 +121,8 @@ const LoginForm = ({ onSubmit, formData, setFormData, ...rest }: LoginFormProps)
       </div>
       <p className="my-6 text-sm text-gray-400 text-center">or continue with</p>
       <div className="space-x-6 flex justify-center items-center">
-        <div>
-          <GoogleLogin />
-
-          <div
-            id="g_id_onload"
-            data-client_id="915197020819-23914pt8hnh35qemg74m6hi2tf0q0v65.apps.googleusercontent.com"
-            data-context="signup"
-            data-ux_mode="popup"
-            data-login_uri="https://localhost:7207/api/v1/identity/login-google"
-            data-auto_select="true"
-            data-itp_support="true"
-          ></div>
-
-          <div
-            className="g_id_signin"
-            data-type="icon"
-            data-shape="circle"
-            data-theme="outline"
-            data-text="signin_with"
-            data-size="large"
-          ></div>
-        </div>
+        <GoogleLogin />
+        
         {/* <button type="button" className="border-none outline-none">
           <Google width={32} />
         </button> */}
