@@ -32,10 +32,11 @@ public static class ApiContractToDto
         };
     }
 
-    public static CreateChatDto ToDto(this CreateChatRequest request)
+    public static CreateChatDto ToDto(this CreateChatRequest request, Guid ownerId)
     {
         return new CreateChatDto
         {
+            OwnerId = ownerId,
             Title = request.Title,
             UsersIdToAdd = request.UsersIdToAdd,
         };

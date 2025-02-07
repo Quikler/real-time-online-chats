@@ -22,6 +22,7 @@ public static class DtoToDomain
     {
         return new ChatEntity
         {
+            OwnerId = createChatDto.OwnerId,
             Title = createChatDto.Title,
             Members = [..createChatDto.UsersIdToAdd.Select(id => new UserEntity
             {

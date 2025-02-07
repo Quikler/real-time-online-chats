@@ -80,7 +80,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        CreateChatDto createChatDto = request.ToDto();
+        CreateChatDto createChatDto = request.ToDto(userId);
         var result = await _chatService.CreateChatAsync(createChatDto);
 
         return result.Match<IActionResult>(

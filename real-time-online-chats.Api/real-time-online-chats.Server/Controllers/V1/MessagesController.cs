@@ -122,7 +122,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
         
         if (result.IsSuccess)
         {
-            await _messageHub.Clients.Group(chatId.ToString()).DeleteMessage(chatId);
+            await _messageHub.Clients.Group(chatId.ToString()).DeleteMessage(messageId);
         }
 
         return result.Match<IActionResult>(
