@@ -4,6 +4,8 @@ import Modal from "@src/components/ui/Modal";
 import React, { useState } from "react";
 import { ChatInfo, UserChat } from "./{chatId}.types";
 import { useAuth } from "@src/contexts/AuthContext";
+import UserAvatar from "./UserAvatar";
+import { Link } from "react-router-dom";
 
 type ChatHeaderProps = {
   users?: UserChat[];
@@ -44,20 +46,19 @@ const ChatHeader = ({ users, chatInfo, onChatLeave, onChatDelete }: ChatHeaderPr
           setIsModalOpen={setIsModalOpen}
         >
           <ul className="text-white cursor-default">
-            {users?.map((value, index) => (
-              <li
-                key={index}
-                className={`flex items-center gap-3 p-3 transition-colors duration-300 ${
-                  chatInfo?.ownerId === value.id
-                    ? "bg-slate-400 hover:bg-slate-300"
-                    : "bg-slate-600 hover:bg-slate-500"
-                }`}
-              >
-                <img
-                  src="/images/test-profile.jpg"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div className="overflow-x-auto text-wrap break-words">{value.email}</div>
+            {users?.map((userChat, index) => (
+              <li key={index}>
+                <Link
+                  to={`/profile/${userChat.id}`}
+                  className={`flex items-center gap-3 p-3 transition-colors duration-300 ${
+                    chatInfo?.ownerId === userChat.id
+                      ? "bg-slate-400 hover:bg-slate-300"
+                      : "bg-slate-600 hover:bg-slate-500"
+                  }`}
+                >
+                  <UserAvatar width="48px" height="48px" />
+                  <div className="overflow-x-auto text-wrap break-words">{userChat.email}</div>
+                </Link>
               </li>
             ))}
           </ul>

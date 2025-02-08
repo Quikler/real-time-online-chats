@@ -2,6 +2,7 @@ import MessageContent from "./MessageContent";
 import { MessageChat } from "./{chatId}.types";
 import MessageActions from "./MessageActions";
 import { MessageService } from "@src/services/api/MessageService";
+import UserAvatarLink from "./UserAvatarLink";
 
 type MessageProps = {
   chatId: string;
@@ -34,11 +35,11 @@ const Message = ({
     <>
       {showUserInfo ? (
         <>
-          <img
-            style={{ width: avatarSize, height: avatarSize }}
-            src="/images/test-profile.jpg"
+          <UserAvatarLink
+            width={avatarSize}
+            height={avatarSize}
             className={`rounded-full object-cover ${isCurrentUser ? "order-2" : ""}`}
-            alt="Profile"
+            userId={messageChat.user.id}
           />
 
           <div className="flex flex-col gap-3 max-w-[80%]">
