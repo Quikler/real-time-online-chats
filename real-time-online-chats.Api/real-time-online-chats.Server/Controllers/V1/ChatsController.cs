@@ -21,9 +21,10 @@ namespace real_time_online_chats.Server.Controllers.V1;
 
 //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Authorize]
-public class ChatsController(IChatService chatService, IHubContext<MessageHub, IMessageClient> messageHub) : ControllerBase
+public class ChatsController(IChatService chatService, IHubContext<MessageHub, IMessageClient> messageHub, IChatAuthorizationService chatAuthorizationService) : ControllerBase
 {
     private readonly IChatService _chatService = chatService;
+    private readonly IChatAuthorizationService _chatAuthorizationService = chatAuthorizationService;
     private readonly IHubContext<MessageHub, IMessageClient> _messageHub = messageHub;
 
     [HttpGet(ApiRoutes.Chats.GetAll)]
@@ -99,7 +100,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
         var result = await _chatService.UpdateChatAsync(chatId, request.ToDto(), userId);
-        
+
         return result.Match<IActionResult>(
             success => Ok(),
             failure => failure.FailureCode switch
@@ -117,7 +118,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
         var result = await _chatService.DeleteChatAsync(chatId, userId);
-        
+
         return result.Match<IActionResult>(
             success => NoContent(),
             failure => failure.FailureCode switch
@@ -134,8 +135,10 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
+        if (await _chatAuthorizationService.IsUserExistInChatAsync(chatId, userId)) return Ok();
+
         var result = await _chatService.UserJoinChatAsync(chatId, userId);
-        
+
         return await result.Match<Task<IActionResult>>(
             async userChatDto =>
             {
@@ -143,7 +146,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
                 await _messageHub.Clients.Group(chatId.ToString()).JoinChat(response);
                 return Ok(response);
             },
-            failure => 
+            failure =>
             {
                 IActionResult failureResult = failure.FailureCode switch
                 {

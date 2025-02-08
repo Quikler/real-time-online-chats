@@ -10,10 +10,18 @@ const useChatDetailed = (chatId?: string) => {
   useEffect(() => {
     if (!chatId) return;
 
-    const abortController = new AbortController();
+    const abortChatDetailed = new AbortController();
+    const abortJoinChat = new AbortController();
 
-    ChatService.getChatDetailed(chatId, { signal: abortController.signal })
-      .then((data) => {
+    const joinAndFetchChat = async () => {
+      try {
+        await ChatService.joinChat(chatId, { signal: abortJoinChat.signal });
+        console.log("Joined chat:", chatId);
+
+        const data = await ChatService.getChatDetailed(chatId, {
+          signal: abortChatDetailed.signal,
+        });
+
         if (data) {
           setChatInfo({
             id: data.id,
@@ -24,10 +32,17 @@ const useChatDetailed = (chatId?: string) => {
           setMessages(data.messages);
           setUsers(data.users);
         }
-      })
-      .catch((e) => console.error("Error fetching chat data:", e.message));
+      } catch (e: any) {
+        console.error("Error joining or fetching the chat:", e.message);
+      }
+    };
 
-    return () => abortController.abort();
+    joinAndFetchChat();
+
+    return () => {
+      abortChatDetailed.abort();
+      abortJoinChat.abort();
+    };
   }, [chatId]);
 
   return { chatInfo, messages, users, setMessages, setUsers, setChatInfo };

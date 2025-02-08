@@ -14,7 +14,7 @@ export default function ChatsSection() {
         setChats(data?.items);
         setLoading(false);
       })
-      .catch((e) => console.error("Get chats:", e.message));
+      .catch((e) => console.error("Error getting chats:", e.message));
 
     return () => abortController.abort();
   }, []);
