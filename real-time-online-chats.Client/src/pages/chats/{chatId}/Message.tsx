@@ -8,8 +8,8 @@ type MessageProps = {
   messageChat: MessageChat;
   isCurrentUser: boolean;
   showUserInfo: boolean;
-  onDelete: (messageId: string) => void;
-  onEdit: (messageId: string) => void;
+  onDelete?: (messageId: string) => void;
+  onEdit?: (messageId: string) => void;
 };
 
 const Message = ({
@@ -27,7 +27,7 @@ const Message = ({
       .then((data) => console.log("Message: " + data + " deleted"))
       .catch((e) => console.error("Error deleting message:", e.message));
 
-    onDelete(messageId);
+    onDelete?.(messageId);
   };
 
   return (

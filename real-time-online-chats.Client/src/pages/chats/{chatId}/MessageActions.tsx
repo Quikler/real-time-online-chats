@@ -5,8 +5,8 @@ import { useState } from "react";
 
 type MessageActionsProps = {
   messageId: string;
-  onDelete: (messageId: string) => void;
-  onEdit: (messageId: string) => void;
+  onDelete?: (messageId: string) => void;
+  onEdit?: (messageId: string) => void;
 };
 
 const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) => {
@@ -17,7 +17,7 @@ const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) =>
       <button onClick={() => setIsModalOpen(true)}>
         <Garbage cursor="pointer" />
       </button>
-      <button onClick={() => onEdit(messageId)}>
+      <button onClick={() => onEdit?.(messageId)}>
         <Edit cursor="pointer" />
       </button>
       <Modal
@@ -29,7 +29,7 @@ const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) =>
           <Button
             onClick={() => {
               setIsModalOpen(false);
-              onDelete(messageId);
+              onDelete?.(messageId);
             }}
             variant="danger"
           >

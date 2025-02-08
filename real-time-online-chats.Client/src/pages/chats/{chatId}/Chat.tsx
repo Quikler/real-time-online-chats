@@ -15,18 +15,16 @@ import ChatHeader from "./ChatHeader";
 import Message from "./Message";
 import { Close } from "@src/assets/images/svgr/common";
 
-export interface CreateMessageFormData {
-  message: string;
-}
-
 const Chat = () => {
   const { user } = useAuth();
   const { chatId } = useParams<{ chatId: string }>();
+  const navigate = useNavigate();
 
   const { chatInfo, messages, users, setMessages } = useChatDetailed(chatId);
   const connection = useMessageHubConnection(chatId);
 
   const [editableMessage, setEditableMessage] = useState<MessageChat | null>();
+  const [message, setMessage] = useState<string>();
 
   const lastMessageRef = useRef<HTMLLIElement>(null);
 
@@ -75,21 +73,6 @@ const Chat = () => {
     }
   }, [messages]);
 
-  const [messageFormData, setMessageFormData] = useState<CreateMessageFormData>({
-    message: "",
-  });
-
-  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    setMessageFormData({
-      ...messageFormData,
-      [name]: value,
-    });
-  };
-
-  const navigate = useNavigate();
-
   const handleChatLeave = () => {
     if (chatId) {
       ChatService.leaveChat(chatId)
@@ -109,14 +92,14 @@ const Chat = () => {
     }
   };
 
-  const handleCreateMessageFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isNullOrWhitespace(messageFormData.message)) return;
+    if (isNullOrWhitespace(message)) return;
 
     if (editableMessage?.id) {
       const request = {
         chatId: chatId!,
-        content: messageFormData.message,
+        content: message!,
       };
 
       MessageService.updateMessage(editableMessage?.id, request)
@@ -130,20 +113,23 @@ const Chat = () => {
 
     const request: CreateMessageRequest = {
       chatId: chatId!,
-      content: messageFormData.message,
+      content: message!,
     };
 
     MessageService.createMessage(request)
-      .then(() => setMessageFormData({ ...messageFormData, message: "" }))
+      .then(() => setMessage(""))
       .catch((e) => console.log(e));
   };
 
-  const handleMessageDelete = () => {};
+  const handleMessageDelete = () => {
+    setEditableMessage(null);
+    setMessage("");
+  };
 
   const handleMessageEdit = (messageId: string) => {
     const message = messages.find((m) => m.id === messageId);
     setEditableMessage(message);
-    setMessageFormData({ ...messages, message: message?.content! });
+    setMessage(message?.content);
   };
 
   return (
@@ -190,22 +176,23 @@ const Chat = () => {
         {editableMessage && (
           <div className="flex items-center gap-2 text-white">
             <p>Edit message: {editableMessage.content}</p>
-            <button className="p-1 px-2 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors duration-300"
+            <button
+              className="p-1 px-2 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors duration-300"
               onClick={() => {
                 setEditableMessage(null);
-                setMessageFormData({ ...messages, message: "" });
+                setMessage("");
               }}
             >
               <Close width="12" />
             </button>
           </div>
         )}
-        <form className="flex items-center gap-4" onSubmit={handleCreateMessageFormSubmit}>
+        <form className="flex items-center gap-4" onSubmit={handleSendMessage}>
           <input
             name="message"
             autoComplete="off"
-            value={messageFormData.message}
-            onChange={handleMessageChange}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
             className="flex-grow p-3 bg-slate-600 text-white placeholder-white focus:outline-none"
             placeholder="Send a message..."
           />
