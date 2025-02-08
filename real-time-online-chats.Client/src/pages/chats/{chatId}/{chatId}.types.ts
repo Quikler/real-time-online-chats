@@ -5,8 +5,8 @@ export type MessageChat = {
 };
 
 export type UserChat = {
-  id?: string;
-  email?: string;
+  id: string;
+  email: string;
   firstName?: string;
   lastName?: string;
 };

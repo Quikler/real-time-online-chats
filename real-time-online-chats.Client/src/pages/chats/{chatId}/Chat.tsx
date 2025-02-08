@@ -20,43 +20,68 @@ const Chat = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const navigate = useNavigate();
 
-  const { chatInfo, messages, users, setMessages } = useChatDetailed(chatId);
+  const { chatInfo, messages, users, setMessages, setUsers, setChatInfo } = useChatDetailed(chatId);
   const connection = useMessageHubConnection(chatId);
 
   const [editableMessage, setEditableMessage] = useState<MessageChat | null>();
-  const [message, setMessage] = useState<string>();
+  const [message, setMessage] = useState<string | undefined>("");
 
   const lastMessageRef = useRef<HTMLLIElement>(null);
 
   // Initialize SignalR event handlers
   useEffect(() => {
-    if (!connection) return;
+    if (!connection || !chatInfo) return;
 
     const registerSignalREventHandlers = (connection: HubConnection) => {
+      connection.off("SendMessage");
       connection.on("SendMessage", (message: MessageChat) =>
         setMessages((prev) => [...prev, message])
       );
 
-      connection.on("JoinChat", (user: UserChat) => {
+      connection.off("JoinChat");
+      connection.on("JoinChat", (joinedUser: UserChat) => {
         const message = createMessageChatFromUserChat(
-          user,
-          `<!-- User ${user.email} joined chat -->`
+          joinedUser,
+          `<!-- User ${joinedUser.email} joined chat -->`
         );
+
         setMessages((prev) => [...prev, message]);
+        setUsers((prev) => [...prev, joinedUser]);
       });
 
-      connection.on("LeaveChat", (user: UserChat) => {
+      connection.off("LeaveChat");
+      connection.on("LeaveChat", (leavedUser: UserChat) => {
+        console.log("Current owner:", chatInfo.ownerId);
+        console.log("Left the chat:", leavedUser.id);
+
+        const newUsers = users.filter((u) => u.id !== leavedUser.id);
+        const newOwner = newUsers[0];
+
+        console.log("New owner:", newOwner);
+
         const message = createMessageChatFromUserChat(
-          user,
-          `<!-- User ${user.email} left the chat -->`
+          leavedUser,
+          leavedUser.id === chatInfo.ownerId
+            ? `<!-- User ${leavedUser.email} left the chat and new owner is ${newOwner.email} -->`
+            : `<!-- User ${leavedUser.email} left the chat -->`
         );
+
         setMessages((prev) => [...prev, message]);
+
+        // ✅ Use functional update to avoid stale state
+        setChatInfo((prevChatInfo) =>
+          prevChatInfo ? { ...prevChatInfo, ownerId: newOwner.id } : prevChatInfo
+        );
+
+        setUsers(newUsers);
       });
 
+      connection.off("DeleteMessage");
       connection.on("DeleteMessage", (messageId: string) => {
         setMessages((prev) => prev.filter((message) => message.id !== messageId));
       });
 
+      connection.off("UpdateMessage");
       connection.on("UpdateMessage", (message: MessageChat) => {
         setMessages((prev) =>
           prev.map((m) => (m.id === message.id ? { ...m, content: message.content } : m))
@@ -65,7 +90,7 @@ const Chat = () => {
     };
 
     registerSignalREventHandlers(connection);
-  }, [connection]);
+  }, [connection, chatInfo?.ownerId]);
 
   useEffect(() => {
     if (messages) {
