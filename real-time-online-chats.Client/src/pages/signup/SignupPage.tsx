@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Apple, Facebook, Google } from "@src/assets/images/svgr/auth-with";
+import { Apple, Facebook } from "@src/assets/images/svgr/auth-with";
 import { useAuth } from "@src/contexts/AuthContext";
 import SignupForm, { SignupFormData } from "./SignupForm";
 import GoogleSignup from "@src/services/google/GoogleSignup";

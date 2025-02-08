@@ -1,5 +1,5 @@
 import MessageContent from "./MessageContent";
-import { ChatInfo, MessageChat } from "./{chatId}.types";
+import { MessageChat } from "./{chatId}.types";
 import MessageActions from "./MessageActions";
 import { MessageService } from "@src/services/api/MessageService";
 
@@ -22,12 +22,12 @@ const Message = ({
 }: MessageProps) => {
   const avatarSize = "64px";
 
-  const handleMessageEdit = (messageId: string) => {};
-
   const handleMessageDelete = (messageId: string) => {
     MessageService.deleteMessage(messageId, chatId)
       .then((data) => console.log("Message: " + data + " deleted"))
-      .catch((e) => console.error("Error deleting chat:", e.message));
+      .catch((e) => console.error("Error deleting message:", e.message));
+
+    onDelete(messageId);
   };
 
   return (
@@ -57,7 +57,7 @@ const Message = ({
               {isCurrentUser && (
                 <MessageActions
                   messageId={messageChat.id}
-                  onEdit={handleMessageEdit}
+                  onEdit={onEdit}
                   onDelete={handleMessageDelete}
                 />
               )}
@@ -76,7 +76,7 @@ const Message = ({
             {isCurrentUser && (
               <MessageActions
                 messageId={messageChat.id}
-                onEdit={handleMessageEdit}
+                onEdit={onEdit}
                 onDelete={handleMessageDelete}
               />
             )}

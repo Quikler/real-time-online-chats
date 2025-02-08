@@ -25,6 +25,8 @@ const Chat = () => {
   const { chatInfo, messages, users, setMessages } = useChatDetailed(chatId);
   const connection = useMessageHubConnection(chatId);
 
+  const [editableMessage, setEditableMessage] = useState<MessageChat | null>();
+
   const lastMessageRef = useRef<HTMLLIElement>(null);
 
   // Initialize SignalR event handlers
@@ -32,9 +34,9 @@ const Chat = () => {
     if (!connection) return;
 
     const registerSignalREventHandlers = (connection: HubConnection) => {
-      connection.on("SendMessage", (message: MessageChat) => {
-        setMessages((prev) => [...prev, message]);
-      });
+      connection.on("SendMessage", (message: MessageChat) =>
+        setMessages((prev) => [...prev, message])
+      );
 
       connection.on("JoinChat", (user: UserChat) => {
         const message = createMessageChatFromUserChat(
@@ -53,7 +55,13 @@ const Chat = () => {
       });
 
       connection.on("DeleteMessage", (messageId: string) => {
-        setMessages((prev) => prev.filter(message => message.id !== messageId));
+        setMessages((prev) => prev.filter((message) => message.id !== messageId));
+      });
+
+      connection.on("UpdateMessage", (message: MessageChat) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === message.id ? { ...m, content: message.content } : m))
+        );
       });
     };
 
@@ -102,10 +110,24 @@ const Chat = () => {
 
   const handleCreateMessageFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (isNullOrWhitespace(messageFormData.message)) return;
 
-    let request: CreateMessageRequest = {
+    if (editableMessage?.id) {
+      const request = {
+        chatId: chatId!,
+        content: messageFormData.message,
+      };
+
+      MessageService.updateMessage(editableMessage?.id, request)
+        .then(() => console.log("Updated message successfully."))
+        .catch((e) => console.error("Error updating message:", e.message));
+
+      setEditableMessage(null);
+
+      return;
+    }
+
+    const request: CreateMessageRequest = {
       chatId: chatId!,
       content: messageFormData.message,
     };
@@ -115,12 +137,12 @@ const Chat = () => {
       .catch((e) => console.log(e));
   };
 
-  const handleMessageDelete = () => {
+  const handleMessageDelete = () => {};
 
-  };
-
-  const handleMessageEdit = () => {
-
+  const handleMessageEdit = (messageId: string) => {
+    const message = messages.find((m) => m.id === messageId);
+    setEditableMessage(message);
+    setMessageFormData({ ...messages, message: message?.content! });
   };
 
   return (
@@ -135,8 +157,9 @@ const Chat = () => {
       <ul className="flex-grow flex flex-col p-6 overflow-y-auto pt-40 pb-32">
         {messages?.map((message, index) => {
           // If previous message's user id is equal to current
-          const isCurrentUserPrevious = index > 0 && message.user.id === messages[index - 1].user.id;
-          
+          const isCurrentUserPrevious =
+            index > 0 && message.user.id === messages[index - 1].user.id;
+
           const isCurrentUser = message.user.id === user?.id;
 
           const showUserInfo = !isCurrentUserPrevious;
@@ -145,9 +168,14 @@ const Chat = () => {
             <li
               ref={index === messages.length - 1 ? lastMessageRef : undefined}
               key={index}
-              className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${isCurrentUser ? "justify-end" : "justify-start"}`}
+              className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${
+                isCurrentUser ? "justify-end" : "justify-start"
+              }`}
             >
-              <Message chatId={chatInfo?.id!} onDelete={handleMessageDelete} onEdit={handleMessageEdit}
+              <Message
+                chatId={chatInfo?.id!}
+                onDelete={handleMessageDelete}
+                onEdit={handleMessageEdit}
                 messageChat={message}
                 isCurrentUser={isCurrentUser}
                 showUserInfo={showUserInfo}
