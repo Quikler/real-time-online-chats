@@ -13,6 +13,7 @@ import useChatDetailed from "./hooks/useChatDetailed";
 import useMessageHubConnection from "./hooks/useMessageHubConnection";
 import ChatHeader from "./ChatHeader";
 import Message from "./Message";
+import { Close } from "@src/assets/images/svgr/common";
 
 export interface CreateMessageFormData {
   message: string;
@@ -185,7 +186,20 @@ const Chat = () => {
         })}
       </ul>
 
-      <div className="fixed bottom-0 right-0 left-0 w-full bg-slate-700 p-4">
+      <div className="fixed flex flex-col gap-2 bottom-0 right-0 left-0 w-full bg-slate-700 p-4">
+        {editableMessage && (
+          <div className="flex items-center gap-2 text-white">
+            <p>Edit message: {editableMessage.content}</p>
+            <button className="p-1 px-2 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors duration-300"
+              onClick={() => {
+                setEditableMessage(null);
+                setMessageFormData({ ...messages, message: "" });
+              }}
+            >
+              <Close width="12" />
+            </button>
+          </div>
+        )}
         <form className="flex items-center gap-4" onSubmit={handleCreateMessageFormSubmit}>
           <input
             name="message"
