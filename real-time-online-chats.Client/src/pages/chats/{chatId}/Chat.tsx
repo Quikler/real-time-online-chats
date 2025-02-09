@@ -6,14 +6,14 @@ import { toast } from "react-toastify";
 import { useAuth } from "@src/contexts/AuthContext";
 import { CreateMessageRequest } from "@src/models/dtos/Message";
 import { ChatService } from "@src/services/api/ChatService";
-import { isNullOrWhitespace } from "@src/utils/helpers";
+import { isNullOrWhitespace, scrollToBottomOfBody } from "@src/utils/helpers";
 import { MessageChat, UserChat } from "./{chatId}.types";
 import { createMessageChatFromUserChat } from "./{chatId}.helpers";
 import useChatDetailed from "./hooks/useChatDetailed";
 import useMessageHubConnection from "./hooks/useMessageHubConnection";
 import ChatHeader from "./ChatHeader";
 import Message from "./Message";
-import { Close } from "@src/assets/images/svgr/common";
+import { Close, ShortArrowDown } from "@src/assets/images/svgr/common";
 
 const Chat = () => {
   const { user } = useAuth();
@@ -23,10 +23,9 @@ const Chat = () => {
   const { chatInfo, messages, users, setMessages, setUsers, setChatInfo } = useChatDetailed(chatId);
   const connection = useMessageHubConnection(chatId);
 
+  const [countOfNewMessages, setCountOfNewMessages] = useState(0);
   const [editableMessage, setEditableMessage] = useState<MessageChat | null>();
   const [message, setMessage] = useState<string | undefined>("");
-
-  const lastMessageRef = useRef<HTMLLIElement>(null);
 
   // Initialize SignalR event handlers
   useEffect(() => {
@@ -34,9 +33,12 @@ const Chat = () => {
 
     const registerSignalREventHandlers = (connection: HubConnection) => {
       connection.off("SendMessage");
-      connection.on("SendMessage", (message: MessageChat) =>
-        setMessages((prev) => [...prev, message])
-      );
+      connection.on("SendMessage", (message: MessageChat) => {
+        setMessages((prev) => [...prev, message]);
+        if (message.user.id !== user?.id) {
+          setCountOfNewMessages(countOfNewMessages + 1);
+        }
+      });
 
       connection.off("JoinChat");
       connection.on("JoinChat", (joinedUser: UserChat) => {
@@ -92,9 +94,12 @@ const Chat = () => {
     registerSignalREventHandlers(connection);
   }, [connection, chatInfo?.ownerId]);
 
+  const hasScrolled = useRef(false);
+
   useEffect(() => {
-    if (messages) {
-      lastMessageRef.current?.scrollIntoView();
+    if (messages?.length > 0 && !hasScrolled.current) {
+      scrollToBottomOfBody();
+      hasScrolled.current = true; // Mark as executed
     }
   }, [messages]);
 
@@ -142,8 +147,11 @@ const Chat = () => {
     };
 
     MessageService.createMessage(request)
-      .then(() => setMessage(""))
-      .catch((e) => console.log(e));
+      .then(() => {
+        setMessage("");
+        window.scrollTo(0, document.body.scrollHeight);
+      })
+      .catch((e) => console.error("Error creating message:", e.message));
   };
 
   const handleMessageDelete = () => {
@@ -178,7 +186,6 @@ const Chat = () => {
 
           return (
             <li
-              ref={index === messages.length - 1 ? lastMessageRef : undefined}
               key={index}
               className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${
                 isCurrentUser ? "justify-end" : "justify-start"
@@ -197,6 +204,25 @@ const Chat = () => {
         })}
       </ul>
 
+      {countOfNewMessages !== 0 && (
+        <button
+          onClick={() => {
+            scrollToBottomOfBody();
+            setCountOfNewMessages(0);
+          }}
+          className="fixed text-white left-8 bottom-24 bg-slate-800 w-16 h-16 rounded-full"
+        >
+          <div className="h-full relative">
+            <div className="h-full flex items-center justify-center">
+              <ShortArrowDown width={12} height={12} />
+            </div>
+            <div className="absolute right-0 top-0">
+              <div className="bg-red-500 rounded-full py-1 px-3">{countOfNewMessages}</div>
+            </div>
+          </div>
+        </button>
+      )}
+
       <div className="fixed flex flex-col gap-2 bottom-0 right-0 left-0 w-full bg-slate-700 p-4">
         {editableMessage && (
           <div className="flex items-center gap-2 text-white">
@@ -213,6 +239,11 @@ const Chat = () => {
           </div>
         )}
         <form className="flex items-center gap-4" onSubmit={handleSendMessage}>
+          {/* {countOfNewMessages !== 0 && (
+            <div className="flex items-center justify-center text-white bg-slate-600 w-10 h-10 rounded-full">
+              {countOfNewMessages}
+            </div>
+          )} */}
           <input
             name="message"
             autoComplete="off"

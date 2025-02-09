@@ -123,7 +123,7 @@ const ChatHeader = ({ users, chatInfo, onChatLeave, onChatDelete }: ChatHeaderPr
                 <li onContextMenu={(e) => handleUserContextMenu(e, userChat.id)} key={index}>
                   <Link
                     to={`/profile/${userChat.id}`}
-                    className={`flex cursor-default items-center gap-3 p-3 transition-colors duration-300 ${
+                    className={`flex items-center gap-3 p-3 transition-colors duration-300 ${
                       chatInfo?.ownerId === userChat.id
                         ? "bg-slate-400 hover:bg-slate-300"
                         : "bg-slate-600 hover:bg-slate-500"

@@ -43,3 +43,5 @@ export const loadScript = (src: string) => {
     document.body.appendChild(script);
   });
 };
+
+export const scrollToBottomOfBody = () => window.scrollTo(0, document.body.scrollHeight);
