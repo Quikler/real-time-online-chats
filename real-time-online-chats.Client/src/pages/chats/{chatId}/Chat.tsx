@@ -27,6 +27,21 @@ const Chat = () => {
   const [editableMessage, setEditableMessage] = useState<MessageChat | null>();
   const [message, setMessage] = useState<string | undefined>("");
 
+  useEffect(() => {
+    const scrollHandler = () => {
+      const scrollPosition = window.scrollY + window.innerHeight;
+      const bottomPosition = document.documentElement.scrollHeight;
+
+      if (scrollPosition >= bottomPosition - 40) {
+        setCountOfNewMessages(0);
+      }
+    };
+
+    window.addEventListener("scroll", scrollHandler);
+
+    return () => window.removeEventListener("scroll", scrollHandler);
+  }, []);
+
   // Initialize SignalR event handlers
   useEffect(() => {
     if (!connection || !chatInfo) return;
