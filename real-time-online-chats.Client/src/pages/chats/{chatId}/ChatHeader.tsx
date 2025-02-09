@@ -1,7 +1,7 @@
 import Button from "@src/components/ui/Button";
 import ButtonLink from "@src/components/ui/ButtonLink";
 import Modal from "@src/components/ui/Modal";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChatInfo, UserChat } from "./{chatId}.types";
 import { useAuth } from "@src/contexts/AuthContext";
 import UserAvatar from "./UserAvatar";
@@ -41,6 +41,25 @@ const ChatHeader = ({ users, chatInfo, onChatLeave, onChatDelete }: ChatHeaderPr
     setMenuPosition({ x: e.clientX, y: e.clientY });
     setSelectedUserId(userId);
   };
+
+  useEffect(() => {
+    const handleClose = () => {
+      setSelectedUserId(null);
+      setMenuPosition({ x: 0, y: 0 });
+    };
+
+    if (selectedUserId) {
+      document.addEventListener("click", handleClose);
+      document.addEventListener("scroll", handleClose);
+      window.addEventListener("resize", handleClose);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClose);
+      document.removeEventListener("scroll", handleClose);
+      window.removeEventListener("resize", handleClose);
+    };
+  }, [selectedUserId]);
 
   return (
     <div
