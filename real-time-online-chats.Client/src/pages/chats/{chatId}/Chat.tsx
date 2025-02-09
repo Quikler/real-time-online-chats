@@ -51,7 +51,7 @@ const Chat = () => {
       connection.on("SendMessage", (message: MessageChat) => {
         setMessages((prev) => [...prev, message]);
         if (message.user.id !== user?.id) {
-          setCountOfNewMessages(countOfNewMessages + 1);
+          setCountOfNewMessages(prev => prev + 1);
         }
       });
 
