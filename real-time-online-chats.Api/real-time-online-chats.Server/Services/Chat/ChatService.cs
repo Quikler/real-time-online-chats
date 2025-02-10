@@ -207,6 +207,23 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         return rows == 0 ? FailureDto.BadRequest("Cannot leave the chat") : user.ToUserChat();
     }
 
+    public async Task<Result<bool, FailureDto>> KickMemberAsync(Guid chatId, Guid memberId, Guid userId)
+    {
+        if (!await _chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own chat.");
+
+        var chat = await _dbContext.Chats
+            .Where(c => c.Id == chatId)
+            .Include(c => c.Members.Where(m => m.Id == memberId))
+            .FirstOrDefaultAsync();
+
+        if (chat is null) return FailureDto.NotFound("Chat not found.");
+
+        chat.Members.Clear();
+
+        int rows = await _dbContext.SaveChangesAsync();
+        return rows == 0 ? FailureDto.BadRequest("Cannot kick user") : true;
+    }
+
     public Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId)
     {
         throw new NotImplementedException();

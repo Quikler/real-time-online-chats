@@ -34,6 +34,7 @@ public static class ApiRoutes
         public const string Delete = BASE + "/chats/{chatId}";
         public const string Join = BASE + "/chats/{chatId}/join";
         public const string Leave = BASE + "/chats/{chatId}/leave";
+        public const string Kick = BASE + "/chats/{chatId}/members/{memberId}";
     }
 
     public static class Messages

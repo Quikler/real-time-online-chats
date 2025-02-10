@@ -4,12 +4,14 @@ using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.Message;
 using real_time_online_chats.Server.Mapping;
+using real_time_online_chats.Server.Services.Chat;
 
 namespace real_time_online_chats.Server.Services.Message;
 
-public class MessageService(AppDbContext dbContext, IMessageAuthorizationService messageAuthorizationService) : IMessageService
+public class MessageService(AppDbContext dbContext, IMessageAuthorizationService messageAuthorizationService, IChatAuthorizationService chatAuthorizationService) : IMessageService
 {
     private readonly IMessageAuthorizationService _messageAuthorizationService = messageAuthorizationService;
+    private readonly IChatAuthorizationService _chatAuthorizationService = chatAuthorizationService;
     private readonly AppDbContext _dbContext = dbContext;
 
     //public Task<List<MessageEntity>> GetMessagesAsync() => _dbContext.Messages.AsNoTracking().ToListAsync();
@@ -26,6 +28,7 @@ public class MessageService(AppDbContext dbContext, IMessageAuthorizationService
     public async Task<Result<MessageChatDto, FailureDto>> CreateMessageAsync(CreateMessageDto createMessageDto)
     {
         if (!_dbContext.Chats.Any(c => c.Id == createMessageDto.ChatId)) return FailureDto.NotFound("Chat not found.");
+        if (!await _chatAuthorizationService.IsUserExistInChatAsync(createMessageDto.ChatId, createMessageDto.UserId)) return FailureDto.Forbidden("User doesn't exist in chat.");
 
         var message = createMessageDto.ToMessage();
 

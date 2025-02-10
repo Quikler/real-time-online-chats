@@ -188,4 +188,32 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
             }
         );
     }
+
+    [HttpDelete(ApiRoutes.Chats.Kick)]
+    public async Task<IActionResult> Kick([FromRoute] Guid chatId, [FromRoute] Guid memberId)
+    {
+        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
+
+        var result = await _chatService.KickMemberAsync(chatId, memberId, userId);
+
+        return await result.Match<Task<IActionResult>>(
+            async success =>
+            {
+                await _messageHub.Clients.Group(chatId.ToString()).KickMember(memberId);
+                return NoContent();
+            },
+            failure =>
+            {
+                IActionResult failureResult = failure.FailureCode switch
+                {
+                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                    FailureCode.Forbidden => Forbid(),
+                    FailureCode.NotFound => NotFound(failure.ToResponse()),
+                    _ => StatusCode(StatusCodes.Status500InternalServerError),
+                };
+
+                return Task.FromResult(failureResult);
+            }
+        );
+    }
 }
