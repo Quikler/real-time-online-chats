@@ -10,4 +10,5 @@ public interface IMessageClient
     Task DeleteMessage(Guid messageId);
     Task LeaveChat(UserChatResponse response);
     Task JoinChat(UserChatResponse response);
+    Task KickMember(Guid memberId);
 }

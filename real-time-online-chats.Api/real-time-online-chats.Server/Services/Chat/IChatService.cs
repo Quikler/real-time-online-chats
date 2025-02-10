@@ -1,6 +1,4 @@
-using System.Diagnostics.Eventing.Reader;
 using real_time_online_chats.Server.Common;
-using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.Chat;
 using real_time_online_chats.Server.DTOs.User;
@@ -20,5 +18,6 @@ public interface IChatService
     Task<Result<bool, FailureDto>> DeleteChatAsync(Guid chatId, Guid userId);
     Task<Result<UserChatDto, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId);
     Task<Result<UserChatDto, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId);
+    Task<Result<bool, FailureDto>> KickMemberAsync(Guid chatId, Guid userId, Guid currentUserId);
     Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId);
 }

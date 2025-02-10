@@ -42,7 +42,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
         var result = await _messageService.GetMessageByIdAsync(messageId, userId);
-        
+
         return result.Match<IActionResult>(
             messageChatDto => Ok(messageChatDto.ToResponse()),
             failure => failure.FailureCode switch
@@ -69,11 +69,12 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
                 await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
                 return CreatedAtAction(nameof(Get), new { messageId = response.Id }, response);
             },
-            failure => 
+            failure =>
             {
                 IActionResult failureResponse = failure.FailureCode switch
                 {
                     FailureCode.BadRequest => BadRequest(failure.ToResponse()),
+                    FailureCode.Forbidden => Forbid(),
                     FailureCode.NotFound => NotFound(failure.ToResponse()),
                     _ => StatusCode(StatusCodes.Status500InternalServerError),
                 };
@@ -98,7 +99,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
                 await _messageHub.Clients.Group(request.ChatId.ToString()).UpdateMessage(response);
                 return Ok(response);
             },
-            failure => 
+            failure =>
             {
                 IActionResult failureResponse = failure.FailureCode switch
                 {
@@ -119,7 +120,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
         var result = await _messageService.DeleteMessageAsync(messageId, userId);
-        
+
         if (result.IsSuccess)
         {
             await _messageHub.Clients.Group(chatId.ToString()).DeleteMessage(messageId);
