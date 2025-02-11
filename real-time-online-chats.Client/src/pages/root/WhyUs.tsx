@@ -7,7 +7,7 @@ import {
   MessageCircle,
   Users,
   Zap,
-} from "@src/assets/images/svgr/common";
+} from "@src/components/svg/SVGCommon";
 
 export default function WhyUsSection() {
   const features = [

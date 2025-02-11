@@ -1,4 +1,4 @@
-import { Users } from "@src/assets/images/svgr/common";
+import { Users } from "@src/components/svg/SVGCommon";
 import Button from "@src/components/ui/Button";
 import { useState } from "react";
 import CreateChatForm, { CreateChatFormData } from "./CreateChatForm";

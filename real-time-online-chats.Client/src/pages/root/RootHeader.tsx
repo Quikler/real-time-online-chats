@@ -1,4 +1,4 @@
-import { MessageCircle } from "../../assets/images/svgr/common";
+import { MessageCircle } from "../../components/svg/SVGCommon";
 import ButtonLink from "../../components/ui/ButtonLink";
 
 export default function HeaderSection(props: React.HTMLAttributes<HTMLDivElement>) {

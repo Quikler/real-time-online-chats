@@ -1,10 +1,11 @@
-import { Facebook } from "@src/assets/images/svgr/auth-with";
-import { GitHub } from "@src/assets/images/svgr/references";
-import React, { useRef } from "react";
+import { Facebook } from "@src/components/svg/SVGAuthProviders";
+import { GitHub } from "@src/components/svg/SVGSocMediaReferences";
+import { useAuth } from "@src/hooks/useAuth";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
-import Button from "../ui/Button";
 
-type EditUserCardUserCardProps = React.HTMLAttributes<HTMLDivElement> & {
+type ProfileUserCard = React.HTMLAttributes<HTMLDivElement> & {
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -18,15 +19,9 @@ type EditUserCardUserCardProps = React.HTMLAttributes<HTMLDivElement> & {
     github: string;
     facebook: string;
   };
-  onActivityStatusChange: (value: string) => void;
-  onCasualStatusChange: (value: string) => void;
-  onMoodStatusChange: (value: string) => void;
-  onWorkStatusChange: (value: string) => void;
-  onGamingStatusChange: (value: string) => void;
-  onAvatarChange: (file: File) => void;
 };
 
-const EditUserCard = ({
+const ProfileUserCard = ({
   firstName,
   lastName,
   email,
@@ -36,45 +31,16 @@ const EditUserCard = ({
   workStatus,
   gamingStatus,
   avatarUrl,
-  socialLinks,
-  className,
-  onActivityStatusChange,
-  onCasualStatusChange,
-  onMoodStatusChange,
-  onWorkStatusChange,
-  onGamingStatusChange,
-  onAvatarChange,
-  ...rest
-}: EditUserCardUserCardProps) => {
-  const inputFileRef = useRef<HTMLInputElement>(null);
-  const avatarRef = useRef<HTMLImageElement>(null);
-
-  const handleChooseAvatar = () => inputFileRef.current?.click();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const file = e.target.files[0];
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        if (avatarRef.current) {
-          const src = e?.target?.result as string;
-          avatarRef.current.src = src;
-          onAvatarChange(file);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+  socialLinks, className, ...rest
+}: ProfileUserCard) => {
+  const { user } = useAuth();
+  
+  const navigate = useNavigate();
+  
   return (
-    <div
-      {...rest}
-      className={twMerge("bg-slate-700 rounded-2xl shadow-2xl overflow-hidden", className)}
-    >
+    <div {...rest} className={twMerge("bg-slate-700 rounded-2xl shadow-2xl overflow-hidden", className)}>
       <div className="relative h-48 bg-slate-600">
         <img
-          ref={avatarRef}
           src={avatarUrl}
           alt={`${firstName} ${lastName}`}
           className="w-48 h-48 rounded-full object-cover border-4 border-slate-700 absolute -bottom-12 left-1/2 transform -translate-x-1/2"
@@ -86,19 +52,6 @@ const EditUserCard = ({
           {firstName} {lastName}
         </h3>
         <p className="text-sm text-slate-300 mt-1">{email}</p>
-
-        <div className="py-2">
-          <Button type="button" onClick={handleChooseAvatar}>
-            Choose avatar
-          </Button>
-          <input
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            type="file"
-            ref={inputFileRef}
-          />
-        </div>
 
         <div className="grid grid-cols-3 items-center gap-2 mt-4">
           <span className="inline-block px-4 py-1 bg-slate-600 text-white text-sm rounded-full">
@@ -138,8 +91,8 @@ const EditUserCard = ({
         </div>
 
         <div className="mt-6">
-          <button className="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-500 transition-colors duration-300">
-            Submit
+          <button type="button" onClick={() => navigate(`/profile/${user?.id}/edit`)} className="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-500 transition-colors duration-300">
+            Edit Profile
           </button>
         </div>
       </div>
@@ -147,4 +100,4 @@ const EditUserCard = ({
   );
 };
 
-export default EditUserCard;
+export default ProfileUserCard;

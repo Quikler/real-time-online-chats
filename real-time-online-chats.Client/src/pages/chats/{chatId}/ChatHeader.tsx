@@ -3,7 +3,7 @@ import ButtonLink from "@src/components/ui/ButtonLink";
 import Modal from "@src/components/ui/Modal";
 import React, { useEffect, useState } from "react";
 import { ChatInfo, UserChat } from "./{chatId}.types";
-import { useAuth } from "@src/contexts/AuthContext";
+import { useAuth } from "@src/hooks/useAuth";
 import UserAvatar from "./UserAvatar";
 import { Link } from "react-router-dom";
 import UserContextMenu from "./UserContextMenu";

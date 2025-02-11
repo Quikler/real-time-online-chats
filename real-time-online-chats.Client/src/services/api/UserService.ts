@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from "axios";
 import api from "../axios/instance";
 import { UserRoutes } from "./ApiRoutes";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
-import { EditUserProfileType } from "@src/components/profile/types";
+import { EditUserProfileType } from "@src/pages/profile/profile.types";
 
 export abstract class UserService {
   static async getUserProfile(userId: string, config?: AxiosRequestConfig<any> | undefined) {

@@ -1,10 +1,10 @@
-import { useAuth } from "@src/contexts/AuthContext";
+import { useAuth } from "@src/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import ButtonLink from "./ui/ButtonLink";
-import Logo from "./ui/Logo";
-import Button from "./ui/Button";
-import { ShortArrowDown } from "@src/assets/images/svgr/common";
+import { ShortArrowDown } from "@src/components/svg/SVGCommon";
+import Button from "@src/components/ui/Button";
+import ButtonLink from "@src/components/ui/ButtonLink";
+import Logo from "@src/components/ui/Logo";
 
 export default function Header() {
   const { user, logoutUser, isUserLoggedIn } = useAuth();

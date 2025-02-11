@@ -1,4 +1,4 @@
-import { Garbage, Edit } from "@src/assets/images/svgr/common";
+import { Garbage, Edit } from "@src/components/svg/SVGCommon";
 import Button from "@src/components/ui/Button";
 import Modal from "@src/components/ui/Modal";
 import { useState } from "react";

@@ -10,6 +10,7 @@ export default defineConfig({
       '@src': path.resolve(__dirname, "./src"),
       '@components': path.resolve(__dirname, "./src/components"),
       '@services': path.resolve(__dirname, "./src/services"),
+      '$fonts': path.resolve('/fonts')
     }
   },
 })

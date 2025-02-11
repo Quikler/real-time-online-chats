@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Apple, Facebook } from "@src/assets/images/svgr/auth-with";
-import { useAuth } from "@src/contexts/AuthContext";
+import { Apple, Facebook } from "@src/components/svg/SVGAuthProviders";
+import { useAuth } from "@src/hooks/useAuth";
 import SignupForm, { SignupFormData } from "./SignupForm";
 import GoogleSignup from "@src/services/google/GoogleSignup";
 
@@ -24,7 +24,7 @@ export default function SignupPage() {
 
   return (
     <>
-      <div className="flex flex-col justify-center items-center bg-slate-100 lg:px-16 lg:py-32 pt-16">
+      <div className="flex flex-col justify-center items-center bg-transparent lg:px-16 lg:py-32 pt-16">
         <div className="grid md:grid-cols-2 items-center gap-y-8 bg-white max-w-7xl w-full shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)] lg:rounded-md overflow-hidden">
           <div className="max-md:order-1 flex flex-col sm:p-8 p-4 bg-gradient-to-r from-lightGreen-100 to-darkBlue-200 w-full h-full">
             <div className="max-w-md space-y-12 mx-auto">

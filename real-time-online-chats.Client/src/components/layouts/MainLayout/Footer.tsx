@@ -1,5 +1,5 @@
-import { Discord, GitHub, LinkedIn, Reddit } from "../assets/images/svgr/references";
-import Logo from "./ui/Logo";
+import { GitHub, LinkedIn, Discord, Reddit } from "@src/components/svg/SVGSocMediaReferences";
+import Logo from "@src/components/ui/Logo";
 
 interface FooterItem {
   icon: JSX.Element;

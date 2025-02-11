@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import LoginForm, { LoginFormData } from "./LoginForm";
 import { useState } from "react";
 import Logo from "@src/components/ui/Logo";
-import { useAuth } from "@src/contexts/AuthContext";
+import { useAuth } from "@src/hooks/useAuth";
 
 export default function LoginPage() {
   const { loginUser } = useAuth();

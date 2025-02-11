@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { HubConnection } from "@microsoft/signalr";
 import { MessageService } from "@src/services/api/MessageService";
 import { toast } from "react-toastify";
-import { useAuth } from "@src/contexts/AuthContext";
+import { useAuth } from "@src/hooks/useAuth";
 import { CreateMessageRequest } from "@src/models/dtos/Message";
 import { ChatService } from "@src/services/api/ChatService";
 import { isNullOrWhitespace, scrollToBottomOfBody } from "@src/utils/helpers";
@@ -13,7 +13,7 @@ import useChatDetailed from "./hooks/useChatDetailed";
 import useMessageHubConnection from "./hooks/useMessageHubConnection";
 import ChatHeader from "./ChatHeader";
 import Message from "./Message";
-import { Close, ShortArrowDown } from "@src/assets/images/svgr/common";
+import { Close, ShortArrowDown } from "@src/components/svg/SVGCommon";
 
 const Chat = () => {
   const { user } = useAuth();

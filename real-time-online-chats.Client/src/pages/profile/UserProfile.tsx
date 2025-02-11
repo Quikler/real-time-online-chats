@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 import FriendPreview from "./FriendPreview";
-import UserCard from "./UserCard";
+import ProfileUserCard from "./ProfileUserCard";
 import { UserService } from "@src/services/api/UserService";
-import { UserFriendType, UserProfileType } from "./types";
-import { LoaderScreen } from "../ui/Loader";
+import { UserFriendType, UserProfileType } from "./profile.types";
+import { LoaderScreen } from "@src/components/ui/Loader";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);
@@ -64,7 +64,7 @@ const UserProfile = () => {
 
       <section className="relative flex flex-col gap-8 m-16 max-w-3xl mx-auto">
         <div className="flex gap-8 lg:flex-row flex-col">
-          <UserCard
+          <ProfileUserCard
             className="w-full flex-grow"
             firstName={userProfile?.firstName}
             lastName={userProfile?.lastName}
