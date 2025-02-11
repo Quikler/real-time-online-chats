@@ -36,6 +36,7 @@ const Message = ({
       {showUserInfo ? (
         <>
           <UserAvatarLink
+            avatarUrl={messageChat.user.avatarUrl}
             width={avatarSize}
             height={avatarSize}
             className={`rounded-full object-cover ${isCurrentUser ? "order-2" : ""}`}

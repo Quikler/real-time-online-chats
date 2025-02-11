@@ -9,6 +9,7 @@ export type UserChat = {
   email: string;
   firstName?: string;
   lastName?: string;
+  avatarUrl: string;
 };
 
 export type ChatInfo = {

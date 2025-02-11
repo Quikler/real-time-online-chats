@@ -12,7 +12,7 @@ export type UserProfileType = {
   workStatus: string;
   gamingStatus: string;
 
-  friends: UserFriendType[];
+  avatarUrl: string;
 };
 
 export type UserFriendType = {
@@ -20,4 +20,18 @@ export type UserFriendType = {
   email: string;
   firstName: string;
   lastName: string;
+
+  avatarUrl: string;
 };
+
+export type EditUserProfileType = {
+  aboutMe: string;
+
+  activityStatus: string;
+  casualStatus: string;
+  moodStatus: string;
+  workStatus: string;
+  gamingStatus: string;
+
+  avatar?: File;
+}

@@ -14,6 +14,7 @@ import HeaderSection from "@src/pages/root/RootHeader";
 import { LoaderScreen } from "@src/components/ui/Loader";
 import ChatsHeaderSection from "@src/pages/chats/ChatsHeader";
 import ChatsSection from "@src/pages/chats/AvailableChats";
+import EditUserProfile from "@src/components/profile/EditUserProfile";
 
 export const router = createBrowserRouter([
   {
@@ -79,7 +80,10 @@ export const router = createBrowserRouter([
             <AccountPage />
           </MainLayout>
         ),
-        children: [{ path: ":userId", element: <UserProfile /> }],
+        children: [
+          { path: ":userId", element: <UserProfile /> },
+          { path: ":userId/edit", element: <EditUserProfile /> },
+        ],
       },
     ],
   },
