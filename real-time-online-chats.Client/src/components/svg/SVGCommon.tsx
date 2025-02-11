@@ -11,7 +11,6 @@ export const CheckCircle = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-circle-check-big w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -30,7 +29,6 @@ export const Lock = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-lock w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
@@ -49,7 +47,6 @@ export const Coffee = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-coffee w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <path d="M10 2v2"></path>
@@ -70,7 +67,6 @@ export const Heart = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-heart w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
@@ -88,7 +84,6 @@ export const MessageCircle = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-message-circle w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
@@ -106,7 +101,6 @@ export const Users = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-users w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -127,7 +121,6 @@ export const Globe = (props: SVGProps<SVGSVGElement>) => (
     strokeWidth="1"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="lucide lucide-globe w-6 h-6 text-black flex-shrink-0 mt-1"
     {...props}
   >
     <circle cx="12" cy="12" r="10"></circle>

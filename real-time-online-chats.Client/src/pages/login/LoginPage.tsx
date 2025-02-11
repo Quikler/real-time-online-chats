@@ -19,34 +19,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-gradient-to-r from-darkBlue-100 via-purple-800 to-darkBlue-200 text-gray-800 lg:px-16 pt-12">
-      <div className="min-h-screen flex fle-col items-center justify-center sm:p-8 p-4">
-        <div className="grid md:grid-cols-2 items-center gap-10 max-w-6xl w-full">
-          <div className="md:order-none order-1 mx-auto">
-            <Logo className="self-start" scale={2} />
-            <h2 className="lg:text-2xl text-2xl font-extrabold lg:leading-[50px] text-white">
-              Seamless Login for Exclusive Access
-            </h2>
-            <p className="text-sm mt-6 text-white">
-              Immerse yourself in a hassle-free login journey with our
-              intuitively designed login form. Effortlessly access your account.
-            </p>
-            <p className="text-sm mt-6 text-white">
-              Don't have an account
-              <Link
-                to="/signup"
-                className="text-white font-semibold underline ml-1"
-              >
-                Register here
-              </Link>
-            </p>
-          </div>
-          <LoginForm
-            formData={formData}
-            setFormData={setFormData}
-            onSubmit={handleSubmit}
-          />
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8">
+      <div className="grid md:grid-cols-2 items-center gap-16 max-w-6xl w-full">
+        <div className="text-center md:text-left">
+          <Logo className="flex md:justify-start justify-center mt-10 lg:mt-0" scale={2} />
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-white mt-8 bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            Seamless Login for Exclusive Access
+          </h2>
+          <p className="text-sm text-gray-300 mt-6">
+            Immerse yourself in a hassle-free login journey with our intuitively designed login
+            form. Effortlessly access your account.
+          </p>
+          <p className="text-sm text-gray-300 mt-6">
+            Don't have an account?&nbsp;
+            <Link
+              to="/signup"
+              className="text-blue-400 font-semibold hover:text-blue-300 transition-colors duration-200"
+            >
+              Register here
+            </Link>
+          </p>
         </div>
+
+        <LoginForm
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleSubmit}
+          className="max-w-md lg:mx-16 mt-8 mx-auto"
+        />
       </div>
     </div>
   );

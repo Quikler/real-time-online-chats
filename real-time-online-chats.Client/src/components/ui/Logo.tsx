@@ -5,9 +5,9 @@ export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   href?: string;
 }
 
-export default function Logo({ scale = 1, href = "", ...rest }: LogoProps) {
+export default function Logo({ scale = 1, href = "", className, ...rest }: LogoProps) {
   return (
-    <div className="flex justify-center" {...rest}>
+    <div className={className} {...rest}>
       <Link
         to={href}
         className={`flex items-center ${

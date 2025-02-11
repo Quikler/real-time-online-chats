@@ -37,7 +37,7 @@ export default function Header() {
   useEffect(() => {
     if (isMenuOpen) {
       if (isScrolled) {
-        setIsMenuActuallyOpen(true)
+        setIsMenuActuallyOpen(true);
       } else if (isLargeScreen) {
         setIsMenuActuallyOpen(false);
       } else {
@@ -98,7 +98,10 @@ export default function Header() {
                         aria-labelledby="dropdownInformationButton"
                       >
                         <li>
-                          <Link to={`/profile/${user?.id}`} className="block px-4 py-2 hover:bg-gray-600">
+                          <Link
+                            to={`/profile/${user?.id}`}
+                            className="block px-4 py-2 hover:bg-gray-600"
+                          >
                             Profile
                           </Link>
                         </li>
@@ -169,12 +172,10 @@ export default function Header() {
                   <Link
                     onClick={toggleMenu}
                     to="/"
-                    className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 ${
-                      isMenuActuallyOpen ? "text-slate-400" : "text-slate-700"
-                    } ${
+                    className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 text-gray-300 ${
                       isLinkActive("/")
                         ? ""
-                        : "opacity-60 hover:opacity-100 lg:hover:bg-transparent hover:bg-lightGreen-100"
+                        : "opacity-60 hover:opacity-100 lg:hover:bg-transparent hover:bg-slate-500"
                     }`}
                   >
                     Home
@@ -184,12 +185,10 @@ export default function Header() {
                   <Link
                     onClick={toggleMenu}
                     to="/chats"
-                    className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 ${
-                      isMenuActuallyOpen ? "text-slate-400" : "text-slate-700"
-                    } ${
+                    className={`block py-2 pr-4 pl-3 lg:bg-transparent lg:p-0 text-gray-300 ${
                       isLinkActive("/chats")
                         ? ""
-                        : "opacity-60 hover:opacity-100 lg:hover:bg-transparent hover:bg-lightGreen-100"
+                        : "opacity-60 hover:opacity-100 lg:hover:bg-transparent hover:bg-slate-500"
                     }`}
                   >
                     Chats
@@ -197,34 +196,9 @@ export default function Header() {
                 </li>
                 <li>
                   <a
-                    href="#"
-                    className="block py-2 pr-4 pl-3 text-gray-300 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 hover:bg-lightGreen-100 hover:text-white"
-                  >
-                    Marketplace
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block py-2 pr-4 pl-3 text-gray-300 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 hover:bg-lightGreen-100 hover:text-white"
-                  >
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
                     className="block py-2 pr-4 pl-3 text-gray-300 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 hover:bg-lightGreen-100 hover:text-white"
                   >
                     Team
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block py-2 pr-4 pl-3 text-gray-300 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 hover:bg-lightGreen-100 hover:text-white"
-                  >
-                    Contact
                   </a>
                 </li>
               </ul>

@@ -51,7 +51,7 @@ const Chat = () => {
       connection.on("SendMessage", (message: MessageChat) => {
         setMessages((prev) => [...prev, message]);
         if (message.user.id !== user?.id) {
-          setCountOfNewMessages(prev => prev + 1);
+          setCountOfNewMessages((prev) => prev + 1);
         }
       });
 
@@ -181,7 +181,10 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col bg-slate-600 lg:px-16 flex-grow" style={{ minHeight: "720px" }}>
+    <div
+      className="flex flex-col bg-gradient-to-br from-slate-700 to-slate-900 lg:px-16 flex-grow"
+      style={{ minHeight: "720px" }}
+    >
       <ChatHeader
         chatInfo={chatInfo}
         users={users}
@@ -254,11 +257,6 @@ const Chat = () => {
           </div>
         )}
         <form className="flex items-center gap-4" onSubmit={handleSendMessage}>
-          {/* {countOfNewMessages !== 0 && (
-            <div className="flex items-center justify-center text-white bg-slate-600 w-10 h-10 rounded-full">
-              {countOfNewMessages}
-            </div>
-          )} */}
           <input
             name="message"
             autoComplete="off"
@@ -269,7 +267,7 @@ const Chat = () => {
           />
           <button
             type="submit"
-            className="p-3 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors duration-300"
+            className="p-3 px-4 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors duration-300"
           >
             ➢
           </button>

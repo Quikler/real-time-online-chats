@@ -12,8 +12,7 @@ const Checkbox = ({
 }: CheckboxProps) => {
 	const v = useVariant(
     [
-      { key: "primary", style: "bg-indigo-500" },
-      { key: "secondary", style: "bg-red-500" },
+      { key: "primary", style: "accent-slate-500" },
     ],
     variant,
     "h-4 w-4 shrink-0 rounded"
