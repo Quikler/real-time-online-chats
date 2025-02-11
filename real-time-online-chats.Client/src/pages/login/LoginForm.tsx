@@ -1,4 +1,4 @@
-import { Apple, Facebook } from "@src/assets/images/svgr/auth-with";
+import { Apple, Facebook } from "@src/components/svg/SVGAuthProviders";
 import Button from "@components/ui/Button";
 import { Link } from "react-router-dom";
 import useFormValidation from "@src/hooks/useFormValidation";

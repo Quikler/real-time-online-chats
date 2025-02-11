@@ -1,20 +1,19 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import UserProfile from "@src/components/profile/UserProfile";
 import WhyUsSection from "@src/pages/root/WhyUs";
-import MainLayout from "@src/layouts/main-layout";
-import AccountPage from "@src/pages/account/account-page";
 import Chat from "@src/pages/chats/{chatId}/Chat";
 import Forbidden from "@src/pages/errors/forbidden";
 import NotFound from "@src/pages/errors/not-found";
 import LoginPage from "@src/pages/login/LoginPage";
 import SignupPage from "@src/pages/signup/SignupPage";
-import ProtectedRoute from "./protected-routes";
+import ProtectedRoute from "./ProtectedRoute";
 import App from "@src/App";
 import HeaderSection from "@src/pages/root/RootHeader";
 import { LoaderScreen } from "@src/components/ui/Loader";
 import ChatsHeaderSection from "@src/pages/chats/ChatsHeader";
 import ChatsSection from "@src/pages/chats/AvailableChats";
-import EditUserProfile from "@src/components/profile/EditUserProfile";
+import EditUserProfile from "@src/pages/profile/EditUserProfile";
+import UserProfile from "@src/pages/profile/UserProfile";
+import MainLayout from "@src/components/layouts/MainLayout/MainLayout";
 
 export const router = createBrowserRouter([
   {
@@ -77,7 +76,7 @@ export const router = createBrowserRouter([
         path: "profile",
         element: (
           <MainLayout>
-            <AccountPage />
+            <Outlet />
           </MainLayout>
         ),
         children: [

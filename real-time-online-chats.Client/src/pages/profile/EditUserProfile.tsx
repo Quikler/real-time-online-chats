@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import FriendPreview from "./FriendPreview";
 import { UserService } from "@src/services/api/UserService";
-import { EditUserProfileType, UserFriendType, UserProfileType } from "./types";
-import EditUserCard from "./EditUserCard";
+import { EditUserProfileType, UserFriendType, UserProfileType } from "./profile.types";
+import EditProfileUserCard from "./EditProfileUserCard";
 
 const EditUserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -78,7 +78,7 @@ const EditUserProfile = () => {
           className="relative flex flex-col gap-8 m-16 max-w-4xl mx-auto"
         >
           <div className="flex gap-8 lg:flex-row flex-col">
-            <EditUserCard
+            <EditProfileUserCard
               onAvatarChange={(file) => {
                 setEditUserProfile({ ...editUserProfile, avatar: file });
               }}

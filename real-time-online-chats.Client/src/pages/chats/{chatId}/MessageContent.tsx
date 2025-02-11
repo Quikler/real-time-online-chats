@@ -1,4 +1,4 @@
-import { useAuth } from "@src/contexts/AuthContext";
+import { useAuth } from "@src/hooks/useAuth";
 import { MessageChat } from "./{chatId}.types";
 import { twMerge } from "tailwind-merge";
 
