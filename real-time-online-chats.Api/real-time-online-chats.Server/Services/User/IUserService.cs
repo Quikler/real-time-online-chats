@@ -9,4 +9,5 @@ public interface IUserService
 {
     Task<Result<UserGlobalDto, FailureDto>> GetUserGlobalAsync(Guid userId);
     Task<Result<UserProfileDto, FailureDto>> GetUserProfileAsync(Guid userId);
+    Task<Result<UserProfileDto, FailureDto>> UpdateUserProfileAsync(Guid userId, UpdateUserProfileDto updateUserProfileDto);
 }

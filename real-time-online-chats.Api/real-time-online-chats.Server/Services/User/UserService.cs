@@ -1,15 +1,19 @@
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.EntityFrameworkCore;
 using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.User;
 using real_time_online_chats.Server.Mapping;
+using real_time_online_chats.Server.Services.Cloudinary;
 
 namespace real_time_online_chats.Server.Services.User;
 
-public class UserService(AppDbContext dbContext) : IUserService
+public class UserService(AppDbContext dbContext, ICloudinaryService cloudinaryService) : IUserService
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private readonly ICloudinaryService _cloudinaryService = cloudinaryService;
 
     public async Task<Result<UserGlobalDto, FailureDto>> GetUserGlobalAsync(Guid userId)
     {
@@ -38,5 +42,38 @@ public class UserService(AppDbContext dbContext) : IUserService
         if (user is null) return FailureDto.NotFound("User not found");
 
         return user.ToUserProfile();
+    }
+
+    public async Task<Result<UserProfileDto, FailureDto>> UpdateUserProfileAsync(Guid userId, UpdateUserProfileDto updateUserProfileDto)
+    {
+        var user = await _dbContext.Users
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null) return FailureDto.NotFound("User not found.");
+
+        user.AboutMe = updateUserProfileDto.AboutMe;
+        user.ActivityStatus = updateUserProfileDto.ActivityStatus;
+        user.CasualStatus = updateUserProfileDto.CasualStatus;
+        user.GamingStatus = updateUserProfileDto.GamingStatus;
+        user.WorkStatus = updateUserProfileDto.WorkStatus;
+        user.MoodStatus = updateUserProfileDto.MoodStatus;
+
+        if (updateUserProfileDto.AvatarStream is not null)
+        {
+            try
+            {
+                var avatarUrl = await _cloudinaryService.UploadAvatarToCloudinaryAsync(updateUserProfileDto.AvatarStream, userId);
+                if (avatarUrl is null) return FailureDto.BadRequest("Unable to update profile avatar.");
+                user.AvatarUrl = avatarUrl;
+            }
+            finally
+            {
+                updateUserProfileDto.AvatarStream.Dispose();
+            }
+        }
+
+        int rows = await _dbContext.SaveChangesAsync();
+        return rows == 0 ? FailureDto.BadRequest("Unable to update profile") : user.ToUserProfile();
     }
 }

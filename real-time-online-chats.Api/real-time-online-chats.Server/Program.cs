@@ -1,4 +1,5 @@
 using System.Text;
+using CloudinaryDotNet;
 using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,7 @@ using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Providers;
 using real_time_online_chats.Server.Services.Chat;
+using real_time_online_chats.Server.Services.Cloudinary;
 using real_time_online_chats.Server.Services.Google;
 using real_time_online_chats.Server.Services.Identity;
 using real_time_online_chats.Server.Services.Message;
@@ -49,6 +51,7 @@ builder.Services.AddScoped<IChatAuthorizationService, ChatAuthorizationService>(
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IMessageAuthorizationService, MessageAuthorizationService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 // Get DB_HOST env variable to determine in which host database will run (local - localhost, Docker - see in docker-compose.yml)
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
@@ -80,6 +83,11 @@ builder.Services
     .Configure<SwaggerConfiguration>(builder.Configuration.GetSection(nameof(SwaggerConfiguration)))
     .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)))
     .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"));
+
+var cloudinary = builder.Configuration.GetSection("Cloudinary");
+CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");
+CloudinaryConfiguration.ApiKey = cloudinary.GetValue<string>("ApiKey");
+CloudinaryConfiguration.ApiSecret = cloudinary.GetValue<string>("ApiSecret");
 
 var jwtConfig = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>()
     ?? throw new InvalidOperationException("Configuration for JwtConfiguration is missing or invalid.");

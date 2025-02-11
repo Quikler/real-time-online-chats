@@ -1,10 +1,11 @@
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
 using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
 using real_time_online_chats.Server.Contracts.V1.Requests.Message;
-using real_time_online_chats.Server.Domain;
+using real_time_online_chats.Server.Contracts.V1.Requests.User;
 using real_time_online_chats.Server.DTOs.Auth;
 using real_time_online_chats.Server.DTOs.Chat;
 using real_time_online_chats.Server.DTOs.Message;
+using real_time_online_chats.Server.DTOs.User;
 
 namespace real_time_online_chats.Server.Mapping;
 
@@ -59,13 +60,27 @@ public static class ApiContractToDto
             UserId = userId,
         };
     }
-    
+
     public static UpdateMessageDto ToDto(this UpdateMessageRequest request, Guid userId)
     {
         return new UpdateMessageDto
         {
             Content = request.Content,
             UserId = userId,
+        };
+    }
+
+    public static UpdateUserProfileDto ToDto(this UpdateUserProfileRequest updateUserProfileRequest)
+    {
+        return new UpdateUserProfileDto
+        {
+            AboutMe = updateUserProfileRequest.AboutMe,
+            ActivityStatus = updateUserProfileRequest.ActivityStatus,
+            CasualStatus = updateUserProfileRequest.CasualStatus,
+            GamingStatus = updateUserProfileRequest.GamingStatus,
+            MoodStatus = updateUserProfileRequest.MoodStatus,
+            WorkStatus = updateUserProfileRequest.WorkStatus,
+            AvatarStream = updateUserProfileRequest.Avatar?.OpenReadStream(),
         };
     }
 }

@@ -17,6 +17,8 @@ public class UserProfileDto
     public required string WorkStatus { get; set; }
     public required string GamingStatus { get; set; }
 
+    public required string AvatarUrl { get; set; }
+
     public IEnumerable<UserFriendDto> Friends { get; set; } = [];
     //public List<ChatEntity> OwnedChats { get; set; }
 }

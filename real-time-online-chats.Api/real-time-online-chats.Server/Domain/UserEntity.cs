@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using real_time_online_chats.Server.Common.Constants;
 
 namespace real_time_online_chats.Server.Domain;
 
@@ -20,6 +21,8 @@ public class UserEntity : IdentityUser<Guid>
     public MoodStatus MoodStatus { get; set; }
     public WorkStatus WorkStatus { get; set; }
     public GamingStatus GamingStatus { get; set; }
+
+    public string AvatarUrl { get; set; } = CloudinaryConstants.DEFAULT_AVATAR_URL;
 
     public List<UserEntity> Friends { get; set; } = [];
     public List<ChatEntity> OwnedChats { get; set; } = [];
