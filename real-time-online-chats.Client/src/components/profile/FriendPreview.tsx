@@ -5,13 +5,14 @@ type FriendPreviewProps = {
   lastName: string;
   email: string;
   id: string;
+  avatarUrl: string;
 };
 
-const FriendPreview = ({ firstName, lastName, email, id }: FriendPreviewProps) => {
+const FriendPreview = ({ firstName, lastName, email, id, avatarUrl }: FriendPreviewProps) => {
   return (
     <div className="bg-slate-600 p-6 flex gap-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
       <img
-        src="/images/test-profile.jpg"
+        src={avatarUrl}
         alt="Profile"
         className="object-cover rounded-full w-20 h-20 border-4 border-slate-600"
       />

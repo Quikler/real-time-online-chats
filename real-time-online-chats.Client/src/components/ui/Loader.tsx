@@ -17,7 +17,7 @@ const Loader = ({ size, ...rest }: LoaderProps) => {
 export default Loader;
 
 export const LoaderScreen = ({ size = "256px", ...rest }: LoaderProps) => (
-  <div className="bg-transparent z-[999] fixed w-full flex items-center justify-center h-screen flex-grow">
+  <div className="bg-transparent w-full flex items-center justify-center flex-grow">
     <Loader size={size} {...rest} />
   </div>
 );

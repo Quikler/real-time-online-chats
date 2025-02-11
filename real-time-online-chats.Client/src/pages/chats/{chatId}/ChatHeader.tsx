@@ -129,7 +129,7 @@ const ChatHeader = ({ users, chatInfo, onChatLeave, onChatDelete }: ChatHeaderPr
                         : "bg-slate-600 hover:bg-slate-500"
                     }`}
                   >
-                    <UserAvatar width="48px" height="48px" />
+                    <UserAvatar avatarUrl={userChat.avatarUrl} width="48px" height="48px" />
                     <div className="overflow-x-auto text-wrap break-words">{userChat.email}</div>
                   </Link>
                   {contextMenu}

@@ -6,14 +6,18 @@ import { useParams } from "react-router-dom";
 import FriendPreview from "./FriendPreview";
 import UserCard from "./UserCard";
 import { UserService } from "@src/services/api/UserService";
-import { UserProfileType } from "./types";
+import { UserFriendType, UserProfileType } from "./types";
+import { LoaderScreen } from "../ui/Loader";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const { userId } = useParams<{ userId: string }>();
 
   const [userProfile, setUserProfile] = useState<UserProfileType>();
+  const [friends, setFriends] = useState<UserFriendType[]>();
 
   useEffect(() => {
     if (!userId) return;
@@ -22,9 +26,17 @@ const UserProfile = () => {
 
     UserService.getUserProfile(userId, { signal: abortController.signal })
       .then((data) => {
-        setUserProfile(data);
+        if (data) {
+          setUserProfile(data);
+          setFriends(data.friends);
+          setLoading(false);
+        }
       })
-      .catch((e) => console.error("Error fetching profile:", e.message));
+      .catch((e) => {
+        console.error("Error fetching profile:", e.message);
+        setLoading(false)
+        setError(true);
+      });
 
     return () => abortController.abort();
   }, [userId]);
@@ -38,6 +50,10 @@ const UserProfile = () => {
       .catch((e) => console.log(e));
   };
 
+  if (loading) return <LoaderScreen />;
+
+  if (error) return "Something goes wrong..."
+
   return (
     <>
       <CreateChatForm
@@ -46,7 +62,7 @@ const UserProfile = () => {
         onSubmit={handleCreateChatFormSubmit}
       />
 
-      <section className="relative flex flex-col gap-8 m-16 max-w-7xl mx-auto">
+      <section className="relative flex flex-col gap-8 m-16 max-w-3xl mx-auto">
         <div className="flex gap-8 lg:flex-row flex-col">
           <UserCard
             className="w-full flex-grow"
@@ -58,7 +74,7 @@ const UserProfile = () => {
             moodStatus={userProfile?.moodStatus}
             workStatus={userProfile?.workStatus}
             gamingStatus={userProfile?.gamingStatus}
-            avatarUrl="/images/test-profile.jpg"
+            avatarUrl={userProfile?.avatarUrl}
             socialLinks={{ github: "test", facebook: "" }}
           />
 
@@ -83,9 +99,9 @@ const UserProfile = () => {
         <div className="bg-slate-700 rounded-2xl shadow-lg p-8">
           <p className="font-semibold text-2xl text-white text-center mb-8">Friends</p>
           <ul className="flex flex-col gap-6">
-            {userProfile?.friends.map((value, index) => (
+            {friends?.map((value, index) => (
               <li key={index}>
-                <FriendPreview
+                <FriendPreview avatarUrl={value.avatarUrl}
                   firstName={value.firstName}
                   lastName={value.lastName}
                   email={value.email}
