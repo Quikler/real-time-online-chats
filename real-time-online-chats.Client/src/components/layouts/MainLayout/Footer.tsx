@@ -19,7 +19,7 @@ export default function Footer() {
     <footer className="w-full py-14 bg-slate-800 text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <Logo />
+          <Logo className="flex justify-center" />
           <ul className="text-lg flex items-center justify-center flex-col gap-7 md:flex-row md:gap-12 transition-all duration-500 py-16 mb-10 border-b border-gray-200">
             <li>
               <a href="#">Pagedone</a>

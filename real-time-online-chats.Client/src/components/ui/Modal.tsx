@@ -24,7 +24,7 @@ const Modal = ({
     isModalOpen ? "flex" : "hidden"
   } overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`;
 
-  const modalContentStyles = "bg-slate-800 rounded-lg shadow-lg w-full max-w-md";
+  const modalContentStyles = "bg-gradient-to-br from-slate-700 to-slate-900 rounded-lg shadow-lg w-full max-w-md";
 
   const closeButtonStyles =
     "text-slate-400 bg-transparent hover:bg-slate-700 hover:text-slate-200 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center";

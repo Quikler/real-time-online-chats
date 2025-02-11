@@ -125,8 +125,8 @@ const ChatHeader = ({ users, chatInfo, onChatLeave, onChatDelete }: ChatHeaderPr
                     to={`/profile/${userChat.id}`}
                     className={`flex items-center gap-3 p-3 transition-colors duration-300 ${
                       chatInfo?.ownerId === userChat.id
-                        ? "bg-slate-400 hover:bg-slate-300"
-                        : "bg-slate-600 hover:bg-slate-500"
+                        ? "bg-gradient-to-b from-slate-700 hover:from-slate-600 to-slate-900"
+                        : "bg-slate-700 hover:bg-slate-800"
                     }`}
                   >
                     <UserAvatar avatarUrl={userChat.avatarUrl} width="48px" height="48px" />
