@@ -29,6 +29,7 @@ public static class DtoToApiContract
             MoodStatus = userProfileDto.MoodStatus.ToString(),
             WorkStatus = userProfileDto.WorkStatus.ToString(),
             Friends = userProfileDto.Friends.Select(f => f.ToResponse()),
+            AvatarUrl = userProfileDto.AvatarUrl,
         };
     }
 
@@ -81,6 +82,7 @@ public static class DtoToApiContract
             Email = userChatDto.Email,
             FirstName = userChatDto.FirstName,
             LastName = userChatDto.LastName,
+            AvatarUrl = userChatDto.AvatarUrl,
         };
     }
 

@@ -13,4 +13,5 @@ public class UserProfileResponse
     public required string GamingStatus { get; set; }
     public required string MoodStatus { get; set; }
     public required string WorkStatus { get; set; }
+    public required string AvatarUrl { get; set; }
 }

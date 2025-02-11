@@ -23,6 +23,7 @@ public static class DomainToDTO
             MoodStatus = userEntity.MoodStatus.ToString(),
             WorkStatus = userEntity.WorkStatus.ToString(),
             Friends = userEntity.Friends.Select(f => f.ToUserFriend()),
+            AvatarUrl = userEntity.AvatarUrl,
         };
     }
 
@@ -56,6 +57,7 @@ public static class DomainToDTO
             Email = userEntity.Email,
             FirstName = userEntity.FirstName,
             LastName = userEntity.LastName,
+            AvatarUrl = userEntity.AvatarUrl,
         };
     }
 

@@ -74,22 +74,10 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
             Messages = chat.Messages.Select(m => new MessageChatDto
             {
                 Id = m.Id,
-                User = new UserChatDto
-                {
-                    Id = m.UserId,
-                    Email = m.User.Email,
-                    FirstName = m.User.FirstName,
-                    LastName = m.User.LastName,
-                },
+                User = m.User.ToUserChat(),
                 Content = m.Content,
             }),
-            Users = chat.Members.Append(chat.Owner).Select(m => new UserChatDto
-            {
-                Id = m.Id,
-                Email = m.Email,
-                FirstName = m.FirstName,
-                LastName = m.LastName,
-            })
+            Users = chat.Members.Append(chat.Owner).Select(m => m.ToUserChat())
         };
     }
 

@@ -49,5 +49,6 @@ public static class ApiRoutes
     public static class Users
     {
         public const string GetProfile = BASE + "/users/{userId}/profile";
+        public const string EditProfile = BASE + "/users/{userId}/profile";
     }
 }
