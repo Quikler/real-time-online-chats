@@ -25,13 +25,13 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
 
         var result = await _identityService.SignupAsync(signupUser);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             authSuccessDto => 
             {
                 HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
                 return Ok(authSuccessDto.ToResponse());
             },
-            failure => BadRequest(new AuthFailResponse(failure.Errors))
+            failure => failure.ToActionResult()
         );
     }
 
@@ -47,13 +47,13 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
 
         var result = await _identityService.LoginAsync(loginUser);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             authSuccessDto => 
             {
                 HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
                 return Ok(authSuccessDto.ToResponse());
             },
-            failure => BadRequest(new AuthFailResponse(failure.Errors))
+            failure => failure.ToActionResult()
         );
     }
 
@@ -64,13 +64,13 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
 
         var result = await _identityService.RefreshTokenAsync(refreshToken);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             authSuccessDto => 
             {
                 HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
                 return Ok(authSuccessDto.ToResponse());
             },
-            failure => BadRequest(new AuthFailResponse(failure.Errors))
+            failure => failure.ToActionResult()
         );
     }
 
@@ -88,9 +88,9 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
 
         var result = await _identityService.MeAsync(refreshToken);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             authSuccessDto => Ok(authSuccessDto.ToResponse()),
-            failure => BadRequest(new AuthFailResponse(failure.Errors))
+            failure => failure.ToActionResult()
         );
     }
 }

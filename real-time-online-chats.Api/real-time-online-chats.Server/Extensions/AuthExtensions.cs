@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using System.Security.Claims;
-using System.Security.Cryptography;
 
 namespace real_time_online_chats.Server.Extensions;
 

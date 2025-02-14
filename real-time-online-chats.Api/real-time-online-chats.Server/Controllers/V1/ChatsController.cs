@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -7,10 +5,7 @@ using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
 using real_time_online_chats.Server.Contracts.V1.Responses;
-using real_time_online_chats.Server.Contracts.V1.Responses.Chat;
-using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs.Chat;
-using real_time_online_chats.Server.DTOs.User;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Hubs.Clients;
@@ -42,9 +37,9 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
 
         var result = await _chatService.GetChatsAsync(page, pageSize);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),
-            failure => BadRequest(new FailureResponse(failure.Errors))
+            failure => failure.ToActionResult()
         );
     }
 
@@ -55,13 +50,9 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
 
         var result = await _chatService.GetChatDetailedByIdAsync(chatId);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             chatDetailedDto => Ok(chatDetailedDto.ToResponse()),
-            failure => failure.FailureCode switch
-            {
-                FailureCode.NotFound => NotFound(failure.ToResponse()),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 
@@ -70,9 +61,9 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
     {
         var result = await _chatService.GetAllOwnedChatsAsync(page, pageSize, userId);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),
-            failure => BadRequest(new FailureResponse(failure.Errors))
+            failure => failure.ToActionResult()
         );
     }
 
@@ -84,13 +75,9 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
         CreateChatDto createChatDto = request.ToDto(userId);
         var result = await _chatService.CreateChatAsync(createChatDto);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             chatPreviewDto => CreatedAtAction(nameof(GetDetailed), new { chatId = chatPreviewDto.Id }, chatPreviewDto.ToResponse()),
-            failure => failure.FailureCode switch
-            {
-                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 
@@ -101,14 +88,9 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
 
         var result = await _chatService.UpdateChatAsync(chatId, request.ToDto(), userId);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             success => Ok(),
-            failure => failure.FailureCode switch
-            {
-                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                FailureCode.Forbidden => Forbid(),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 
@@ -119,14 +101,9 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
 
         var result = await _chatService.DeleteChatAsync(chatId, userId);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             success => NoContent(),
-            failure => failure.FailureCode switch
-            {
-                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                FailureCode.Forbidden => Forbid(),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 
@@ -146,17 +123,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
                 await _messageHub.Clients.Group(chatId.ToString()).JoinChat(response);
                 return Ok(response);
             },
-            failure =>
-            {
-                IActionResult failureResult = failure.FailureCode switch
-                {
-                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                    FailureCode.NotFound => NotFound(failure.ToResponse()),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError),
-                };
-
-                return Task.FromResult(failureResult);
-            }
+            failure => Task.FromResult(failure.ToActionResult())
         );
     }
 
@@ -175,17 +142,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
                 await _messageHub.Clients.Group(chatId.ToString()).LeaveChat(response);
                 return Ok(response);
             },
-            failure =>
-            {
-                IActionResult failureResult = failure.FailureCode switch
-                {
-                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                    FailureCode.NotFound => NotFound(failure.ToResponse()),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError),
-                };
-
-                return Task.FromResult(failureResult);
-            }
+            failure => Task.FromResult(failure.ToActionResult())
         );
     }
 
@@ -202,18 +159,7 @@ public class ChatsController(IChatService chatService, IHubContext<MessageHub, I
                 await _messageHub.Clients.Group(chatId.ToString()).KickMember(memberId);
                 return NoContent();
             },
-            failure =>
-            {
-                IActionResult failureResult = failure.FailureCode switch
-                {
-                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                    FailureCode.Forbidden => Forbid(),
-                    FailureCode.NotFound => NotFound(failure.ToResponse()),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError),
-                };
-
-                return Task.FromResult(failureResult);
-            }
+            failure => Task.FromResult(failure.ToActionResult())
         );
     }
 }

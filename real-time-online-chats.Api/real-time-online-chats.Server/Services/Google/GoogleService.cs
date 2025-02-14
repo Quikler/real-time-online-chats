@@ -18,8 +18,8 @@ public class GoogleService(
     AppDbContext dbContext,
     UserManager<UserEntity> userManager,
     TokenProvider tokenProvider,
-    IOptions<JwtConfiguration> jwtConfiguration
-) : IGoogleService
+    IOptions<JwtConfiguration> jwtConfiguration) 
+    : IGoogleService
 {
     private readonly GoogleConfiguration _googleConfiguration = googleConfiguration.Value;
     private readonly AppDbContext _dbContext = dbContext;
