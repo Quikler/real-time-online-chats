@@ -17,24 +17,10 @@ using real_time_online_chats.Server.Services.User;
 namespace real_time_online_chats.Server.Controllers.V1;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-public class MessagesController(IMessageService chatService, IHubContext<MessageHub, IMessageClient> messagehub, IUserService userService) : ControllerBase
+public class MessagesController(IMessageService chatService, IHubContext<MessageHub, IMessageClient> messagehub) : ControllerBase
 {
     private readonly IMessageService _messageService = chatService;
-    private readonly IUserService _userService = userService;
     private readonly IHubContext<MessageHub, IMessageClient> _messageHub = messagehub;
-
-    // [HttpGet(ApiRoutes.Messages.GetAll)]
-    // public async Task<IActionResult> GetAll()
-    // {
-    //     var messages = await _messageService.GetMessagesAsync();
-    //     var response = messages.Select(m => new MessageChatResponse
-    //     {
-    //         Id = m.Id,
-    //         Content = m.Content,
-    //     });
-
-    //     return Ok(response);
-    // }
 
     [HttpGet(ApiRoutes.Messages.Get)]
     public async Task<IActionResult> Get([FromRoute] Guid messageId)
@@ -43,14 +29,9 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
 
         var result = await _messageService.GetMessageByIdAsync(messageId, userId);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             messageChatDto => Ok(messageChatDto.ToResponse()),
-            failure => failure.FailureCode switch
-            {
-                FailureCode.Forbidden => Forbid(),
-                FailureCode.NotFound => NotFound(failure.ToResponse()),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 
@@ -69,18 +50,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
                 await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
                 return CreatedAtAction(nameof(Get), new { messageId = response.Id }, response);
             },
-            failure =>
-            {
-                IActionResult failureResponse = failure.FailureCode switch
-                {
-                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                    FailureCode.Forbidden => Forbid(),
-                    FailureCode.NotFound => NotFound(failure.ToResponse()),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError),
-                };
-
-                return Task.FromResult(failureResponse);
-            }
+            failure => Task.FromResult(failure.ToActionResult())
         );
     }
 
@@ -99,18 +69,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
                 await _messageHub.Clients.Group(request.ChatId.ToString()).UpdateMessage(response);
                 return Ok(response);
             },
-            failure =>
-            {
-                IActionResult failureResponse = failure.FailureCode switch
-                {
-                    FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                    FailureCode.Forbidden => Forbid(),
-                    FailureCode.NotFound => NotFound(failure.ToResponse()),
-                    _ => StatusCode(StatusCodes.Status500InternalServerError),
-                };
-
-                return Task.FromResult(failureResponse);
-            }
+            failure => Task.FromResult(failure.ToActionResult())
         );
     }
 
@@ -126,14 +85,9 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
             await _messageHub.Clients.Group(chatId.ToString()).DeleteMessage(messageId);
         }
 
-        return result.Match<IActionResult>(
+        return result.Match(
             guid => NoContent(),
-            failure => failure.FailureCode switch
-            {
-                FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                FailureCode.Forbidden => Forbid(),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 }

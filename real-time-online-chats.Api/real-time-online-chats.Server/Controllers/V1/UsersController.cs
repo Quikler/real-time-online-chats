@@ -16,9 +16,9 @@ public class UsersController(IUserService userService) : ControllerBase
     {
         var result = await _userService.GetUserProfileAsync(userId);
 
-        return result.Match<IActionResult>(
+        return result.Match(
             userProfileDto => Ok(userProfileDto.ToResponse()),
-            userFailureDto => BadRequest(userFailureDto.ToResponse())
+            failure => failure.ToActionResult()
         );
     }
 
@@ -30,14 +30,9 @@ public class UsersController(IUserService userService) : ControllerBase
 
         var result = await _userService.UpdateUserProfileAsync(userId, request.ToDto());
 
-        return result.Match<IActionResult>(
+        return result.Match(
             userProfileDto => Ok(userProfileDto.ToResponse()),
-            failure => failure.FailureCode switch
-            {
-                Common.FailureCode.BadRequest => BadRequest(failure.ToResponse()),
-                Common.FailureCode.NotFound => NotFound(failure.ToResponse()),
-                _ => StatusCode(StatusCodes.Status500InternalServerError),
-            }
+            failure => failure.ToActionResult()
         );
     }
 }
