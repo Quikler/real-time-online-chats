@@ -8,11 +8,11 @@ namespace real_time_online_chats.Server.Helpers;
 
 public static class AuthHelper
 {
-    public static async Task<AuthSuccessDto> GenerateAuthResultForUserAsync(
+    public static async Task<AuthSuccessDto> GenerateAuthSuccessDtoForUserAsync(
         UserEntity user,
         TokenProvider tokenProvider,
         AppDbContext dbContext,
-        TimeSpan refreshTokenLifetime)
+        TimeSpan refreshTokenLifetime, IEnumerable<string> roles)
     {
         var refreshToken = new RefreshTokenEntity
         {
@@ -24,14 +24,14 @@ public static class AuthHelper
         await dbContext.RefreshTokens.AddAsync(refreshToken);
         await dbContext.SaveChangesAsync();
 
-        return CreateAuthSuccess(user, refreshToken.Token, tokenProvider);
+        return CreateAuthSuccess(user, refreshToken.Token, tokenProvider.CreateToken(user, roles));
     }
 
-    public static AuthSuccessDto CreateAuthSuccess(UserEntity user, string refreshToken, TokenProvider tokenProvider)
+    public static AuthSuccessDto CreateAuthSuccess(UserEntity user, string refreshToken, string token)
     {
         return new AuthSuccessDto
         {
-            Token = tokenProvider.CreateToken(user),
+            Token = token,
             RefreshToken = refreshToken,
             User = new UserGlobalDto
             {
