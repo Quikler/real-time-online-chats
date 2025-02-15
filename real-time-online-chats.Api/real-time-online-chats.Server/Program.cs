@@ -186,6 +186,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStaticFiles();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -199,6 +201,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(swaggerConfig.UIEndpoint, swaggerConfig.Description);
+        options.InjectJavascript("/swagger/custom-auth.js");
         //options.RoutePrefix = "swagger";
     });
 
