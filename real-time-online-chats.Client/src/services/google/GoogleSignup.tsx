@@ -1,12 +1,17 @@
 import { useEffect } from "react";
-import { GoogleService } from "./GoogleService";
 import { initGoogleGSIScript, initGoogleAuth, renderGoogleButton } from "./googleHelpers";
+import { useAuth } from "@src/hooks/useAuth";
+import { toast } from "react-toastify";
 
 const GoogleSignup = () => {
-  const googleAuthCallback = (response: any) => {
-    GoogleService.login(response.credential)
-      .then((data) => console.log(data))
-      .catch((e) => console.error("[Google] error:", e));
+  const { signupGoogle } = useAuth();
+
+  const googleAuthCallback = async (response: any) => {
+    try {
+      await signupGoogle(response.credential);
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
 
   const googleButtonStyle = {};
