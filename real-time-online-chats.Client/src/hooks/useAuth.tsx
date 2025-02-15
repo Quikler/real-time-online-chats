@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import api from "@services/axios/instance";
 import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
 import { AuthRoutes } from "@src/services/api/ApiRoutes";
 import { AuthService } from "@src/services/api/AuthService";
+import { GoogleService } from "@src/services/google/GoogleService";
 
 export type UserProfile = {
   id: string;
@@ -16,9 +16,11 @@ export type UserProfile = {
 interface AuthContextType {
   token: string | null | undefined;
   user: UserProfile | null | undefined;
-  loginUser: (request: LoginRequest) => void;
-  signupUser: (request: SignupRequest) => void;
-  logoutUser: () => void;
+  loginUser: (request: LoginRequest) => Promise<void>;
+  signupUser: (request: SignupRequest) => Promise<void>;
+  loginGoogle: (credential: string) => Promise<void>;
+  signupGoogle: (credential: string) => Promise<void>;
+  logoutUser: () => Promise<void>;
   isUserLoggedIn: () => boolean;
 }
 
@@ -114,38 +116,67 @@ export const AuthProvider = ({ children }: Props) => {
     }
   }, [user]);
 
-  const signupUser = (request: SignupRequest) => {
-    AuthService.signup(request)
-      .then((response) => {
-        if (response) {
-          setToken(response.token);
-          setUser(response.user);
-        }
-      })
-      .catch((e) => toast.error(e));
+  const signupUser = async (request: SignupRequest) => {
+    try {
+      const data = await AuthService.signup(request);
+      if (data) {
+        setToken(data.token);
+        setUser(data.user);
+      }
+    } catch (e: any) {
+      console.error("Unable to signup:", e.message);
+    }
   };
 
-  const loginUser = (request: LoginRequest) => {
-    AuthService.login(request)
-      .then((response) => {
-        if (response) {
-          setToken(response.token);
-          setUser(response.user);
-        }
-      })
-      .catch((e) => toast.error(e));
+  const loginUser = async (request: LoginRequest) => {
+    try {
+      const data = await AuthService.login(request);
+      if (data) {
+        setToken(data.token);
+        setUser(data.user);
+      }
+    } catch (e: any) {
+      console.error("Unable to login:", e.message);
+    }
+  };
+
+  const signupGoogle = async (credential: string) => {
+    try {
+      const data = await GoogleService.signup(credential);
+      if (data) {
+        setToken(data.token);
+        setUser(data.user);
+      }
+    } catch (e: any) {
+      console.error("Unable to signup with google:", e.message);
+      throw e;
+    }
+  };
+
+  const loginGoogle = async (credential: string) => {
+    try {
+      const data = await GoogleService.login(credential);
+      if (data) {
+        setToken(data.token);
+        setUser(data.user);
+      }
+    } catch (e: any) {
+      console.error("Unable to login with google:", e.message);
+      throw e;
+    }
   };
 
   const isUserLoggedIn = () => !!user;
 
-  const logoutUser = () => {
-    AuthService.logout()
-      .then(() => {
-        setUser(null);
-        setToken(null);
-        navigate("/");
-      })
-      .catch((e) => toast.error(e));
+  const logoutUser = async () => {
+    try {
+      await AuthService.logout();
+      setUser(null);
+      setToken(null);
+      navigate("/");
+    } catch (e: any) {
+      console.error("Unable to logout:", e.message);
+    }
   };
 
   const value = useMemo(
@@ -154,6 +185,8 @@ export const AuthProvider = ({ children }: Props) => {
       user,
       loginUser,
       signupUser,
+      loginGoogle,
+      signupGoogle,
       logoutUser,
       isUserLoggedIn,
     }),

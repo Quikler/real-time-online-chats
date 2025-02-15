@@ -31,16 +31,22 @@ const ProfileUserCard = ({
   workStatus,
   gamingStatus,
   avatarUrl,
-  socialLinks, className, ...rest
+  socialLinks,
+  className,
+  ...rest
 }: ProfileUserCard) => {
   const { user } = useAuth();
-  
+
   const navigate = useNavigate();
-  
+
   return (
-    <div {...rest} className={twMerge("bg-slate-700 rounded-2xl shadow-2xl overflow-hidden", className)}>
+    <div
+      {...rest}
+      className={twMerge("bg-slate-700 rounded-2xl shadow-2xl overflow-hidden", className)}
+    >
       <div className="relative h-48 bg-slate-600">
         <img
+          referrerPolicy="no-referrer"
           src={avatarUrl}
           alt={`${firstName} ${lastName}`}
           className="w-48 h-48 rounded-full object-cover border-4 border-slate-700 absolute -bottom-12 left-1/2 transform -translate-x-1/2"
@@ -91,7 +97,11 @@ const ProfileUserCard = ({
         </div>
 
         <div className="mt-6">
-          <button type="button" onClick={() => navigate(`/profile/${user?.id}/edit`)} className="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-500 transition-colors duration-300">
+          <button
+            type="button"
+            onClick={() => navigate(`/profile/${user?.id}/edit`)}
+            className="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-500 transition-colors duration-300"
+          >
             Edit Profile
           </button>
         </div>
