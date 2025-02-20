@@ -1,5 +1,4 @@
 using real_time_online_chats.Server.Common;
-using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.User;
 

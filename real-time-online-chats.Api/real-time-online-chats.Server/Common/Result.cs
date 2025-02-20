@@ -27,4 +27,7 @@ public readonly struct Result<TValue, TError>
 
     public TResult Match<TResult>(Func<TValue, TResult> success, Func<TError, TResult> failure)
         => IsSuccess ? success(_value!) : failure(_error!);
+
+    public Task<TResult> MatchAsync<TResult>(Func<TValue, Task<TResult>> success, Func<TError, TResult> failure)
+        => IsSuccess ? success(_value!) : Task.FromResult(failure(_error!));
 }

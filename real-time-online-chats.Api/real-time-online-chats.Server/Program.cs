@@ -15,6 +15,7 @@ using real_time_online_chats.Server.Services.Chat;
 using real_time_online_chats.Server.Services.Cloudinary;
 using real_time_online_chats.Server.Services.Google;
 using real_time_online_chats.Server.Services.Identity;
+using real_time_online_chats.Server.Services.Mail;
 using real_time_online_chats.Server.Services.Message;
 using real_time_online_chats.Server.Services.User;
 
@@ -39,6 +40,8 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<TokenProvider>();
+
+builder.Services.AddTransient<IMailService, MailService>();
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -78,7 +81,8 @@ builder.Services
 builder.Services
     .Configure<SwaggerConfiguration>(builder.Configuration.GetSection(nameof(SwaggerConfiguration)))
     .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)))
-    .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"));
+    .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"))
+    .Configure<MailConfiguration>(builder.Configuration.GetSection("Mail"));
 
 var cloudinary = builder.Configuration.GetSection("Cloudinary");
 CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");

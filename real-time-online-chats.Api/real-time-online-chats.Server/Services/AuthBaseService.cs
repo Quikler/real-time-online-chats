@@ -10,9 +10,9 @@ using real_time_online_chats.Server.Providers;
 namespace real_time_online_chats.Server.Services;
 
 public class AuthBaseService(UserManager<UserEntity> userManager, 
-TokenProvider tokenProvider, 
-IOptions<JwtConfiguration> jwtConfiguration,
-AppDbContext dbContext)
+    TokenProvider tokenProvider, 
+    IOptions<JwtConfiguration> jwtConfiguration,
+    AppDbContext dbContext)
 {
     protected readonly UserManager<UserEntity> userManager = userManager;
     protected readonly TokenProvider tokenProvider = tokenProvider;
@@ -33,10 +33,10 @@ AppDbContext dbContext)
         await dbContext.RefreshTokens.AddAsync(refreshToken);
         await dbContext.SaveChangesAsync();
 
-        return CreateAuthDto(user, refreshToken.Token, tokenProvider.CreateToken(user, roles));
+        return CreateAuthSuccessDto(user, refreshToken.Token, tokenProvider.CreateToken(user, roles));
     }
 
-    protected static AuthSuccessDto CreateAuthDto(UserEntity user, string refreshToken, string token) => new()
+    protected static AuthSuccessDto CreateAuthSuccessDto(UserEntity user, string refreshToken, string token) => new()
     {
         RefreshToken = refreshToken,
         Token = token,

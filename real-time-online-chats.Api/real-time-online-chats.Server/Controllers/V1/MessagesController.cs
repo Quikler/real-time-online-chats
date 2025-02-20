@@ -2,17 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Message;
-using real_time_online_chats.Server.Contracts.V1.Responses.Message;
-using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Hubs.Clients;
 using real_time_online_chats.Server.Mapping;
 using real_time_online_chats.Server.Services.Message;
-using real_time_online_chats.Server.Services.User;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
