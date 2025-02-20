@@ -38,7 +38,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
 
         var result = await _messageService.CreateMessageAsync(request.ToDto(userId));
 
-        return await result.Match<Task<IActionResult>>(
+        return await result.MatchAsync<IActionResult>(
             async messageChatDto =>
             {
                 var response = messageChatDto.ToResponse();
@@ -46,7 +46,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
                 await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
                 return CreatedAtAction(nameof(Get), new { messageId = response.Id }, response);
             },
-            failure => Task.FromResult(failure.ToActionResult())
+            failure => failure.ToActionResult()
         );
     }
 
@@ -57,7 +57,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
 
         var result = await _messageService.UpdateMessageAsync(messageId, request.ToDto(userId));
 
-        return await result.Match<Task<IActionResult>>(
+        return await result.MatchAsync<IActionResult>(
             async messageChatDto =>
             {
                 var response = messageChatDto.ToResponse();
@@ -65,7 +65,7 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
                 await _messageHub.Clients.Group(request.ChatId.ToString()).UpdateMessage(response);
                 return Ok(response);
             },
-            failure => Task.FromResult(failure.ToActionResult())
+            failure => failure.ToActionResult()
         );
     }
 

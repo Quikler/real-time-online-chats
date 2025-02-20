@@ -15,11 +15,6 @@ public class IdentityController(IIdentityService identityService, IMailService m
     [HttpGet(ApiRoutes.Identity.ConfirmEmail)]
     public async Task<IActionResult> ConfirmEmail([FromQuery][Required] Guid userId, [FromQuery][Required] string token)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
-        }
-
         var result = await identityService.ConfirmEmailAsync(userId, token);
 
         return result.Match(
@@ -31,11 +26,6 @@ public class IdentityController(IIdentityService identityService, IMailService m
     [HttpPost(ApiRoutes.Identity.Signup)]
     public async Task<IActionResult> Signup([FromBody] SignupUserRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
-        }
-
         var result = await identityService.SignupAsync(request.ToDto());
 
         return await result.MatchAsync<IActionResult>(
@@ -64,11 +54,6 @@ public class IdentityController(IIdentityService identityService, IMailService m
     [HttpPost(ApiRoutes.Identity.Login)]
     public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
-        }
-
         var loginUser = request.ToDto();
 
         var result = await identityService.LoginAsync(loginUser);

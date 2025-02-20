@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../real-time-online-chats.Server/real-time-online-chats.Server.csproj" />
+    <ProjectReference Include="../../src/WebAPI/WebAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

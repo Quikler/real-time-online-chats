@@ -9,6 +9,7 @@ using real_time_online_chats.Server.Configurations;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.Extensions;
+using real_time_online_chats.Server.Filters;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Providers;
 using real_time_online_chats.Server.Services.Chat;
@@ -35,7 +36,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidateModelStateFilter>();
+});
 
 builder.Services.AddSignalR();
 
