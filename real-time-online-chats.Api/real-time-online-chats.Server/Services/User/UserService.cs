@@ -1,5 +1,3 @@
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using Microsoft.EntityFrameworkCore;
 using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Data;

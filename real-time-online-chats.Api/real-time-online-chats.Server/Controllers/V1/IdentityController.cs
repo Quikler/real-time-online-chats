@@ -1,17 +1,32 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
 using real_time_online_chats.Server.Contracts.V1.Responses;
-using real_time_online_chats.Server.Contracts.V1.Responses.Auth;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Mapping;
 using real_time_online_chats.Server.Services.Identity;
+using real_time_online_chats.Server.Services.Mail;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
-public class IdentityController(IIdentityService identityService) : ControllerBase
+public class IdentityController(IIdentityService identityService, IMailService mailService) : ControllerBase
 {
-    private readonly IIdentityService _identityService = identityService;
+    [HttpGet(ApiRoutes.Identity.ConfirmEmail)]
+    public async Task<IActionResult> ConfirmEmail([FromQuery][Required] Guid userId, [FromQuery][Required] string token)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
+        }
+
+        var result = await identityService.ConfirmEmailAsync(userId, token);
+
+        return result.Match(
+            success => Ok("Email confirmed successfully. Now you can login."),
+            failure => failure.ToActionResult()
+        );
+    }
 
     [HttpPost(ApiRoutes.Identity.Signup)]
     public async Task<IActionResult> Signup([FromBody] SignupUserRequest request)
@@ -21,15 +36,26 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
             return BadRequest(new FailureResponse(ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))));
         }
 
-        var signupUser = request.ToDto();
+        var result = await identityService.SignupAsync(request.ToDto());
 
-        var result = await _identityService.SignupAsync(signupUser);
-
-        return result.Match(
-            authSuccessDto => 
+        return await result.MatchAsync<IActionResult>(
+            async emailConfirmDto =>
             {
-                HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
-                return Ok(authSuccessDto.ToResponse());
+                var confirmationLink = Url.ActionLink(
+                    nameof(ConfirmEmail),
+                    values: new { userId = emailConfirmDto.UserId, token = emailConfirmDto.Token });
+
+                await mailService.SendMessageAsync([request.Email], "Confirm your email",
+                    $"""
+                    <div style="background: linear-gradient(90deg, black, #3903f9);text-align: center;color: white;padding: 32px;">
+                        <h1 style="margin: 0;">Welcome to <span style="color:cc;background-image: linear-gradient(180deg, #00ffab, #e22bac);color: transparent;background-clip: text;">ROC</span>!</h1>
+                        <p style="margin: 0;">Thank you for signing up to ROC.</p>
+                        <p style="margin: 0;margin-bottom: 16px;">Please confirm your email by clicking the link below.</p>
+                        <a href="{confirmationLink}" style="font-style: italic; color: aquamarine;">Click here to confirm your email.</a>
+                    </div>
+                    """);
+
+                return Ok("Account created. Before login please confirm your email.");
             },
             failure => failure.ToActionResult()
         );
@@ -45,10 +71,10 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
 
         var loginUser = request.ToDto();
 
-        var result = await _identityService.LoginAsync(loginUser);
+        var result = await identityService.LoginAsync(loginUser);
 
         return result.Match(
-            authSuccessDto => 
+            authSuccessDto =>
             {
                 HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
                 return Ok(authSuccessDto.ToResponse());
@@ -62,10 +88,10 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     {
         if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)) return Unauthorized();
 
-        var result = await _identityService.RefreshTokenAsync(refreshToken);
+        var result = await identityService.RefreshTokenAsync(refreshToken);
 
         return result.Match(
-            authSuccessDto => 
+            authSuccessDto =>
             {
                 HttpContext.SetHttpOnlyRefreshToken(authSuccessDto.RefreshToken);
                 return Ok(authSuccessDto.ToResponse());
@@ -86,7 +112,7 @@ public class IdentityController(IIdentityService identityService) : ControllerBa
     {
         if (!HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)) return Unauthorized();
 
-        var result = await _identityService.MeAsync(refreshToken);
+        var result = await identityService.MeAsync(refreshToken);
 
         return result.Match(
             authSuccessDto => Ok(authSuccessDto.ToResponse()),

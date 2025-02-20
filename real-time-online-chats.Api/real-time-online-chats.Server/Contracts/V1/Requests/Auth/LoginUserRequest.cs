@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace real_time_online_chats.Server.Contracts.V1.Requests.Auth;

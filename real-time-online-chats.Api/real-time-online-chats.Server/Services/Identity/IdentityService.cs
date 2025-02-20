@@ -18,7 +18,16 @@ public class IdentityService(AppDbContext dbContext,
     IOptions<JwtConfiguration> jwtConfiguration)
     : AuthBaseService(userManager, tokenProvider, jwtConfiguration, dbContext), IIdentityService
 {
-    public async Task<Result<AuthSuccessDto, FailureDto>> SignupAsync(SignupUserDto signupUser)
+    public async Task<Result<bool, FailureDto>> ConfirmEmailAsync(Guid userId, string token)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return FailureDto.NotFound("User not found.");
+
+        var confirmResult = await userManager.ConfirmEmailAsync(user, token);
+        return confirmResult.Succeeded ? true : FailureDto.BadRequest(confirmResult.Errors.Select(e => e.Description));
+    }
+
+    public async Task<Result<EmailConfirmDto, FailureDto>> SignupAsync(SignupUserDto signupUser)
     {
         var existingUser = await userManager.FindByEmailAsync(signupUser.Email);
 
@@ -27,12 +36,15 @@ public class IdentityService(AppDbContext dbContext,
         UserEntity user = signupUser.ToUser();
         user.UserName = signupUser.Email;
 
-        var createdResult = await userManager.CreateAsync(user, signupUser.Password);
-
+        IdentityResult createdResult = await userManager.CreateAsync(user, signupUser.Password);
         if (!createdResult.Succeeded) return FailureDto.BadRequest(createdResult.Errors.Select(e => e.Description));
-        var roles = await userManager.GetRolesAsync(user);
 
-        return await GenerateAuthSuccessDtoForUserAsync(user);
+        string emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        return new EmailConfirmDto
+        {
+            UserId = user.Id,
+            Token = emailToken,
+        };
     }
 
     public async Task<Result<AuthSuccessDto, FailureDto>> LoginAsync(LoginUserDto loginUser)
@@ -40,11 +52,10 @@ public class IdentityService(AppDbContext dbContext,
         var user = await userManager.FindByEmailAsync(loginUser.Email);
 
         if (user is null || !await userManager.CheckPasswordAsync(user, loginUser.Password)) return FailureDto.Unauthorized("Invalid email or password.");
+        if (!await userManager.IsEmailConfirmedAsync(user)) return FailureDto.Unauthorized("Email is not confirmed.");
         if (await userManager.IsLockedOutAsync(user)) return FailureDto.Unauthorized("Account is locked. Please try again later.");
 
         await userManager.ResetAccessFailedCountAsync(user);
-        var roles = await userManager.GetRolesAsync(user);
-
         return await GenerateAuthSuccessDtoForUserAsync(user);
     }
 
@@ -65,7 +76,7 @@ public class IdentityService(AppDbContext dbContext,
         var roles = await userManager.GetRolesAsync(storedRefreshToken.User);
         var token = tokenProvider.CreateToken(storedRefreshToken.User, roles);
 
-        return CreateAuthDto(storedRefreshToken.User, newRefreshToken, token);
+        return CreateAuthSuccessDto(storedRefreshToken.User, newRefreshToken, token);
     }
 
     public async Task<Result<AuthSuccessDto, FailureDto>> MeAsync(string refreshToken)
@@ -79,6 +90,6 @@ public class IdentityService(AppDbContext dbContext,
         var roles = await userManager.GetRolesAsync(storedRefreshToken.User);
         var token = tokenProvider.CreateToken(storedRefreshToken.User, roles);
 
-        return CreateAuthDto(storedRefreshToken.User, storedRefreshToken.Token, token);
+        return CreateAuthSuccessDto(storedRefreshToken.User, storedRefreshToken.Token, token);
     }
 }

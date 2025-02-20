@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using real_time_online_chats.Server.Common;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
-using real_time_online_chats.Server.Contracts.V1.Responses;
 using real_time_online_chats.Server.DTOs.Chat;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
