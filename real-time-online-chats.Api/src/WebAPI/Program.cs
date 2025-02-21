@@ -9,6 +9,7 @@ using real_time_online_chats.Server.Configurations;
 using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.Extensions;
+using real_time_online_chats.Server.Factories.SmtpClient;
 using real_time_online_chats.Server.Filters;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Providers;
@@ -45,6 +46,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<TokenProvider>();
 
+builder.Services.AddTransient<ISmtpClientFactory, SmtpClientFactory>();
 builder.Services.AddTransient<IMailService, MailService>();
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();

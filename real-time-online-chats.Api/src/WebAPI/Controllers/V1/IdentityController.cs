@@ -28,14 +28,14 @@ public class IdentityController(IIdentityService identityService, IMailService m
     {
         var result = await identityService.SignupAsync(request.ToDto());
 
-        return await result.MatchAsync<IActionResult>(
+        return await result.MatchAsync(
             async emailConfirmDto =>
             {
                 var confirmationLink = Url.ActionLink(
                     nameof(ConfirmEmail),
                     values: new { userId = emailConfirmDto.UserId, token = emailConfirmDto.Token });
 
-                await mailService.SendMessageAsync([request.Email], "Confirm your email",
+                var sent = await mailService.SendMessageAsync([request.Email], "Confirm your email",
                     $"""
                     <div style="background: linear-gradient(90deg, black, #3903f9);text-align: center;color: white;padding: 32px;">
                         <h1 style="margin: 0;">Welcome to <span style="color:cc;background-image: linear-gradient(180deg, #00ffab, #e22bac);color: transparent;background-clip: text;">ROC</span>!</h1>
@@ -45,7 +45,9 @@ public class IdentityController(IIdentityService identityService, IMailService m
                     </div>
                     """);
 
-                return Ok("Account created. Before login please confirm your email.");
+                return sent
+                    ? Ok("Account created. Before login please confirm your email.")
+                    : BadRequest(new FailureResponse(["Failed to send confirmation email."]));
             },
             failure => failure.ToActionResult()
         );
