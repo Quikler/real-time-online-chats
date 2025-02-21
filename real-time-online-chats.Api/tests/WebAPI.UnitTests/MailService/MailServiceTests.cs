@@ -12,6 +12,8 @@ namespace WebAPI.UnitTests.MailService
     public class MailServiceTests
     {
         private const string Mail = "test@test.com", MailPassword = "Test1234";
+        private const string Body = "Body", Subject = "Subject";
+        private static readonly string[] s_mailsToSend = ["test@test.com", "test2@test.com", "test3@test.com"];
 
         private readonly MockRepository _mockRepository;
 
@@ -39,20 +41,16 @@ namespace WebAPI.UnitTests.MailService
         public async Task SendMessageAsync_ShouldReturnTrue_WhenEmailIsSentSuccessfully()
         {
             // Arrange
-            string[] mailsToSend = ["test@test.com", "test2@test.com", "test3@test.com"];
-            string subject = "Subject";
-            string body = "Body";
-
             _smtpClientMock
                 .Setup(client => client.SendMailAsync(
                     It.Is<MailMessage>(mailMessage =>
                         mailMessage.IsBodyHtml &&
-                        mailMessage.Body == body &&
-                        mailMessage.Subject == subject &&
+                        mailMessage.Body == Body &&
+                        mailMessage.Subject == Subject &&
                         mailMessage.From != null &&
                         mailMessage.From.Address == Mail &&
                         mailMessage.From.DisplayName == "ROC Team" &&
-                        mailMessage.To.Select(to => to.Address).SequenceEqual(mailsToSend)
+                        mailMessage.To.Select(to => to.Address).SequenceEqual(s_mailsToSend)
                     )))
                 .Returns(Task.CompletedTask);
 
@@ -60,7 +58,7 @@ namespace WebAPI.UnitTests.MailService
                 .Returns(_smtpClientMock.Object);
 
             // Act
-            var sendResult = await _mailService.SendMessageAsync(mailsToSend, subject, body);
+            var sendResult = await _mailService.SendMessageAsync(s_mailsToSend, Subject, Body);
 
             // Assert
             sendResult.ShouldBeTrue();
@@ -70,10 +68,6 @@ namespace WebAPI.UnitTests.MailService
         public async Task SendMessageAsync_ShouldReturnFalse_WhenEmailIsNotSentSuccessfully()
         {
             // Arrange
-            string[] mailsToSend = ["test@test.com", "test2@test.com", "test3@test.com"];
-            string subject = "Subject";
-            string body = "Body";
-
             _smtpClientMock
                 .Setup(client => client.SendMailAsync(
                     It.IsAny<MailMessage>()
@@ -84,7 +78,7 @@ namespace WebAPI.UnitTests.MailService
                 .Returns(_smtpClientMock.Object);
 
             // Act
-            var sendResult = await _mailService.SendMessageAsync(mailsToSend, subject, body);
+            var sendResult = await _mailService.SendMessageAsync(s_mailsToSend, Subject, Body);
 
             // Assert
             sendResult.ShouldBeFalse();
