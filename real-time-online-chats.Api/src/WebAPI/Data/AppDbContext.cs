@@ -6,13 +6,16 @@ using real_time_online_chats.Server.Domain;
 
 namespace real_time_online_chats.Server.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) 
-    : IdentityDbContext<UserEntity, IdentityRole<Guid>, Guid>(options)
+public class AppDbContext
+    : IdentityDbContext<UserEntity, IdentityRole<Guid>, Guid>
 {
     public DbSet<ChatEntity> Chats { get; set; } = null!;
     public DbSet<MessageEntity> Messages { get; set; } = null!;
     public DbSet<RefreshTokenEntity> RefreshTokens { get; set; } = null!;
 
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public AppDbContext() { }
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfiguration(new UserEntityTypeConfiguration());
