@@ -127,10 +127,10 @@ namespace WebAPI.UnitTests.Identity
             var loginUserDto = CreateLoginUserDto(TestEmail, TestPassword);
             var user = CreateUserEntity();
 
-            var mockDbSet = new Mock<DbSet<RefreshTokenEntity>>();
+            var refreshTokensDbSetMock = new Mock<DbSet<RefreshTokenEntity>>();
             DbContextMock
                 .Setup(dbContext => dbContext.RefreshTokens)
-                .Returns(mockDbSet.Object);
+                .Returns(refreshTokensDbSetMock.Object);
 
             UserManagerMock.SetupFindByEmailAsync(user);
             UserManagerMock.SetupCheckPasswordAsync(true);
