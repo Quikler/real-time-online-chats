@@ -4,10 +4,10 @@ using Shouldly;
 
 namespace WebAPI.UnitTests.Identity;
 
-public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
+public class IdentityServiceMeTests : BaseIdentityServiceTests
 {
     [Fact]
-    public async Task RefreshTokenAsync_ShouldReturnError_WhenTokenNotFound()
+    public async Task MeAsync_ShouldReturnError_WhenTokenNotFound()
     {
         // Arrange
         var refreshToken = TokenProvider.GenerateRefreshToken();
@@ -20,12 +20,12 @@ public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
             .Returns(refreshTokensDbSetMock.Object);
 
         // Act
-        var refreshResult = await IdentityService.RefreshTokenAsync(refreshToken);
+        var meResult = await IdentityService.MeAsync(refreshToken);
 
         // Assert
-        refreshResult.IsSuccess.ShouldBeFalse();
+        meResult.IsSuccess.ShouldBeFalse();
 
-        var matchResult = refreshResult.Match(
+        var matchResult = meResult.Match(
             authSuccessDto => [],
             failure => failure.Errors
         );
@@ -34,7 +34,7 @@ public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
     }
 
     [Fact]
-    public async Task RefreshTokenAsync_ShouldReturnError_WhenTokenExpired()
+    public async Task MeAsync_ShouldReturnError_WhenTokenExpired()
     {
         // Arrange
         var user = CreateUserEntity();
@@ -57,12 +57,12 @@ public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
             .Returns(refreshTokensDbSetMock.Object);
 
         // Act
-        var refreshResult = await IdentityService.RefreshTokenAsync(refreshToken);
+        var meResult = await IdentityService.MeAsync(refreshToken);
 
         // Assert
-        refreshResult.IsSuccess.ShouldBeFalse();
+        meResult.IsSuccess.ShouldBeFalse();
 
-        var matchResult = refreshResult.Match(
+        var matchResult = meResult.Match(
             authSuccessDto => [],
             failure => failure.Errors
         );
@@ -71,7 +71,7 @@ public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
     }
 
     [Fact]
-    public async Task RefreshTokenAsync_ShouldReturnAuthSuccessDto_WhenEveryCheckPasses()
+    public async Task MeAsync_ShouldReturnAuthSuccessDto_WhenEveryCheckPasses()
     {
         // Arrange
         var user = CreateUserEntity();
@@ -94,7 +94,7 @@ public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
             .Returns(refreshTokensDbSetMock.Object);
 
         // Act
-        var refreshResult = await IdentityService.RefreshTokenAsync(refreshToken);
+        var refreshResult = await IdentityService.MeAsync(refreshToken);
 
         // Assert
         refreshResult.IsSuccess.ShouldBeTrue();
@@ -106,6 +106,6 @@ public class IdentityServiceRefreshTokenTests : BaseIdentityServiceTests
 
         matchResult.User.Id.ShouldBe(user.Id);
         matchResult.Token.ShouldNotBeNullOrWhiteSpace();
-        matchResult.RefreshToken.ShouldNotBe(refreshToken);
+        matchResult.RefreshToken.ShouldBe(refreshToken);
     }
 }

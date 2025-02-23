@@ -65,10 +65,10 @@ public class IdentityService(AppDbContext dbContext,
             .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.Token == refreshToken);
 
-        if (storedRefreshToken is null || storedRefreshToken.ExpiryDate < DateTime.UtcNow) return FailureDto.Unauthorized("Refresh token has expired.");
+        if (!IsRefreshTokenValid(storedRefreshToken)) return FailureDto.Unauthorized("Refresh token has expired.");
 
         var newRefreshToken = tokenProvider.GenerateRefreshToken();
-        storedRefreshToken.Token = newRefreshToken;
+        storedRefreshToken!.Token = newRefreshToken;
         storedRefreshToken.ExpiryDate = DateTime.UtcNow.Add(jwtConfiguration.RefreshTokenLifetime);
 
         await dbContext.SaveChangesAsync();
@@ -85,11 +85,16 @@ public class IdentityService(AppDbContext dbContext,
             .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.Token == refreshToken);
 
-        if (storedRefreshToken is null) return FailureDto.Unauthorized("Refresh token has expired.");
+        if (!IsRefreshTokenValid(storedRefreshToken)) return FailureDto.Unauthorized("Refresh token has expired.");
 
-        var roles = await userManager.GetRolesAsync(storedRefreshToken.User);
+        var roles = await userManager.GetRolesAsync(storedRefreshToken!.User);
         var token = tokenProvider.CreateToken(storedRefreshToken.User, roles);
 
         return CreateAuthSuccessDto(storedRefreshToken.User, storedRefreshToken.Token, token);
+    }
+
+    private static bool IsRefreshTokenValid(RefreshTokenEntity? refreshTokenEntity)
+    {
+        return refreshTokenEntity is not null && refreshTokenEntity.ExpiryDate >= DateTime.UtcNow;
     }
 }
