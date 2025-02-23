@@ -26,20 +26,14 @@ public class BaseIdentityServiceTests
 
     public BaseIdentityServiceTests()
     {
-        var refreshTokensSetMock = new Mock<DbSet<RefreshTokenEntity>>();
-
         DbContextMock = new Mock<AppDbContext>();
-
-        DbContextMock
-            .Setup(ctx => ctx.Set<RefreshTokenEntity>())
-            .Returns(refreshTokensSetMock.Object);
 
         var userStoreMock = new Mock<IUserStore<UserEntity>>();
         UserManagerMock = new Mock<UserManager<UserEntity>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         JwtConfiguration = Options.Create(new JwtConfiguration
         {
-            SecretKey = "test",
+            SecretKey = ",bGewnAe)0(7./{vwVnBnRK%S*xb08KP",
             ValidIssuer = "test",
             ValidAudience = "test",
             RefreshTokenLifetime = TimeSpan.FromDays(180),
@@ -50,4 +44,12 @@ public class BaseIdentityServiceTests
 
         IdentityService = new IdentityService(DbContextMock.Object, UserManagerMock.Object, TokenProvider, JwtConfiguration);
     }
+
+    protected static UserEntity CreateUserEntity() => new()
+    {
+        Id = Guid.NewGuid(),
+        Email = TestEmail,
+        UserName = TestEmail,
+        PhoneNumber = TestPhone,
+    };
 }
