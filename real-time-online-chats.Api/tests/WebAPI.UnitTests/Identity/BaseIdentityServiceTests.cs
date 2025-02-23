@@ -20,7 +20,7 @@ public class BaseIdentityServiceTests
     protected virtual Mock<UserManager<UserEntity>> UserManagerMock { get; }
 
     protected virtual TokenProvider TokenProvider { get; }
-    protected virtual IOptions<JwtConfiguration> JwtConfiguration { get; }
+    protected virtual JwtConfiguration JwtConfiguration { get; }
 
     protected virtual IdentityService IdentityService { get; }
 
@@ -31,18 +31,20 @@ public class BaseIdentityServiceTests
         var userStoreMock = new Mock<IUserStore<UserEntity>>();
         UserManagerMock = new Mock<UserManager<UserEntity>>(userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        JwtConfiguration = Options.Create(new JwtConfiguration
+        JwtConfiguration = new JwtConfiguration
         {
             SecretKey = ",bGewnAe)0(7./{vwVnBnRK%S*xb08KP",
             ValidIssuer = "test",
             ValidAudience = "test",
             RefreshTokenLifetime = TimeSpan.FromDays(180),
             TokenLifetime = TimeSpan.FromSeconds(45),
-        });
+        };
 
-        TokenProvider = new TokenProvider(JwtConfiguration);
+        var jwtConfigurationOptions = Options.Create(JwtConfiguration);
 
-        IdentityService = new IdentityService(DbContextMock.Object, UserManagerMock.Object, TokenProvider, JwtConfiguration);
+        TokenProvider = new TokenProvider(jwtConfigurationOptions);
+
+        IdentityService = new IdentityService(DbContextMock.Object, UserManagerMock.Object, TokenProvider, jwtConfigurationOptions);
     }
 
     protected static UserEntity CreateUserEntity() => new()
