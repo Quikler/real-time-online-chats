@@ -79,4 +79,14 @@ public static class UserManagerMockExtensions
             ), times ?? Times.Once
         );
     }
+
+    public static void VerifyCreateAsync(this Mock<UserManager<UserEntity>> userManagerMock,
+        string email,
+        Func<Times>? times = null)
+    {
+        userManagerMock.Verify(userManager =>
+            userManager.CreateAsync(
+                It.Is<UserEntity>(userEntity => userEntity.Email == email)), times ?? Times.Once
+        );
+    }
 }
