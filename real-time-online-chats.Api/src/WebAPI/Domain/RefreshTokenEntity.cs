@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using real_time_online_chats.Server.Extensions;
-
 namespace real_time_online_chats.Server.Domain;
 
 public class RefreshTokenEntity : BaseEntity

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
 using real_time_online_chats.Server.Configurations;
@@ -23,6 +22,20 @@ public class BaseIdentityServiceTests
     protected virtual JwtConfiguration JwtConfiguration { get; }
 
     protected virtual IdentityService IdentityService { get; }
+
+    // static BaseIdentityServiceTests()
+    // {
+    //     JwtConfiguration = new JwtConfiguration
+    //     {
+    //         SecretKey = ",bGewnAe)0(7./{vwVnBnRK%S*xb08KP",
+    //         ValidIssuer = "test",
+    //         ValidAudience = "test",
+    //         RefreshTokenLifetime = TimeSpan.FromDays(180),
+    //         TokenLifetime = TimeSpan.FromSeconds(45),
+    //     };
+
+    //     TokenProvider = new TokenProvider(Options.Create(JwtConfiguration));
+    // }
 
     public BaseIdentityServiceTests()
     {

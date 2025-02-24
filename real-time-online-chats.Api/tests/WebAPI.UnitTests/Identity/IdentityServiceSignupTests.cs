@@ -4,6 +4,7 @@ using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs.Auth;
 using real_time_online_chats.Server.Services.Identity;
 using Shouldly;
+using WebAPI.UnitTests.Extensions;
 
 namespace WebAPI.UnitTests.Identity;
 
@@ -13,14 +14,10 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
     public async Task SignupAsync_ShouldReturnError_WhenEmailAlreadyRegistered()
     {
         // Arrange
-        UserManagerMock
-            .Setup(userManeger => userManeger.FindByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync(new UserEntity
-            {
-                Email = TestEmail,
-            });
-
+        var user = CreateUserEntity();
         var signupUserDto = CreateSignupUserDto(TestEmail, TestPassword, TestPhone);
+
+        UserManagerMock.SetupFindByEmailAsync(user);
 
         // Act
         var signupResult = await IdentityService.SignupAsync(signupUserDto);
@@ -35,16 +32,14 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
 
         matchResult.ShouldContain("Email is already registered.");
 
-        UserManagerMock.Verify(userManager => userManager.FindByEmailAsync(signupUserDto.Email), Times.Once);
+        UserManagerMock.VerifyFindByEmailAsync(signupUserDto.Email);
     }
 
     [Fact]
     public async Task SignupAsync_ShouldReturnError_WhenCreateAsyncFails()
     {
         // Arrange
-        UserManagerMock
-            .Setup(userManeger => userManeger.FindByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync((UserEntity?)null);
+        UserManagerMock.SetupFindByEmailAsync(null);
 
         UserManagerMock
             .Setup(userManager => userManager.CreateAsync(It.IsAny<UserEntity>(), It.IsAny<string>()))
@@ -69,23 +64,15 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
 
         matchResult.ShouldContain("Some error happened.");
 
-        UserManagerMock.Verify(userManager => userManager.FindByEmailAsync(signupUserDto.Email), Times.Once);
-        UserManagerMock.Verify(userManager => userManager.CreateAsync(
-            It.Is<UserEntity>(userEntity =>
-                userEntity.Email == signupUserDto.Email &&
-                userEntity.PhoneNumber == signupUserDto.Phone
-            ),
-            It.IsAny<string>()
-        ), Times.Once);
+        UserManagerMock.VerifyFindByEmailAsync(signupUserDto.Email);
+        UserManagerMock.VerifyCreateAsync(signupUserDto.Email, signupUserDto.Phone, signupUserDto.Password);
     }
 
     [Fact]
     public async Task SignupAsync_ShouldReturnEmailConfirmDto_WhenUserDoesntExist()
     {
         // Arrange
-        UserManagerMock
-            .Setup(userManager => userManager.FindByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync((UserEntity?)null);
+        UserManagerMock.SetupFindByEmailAsync(null);
 
         UserManagerMock
             .Setup(userManager => userManager.CreateAsync(
@@ -118,14 +105,9 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
 
         matchResult.ShouldBeTrue();
 
-        UserManagerMock.Verify(userManager => userManager.FindByEmailAsync(signupUserDto.Email), Times.Once);
-        UserManagerMock.Verify(userManager => userManager.CreateAsync(
-            It.Is<UserEntity>(userEntity =>
-                userEntity.Email == signupUserDto.Email &&
-                userEntity.PhoneNumber == signupUserDto.Phone
-            ),
-            signupUserDto.Password
-        ), Times.Once);
+        UserManagerMock.VerifyFindByEmailAsync(signupUserDto.Email);
+        UserManagerMock.VerifyCreateAsync(signupUserDto.Email, signupUserDto.Phone, signupUserDto.Password);
+        
         UserManagerMock.Verify(userManager => userManager.GenerateEmailConfirmationTokenAsync(
             It.Is<UserEntity>(userEntity =>
                 userEntity.Email == signupUserDto.Email &&

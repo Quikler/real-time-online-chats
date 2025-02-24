@@ -66,4 +66,17 @@ public static class UserManagerMockExtensions
         userManagerMock
             .Verify(userManager => userManager.IsLockedOutAsync(userEntity), times ?? Times.Once);
     }
+
+    public static void VerifyCreateAsync(this Mock<UserManager<UserEntity>> userManagerMock,
+        string email,
+        string phone,
+        string password,
+        Func<Times>? times = null)
+    {
+        userManagerMock.Verify(userManager =>
+            userManager.CreateAsync(
+                It.Is<UserEntity>(userEntity => userEntity.Email == email && userEntity.PhoneNumber == phone), password
+            ), times ?? Times.Once
+        );
+    }
 }
