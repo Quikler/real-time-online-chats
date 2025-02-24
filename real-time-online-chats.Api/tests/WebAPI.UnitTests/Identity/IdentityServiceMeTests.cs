@@ -6,49 +6,27 @@ namespace WebAPI.UnitTests.Identity;
 
 public class IdentityServiceMeTests : BaseIdentityServiceTests
 {
-    [Fact]
-    public async Task MeAsync_ShouldReturnError_WhenTokenNotFound()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MeAsync_ShouldReturnError_WhenTokenNotFoundOrExpired(bool isTokenFound)
     {
         // Arrange
         var refreshToken = TokenProvider.GenerateRefreshToken();
+        var user = CreateUserEntity();
         List<RefreshTokenEntity> refreshTokens = [];
 
-        var refreshTokensDbSetMock = refreshTokens.BuildMockDbSet();
-
-        DbContextMock
-            .Setup(dbContext => dbContext.RefreshTokens)
-            .Returns(refreshTokensDbSetMock.Object);
-
-        // Act
-        var meResult = await IdentityService.MeAsync(refreshToken);
-
-        // Assert
-        meResult.IsSuccess.ShouldBeFalse();
-
-        var matchResult = meResult.Match(
-            authSuccessDto => [],
-            failure => failure.Errors
-        );
-
-        matchResult.ShouldContain("Refresh token has expired.");
-    }
-
-    [Fact]
-    public async Task MeAsync_ShouldReturnError_WhenTokenExpired()
-    {
-        // Arrange
-        var user = CreateUserEntity();
-        var refreshToken = TokenProvider.GenerateRefreshToken();
-        List<RefreshTokenEntity> refreshTokens = [
-            new RefreshTokenEntity
+        if (isTokenFound)
+        {
+            refreshTokens.Add(new RefreshTokenEntity
             {
                 Id = Guid.NewGuid(),
                 ExpiryDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                 Token = refreshToken,
                 User = user,
                 UserId = user.Id,
-            }
-        ];
+            });
+        }
 
         var refreshTokensDbSetMock = refreshTokens.BuildMockDbSet();
 
@@ -63,7 +41,7 @@ public class IdentityServiceMeTests : BaseIdentityServiceTests
         meResult.IsSuccess.ShouldBeFalse();
 
         var matchResult = meResult.Match(
-            authSuccessDto => [],
+            authSuccesDto => [],
             failure => failure.Errors
         );
 

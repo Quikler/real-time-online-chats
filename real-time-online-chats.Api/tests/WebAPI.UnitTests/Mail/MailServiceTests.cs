@@ -6,13 +6,14 @@ using real_time_online_chats.Server.Wrappers.SmtpClient;
 using System.Net.Mail;
 using Shouldly;
 using MailServices = real_time_online_chats.Server.Services.Mail;
+using WebAPI.UnitTests.Extensions;
 
-namespace WebAPI.UnitTests.MailService
+namespace WebAPI.UnitTests.Mail
 {
     public class MailServiceTests
     {
-        private const string Mail = "test@test.com", MailPassword = "Test1234";
-        private const string Body = "Body", Subject = "Subject";
+        private const string FromMail = "test@test.com", MailPassword = "Test1234";
+        private const string Body = "Body", Subject = "Subject", DisplayName = "ROC Team";
         private static readonly string[] s_mailsToSend = ["test@test.com", "test2@test.com", "test3@test.com"];
 
         private readonly MockRepository _mockRepository;
@@ -30,7 +31,7 @@ namespace WebAPI.UnitTests.MailService
 
             var mailConfigurationOptions = Options.Create(new MailConfiguration
             {
-                Mail = Mail,
+                Mail = FromMail,
                 MailPassword = MailPassword,
             });
 
@@ -42,26 +43,18 @@ namespace WebAPI.UnitTests.MailService
         {
             // Arrange
             _smtpClientMock
-                .Setup(client => client.SendMailAsync(
-                    It.Is<MailMessage>(mailMessage =>
-                        mailMessage.IsBodyHtml &&
-                        mailMessage.Body == Body &&
-                        mailMessage.Subject == Subject &&
-                        mailMessage.From != null &&
-                        mailMessage.From.Address == Mail &&
-                        mailMessage.From.DisplayName == "ROC Team" &&
-                        mailMessage.To.Select(to => to.Address).SequenceEqual(s_mailsToSend)
-                    )))
+                .Setup(client => client.SendMailAsync(It.IsAny<MailMessage>()))
                 .Returns(Task.CompletedTask);
 
-            _smtpClientFactoryMock.Setup(generator => generator.CreateClient())
-                .Returns(_smtpClientMock.Object);
+            _smtpClientFactoryMock.SetupCreateClient(_smtpClientMock);
 
             // Act
             var sendResult = await _mailService.SendMessageAsync(s_mailsToSend, Subject, Body);
 
             // Assert
             sendResult.ShouldBeTrue();
+
+            _smtpClientMock.VerifySendMailAsync(Body, Subject, FromMail, DisplayName, s_mailsToSend);
         }
 
         [Fact]
@@ -69,19 +62,18 @@ namespace WebAPI.UnitTests.MailService
         {
             // Arrange
             _smtpClientMock
-                .Setup(client => client.SendMailAsync(
-                    It.IsAny<MailMessage>()
-                ))
+                .Setup(client => client.SendMailAsync(It.IsAny<MailMessage>()))
                 .ThrowsAsync(new SmtpException());
 
-            _smtpClientFactoryMock.Setup(generator => generator.CreateClient())
-                .Returns(_smtpClientMock.Object);
+            _smtpClientFactoryMock.SetupCreateClient(_smtpClientMock);
 
             // Act
             var sendResult = await _mailService.SendMessageAsync(s_mailsToSend, Subject, Body);
 
             // Assert
             sendResult.ShouldBeFalse();
+
+            _smtpClientMock.VerifySendMailAsync(Body, Subject, FromMail, DisplayName, s_mailsToSend);
         }
     }
 }
