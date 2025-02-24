@@ -3,20 +3,11 @@ using CloudinaryDotNet.Actions;
 
 namespace real_time_online_chats.Server.Services.Cloudinary;
 
-public class CloudinaryService : ICloudinaryService
+public class CloudinaryService(ICloudinary cloudinary) : ICloudinaryService
 {
     public async Task<string?> UploadAvatarToCloudinaryAsync(Stream avatarStream, Guid userId)
     {
-        var account = new Account(
-            CloudinaryConfiguration.CloudName,
-            CloudinaryConfiguration.ApiKey,
-            CloudinaryConfiguration.ApiSecret);
-
-        var cloudinary = new CloudinaryDotNet.Cloudinary(account);
-        cloudinary.Api.Secure = true;
-
         var publicId = userId.ToString();
-
         var uploadParams = new ImageUploadParams()
         {
             File = new FileDescription(publicId, avatarStream),

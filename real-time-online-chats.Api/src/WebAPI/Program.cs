@@ -44,20 +44,6 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<TokenProvider>();
-
-builder.Services.AddTransient<ISmtpClientFactory, SmtpClientFactory>();
-builder.Services.AddTransient<IMailService, MailService>();
-
-builder.Services.AddScoped<IIdentityService, IdentityService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IChatService, ChatService>();
-builder.Services.AddScoped<IChatAuthorizationService, ChatAuthorizationService>();
-builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IMessageAuthorizationService, MessageAuthorizationService>();
-builder.Services.AddScoped<IGoogleService, GoogleService>();
-builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-
 // Get DB_HOST env variable to determine in which host database will run (local - localhost, Docker - see in docker-compose.yml)
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
 
@@ -94,6 +80,28 @@ var cloudinary = builder.Configuration.GetSection("Cloudinary");
 CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");
 CloudinaryConfiguration.ApiKey = cloudinary.GetValue<string>("ApiKey");
 CloudinaryConfiguration.ApiSecret = cloudinary.GetValue<string>("ApiSecret");
+
+builder.Services.AddTransient<ICloudinary, Cloudinary>(factory =>
+{
+    var account = new Account(
+        CloudinaryConfiguration.CloudName,
+        CloudinaryConfiguration.ApiKey,
+        CloudinaryConfiguration.ApiSecret);
+
+    return new Cloudinary(account);
+});
+builder.Services.AddTransient<TokenProvider>();
+builder.Services.AddTransient<ISmtpClientFactory, SmtpClientFactory>();
+builder.Services.AddTransient<IMailService, MailService>();
+
+builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IChatAuthorizationService, ChatAuthorizationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IMessageAuthorizationService, MessageAuthorizationService>();
+builder.Services.AddScoped<IGoogleService, GoogleService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 var jwtConfig = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>()
     ?? throw new InvalidOperationException("Configuration for JwtConfiguration is missing or invalid.");
