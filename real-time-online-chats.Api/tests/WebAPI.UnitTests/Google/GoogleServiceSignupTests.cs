@@ -1,3 +1,4 @@
+using AutoFixture;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,16 +12,23 @@ namespace WebApi.UnitTests.Google;
 
 public class GoogleServiceSignupTests : BaseGoogleServiceTests
 {
+    private readonly UserEntity _user;
+    private readonly GoogleJsonWebSignature.Payload _payload;
+
+    public GoogleServiceSignupTests()
+    {
+        _user = Fixture.Create<UserEntity>();
+        _payload = Fixture.Create<GoogleJsonWebSignature.Payload>();
+    }
+
     [Fact]
     public async Task SignupAsync_ShouldReturnError_WhenEmailAlreadyRegistered()
     {
         // Arrange
-        var payload = CreateGoogleJsonWebSignaturePayload();
-
-        UserManagerMock.SetupFindByEmailAsync(CreateUserEntity());
+        UserManagerMock.SetupFindByEmailAsync(_user);
 
         // Act
-        var signupResult = await GoogleService.SignupAsync(payload);
+        var signupResult = await GoogleService.SignupAsync(_payload);
 
         // Assert
         signupResult.IsSuccess.ShouldBeFalse();
@@ -32,15 +40,13 @@ public class GoogleServiceSignupTests : BaseGoogleServiceTests
 
         matchResult.ShouldContain("Email is already registered.");
 
-        UserManagerMock.VerifyFindByEmailAsync(payload.Email);
+        UserManagerMock.VerifyFindByEmailAsync(_payload.Email);
     }
 
     [Fact]
     public async Task SignupAsync_ShouldReturnError_WhenCreateAsyncFails()
     {
         // Arrange
-        var payload = CreateGoogleJsonWebSignaturePayload();
-
         UserManagerMock.SetupFindByEmailAsync(null);
 
         UserManagerMock
@@ -52,7 +58,7 @@ public class GoogleServiceSignupTests : BaseGoogleServiceTests
             }]));
 
         // Act
-        var signupResult = await GoogleService.SignupAsync(payload);
+        var signupResult = await GoogleService.SignupAsync(_payload);
 
         // Assert
         signupResult.IsSuccess.ShouldBeFalse();
@@ -64,16 +70,14 @@ public class GoogleServiceSignupTests : BaseGoogleServiceTests
 
         matchResult.ShouldContain("Some error happened.");
 
-        UserManagerMock.VerifyFindByEmailAsync(payload.Email);
-        UserManagerMock.VerifyCreateAsync(payload.Email);
+        UserManagerMock.VerifyFindByEmailAsync(_payload.Email);
+        UserManagerMock.VerifyCreateAsync(_payload.Email);
     }
 
     [Fact]
     public async Task SignupAsync_ShouldReturnEmailConfirmDto_WhenUserDoesntExist()
     {
         // Arrange
-        var payload = CreateGoogleJsonWebSignaturePayload();
-
         UserManagerMock.SetupFindByEmailAsync(null);
 
         var userIdToAssign = Guid.NewGuid();
@@ -90,7 +94,7 @@ public class GoogleServiceSignupTests : BaseGoogleServiceTests
             .Returns(refreshTokensDbSetMock.Object);
 
         // Act
-        var signupResult = await GoogleService.SignupAsync(payload);
+        var signupResult = await GoogleService.SignupAsync(_payload);
 
         // Assert
         signupResult.IsSuccess.ShouldBeTrue();
@@ -104,21 +108,7 @@ public class GoogleServiceSignupTests : BaseGoogleServiceTests
         matchResult.Token.ShouldNotBeNullOrWhiteSpace();
         matchResult.RefreshToken.ShouldNotBeNullOrWhiteSpace();
 
-        UserManagerMock.VerifyFindByEmailAsync(payload.Email);
-        UserManagerMock.VerifyCreateAsync(payload.Email);
-    }
-
-    private static GoogleJsonWebSignature.Payload CreateGoogleJsonWebSignaturePayload(string email = TestEmail,
-        string firstName = TestFirstName,
-        string lastName = TestLastName,
-        string picture = "https://picsum.photos/200/300")
-    {
-        return new GoogleJsonWebSignature.Payload
-        {
-            Email = email,
-            Name = firstName,
-            FamilyName = lastName,
-            Picture = picture,
-        };
+        UserManagerMock.VerifyFindByEmailAsync(_payload.Email);
+        UserManagerMock.VerifyCreateAsync(_payload.Email);
     }
 }

@@ -1,3 +1,4 @@
+using AutoFixture;
 using MockQueryable.Moq;
 using real_time_online_chats.Server.Domain;
 using Shouldly;
@@ -6,6 +7,15 @@ namespace WebAPI.UnitTests.Identity;
 
 public class IdentityServiceMeTests : BaseIdentityServiceTests
 {
+    private readonly RefreshTokenEntity _refreshTokenEntity;
+
+    public IdentityServiceMeTests()
+    {
+        _refreshTokenEntity = Fixture.Build<RefreshTokenEntity>()
+            .With(r => r.Token, TokenProvider.GenerateRefreshToken())
+            .Create();
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -13,23 +23,15 @@ public class IdentityServiceMeTests : BaseIdentityServiceTests
     {
         // Arrange
         var refreshToken = TokenProvider.GenerateRefreshToken();
-        var user = CreateUserEntity();
         List<RefreshTokenEntity> refreshTokens = [];
-
         if (isTokenFound)
         {
-            refreshTokens.Add(new RefreshTokenEntity
-            {
-                Id = Guid.NewGuid(),
-                ExpiryDate = DateTime.UtcNow - TimeSpan.FromDays(1),
-                Token = refreshToken,
-                User = user,
-                UserId = user.Id,
-            });
+            _refreshTokenEntity.ExpiryDate = DateTime.UtcNow - TimeSpan.FromDays(1);
+            _refreshTokenEntity.Token = refreshToken;
+            refreshTokens.Add(_refreshTokenEntity);
         }
 
         var refreshTokensDbSetMock = refreshTokens.BuildMockDbSet();
-
         DbContextMock
             .Setup(dbContext => dbContext.RefreshTokens)
             .Returns(refreshTokensDbSetMock.Object);
@@ -52,21 +54,12 @@ public class IdentityServiceMeTests : BaseIdentityServiceTests
     public async Task MeAsync_ShouldReturnAuthSuccessDto_WhenEveryCheckPasses()
     {
         // Arrange
-        var user = CreateUserEntity();
         var refreshToken = TokenProvider.GenerateRefreshToken();
-        List<RefreshTokenEntity> refreshTokens = [
-            new RefreshTokenEntity
-            {
-                Id = Guid.NewGuid(),
-                ExpiryDate = DateTime.UtcNow.Add(JwtConfiguration.RefreshTokenLifetime),
-                Token = refreshToken,
-                User = user,
-                UserId = user.Id,
-            }
-        ];
+        _refreshTokenEntity.ExpiryDate = DateTime.UtcNow.Add(JwtConfiguration.RefreshTokenLifetime);
+        _refreshTokenEntity.Token = refreshToken;
+        RefreshTokenEntity[] refreshTokens = [_refreshTokenEntity,];
 
         var refreshTokensDbSetMock = refreshTokens.BuildMockDbSet();
-
         DbContextMock
             .Setup(dbContext => dbContext.RefreshTokens)
             .Returns(refreshTokensDbSetMock.Object);
@@ -82,7 +75,7 @@ public class IdentityServiceMeTests : BaseIdentityServiceTests
             failure => throw new Exception("Should not be failure.")
         );
 
-        matchResult.User.Id.ShouldBe(user.Id);
+        matchResult.User.Id.ShouldBe(_refreshTokenEntity.User.Id);
         matchResult.Token.ShouldNotBeNullOrWhiteSpace();
         matchResult.RefreshToken.ShouldBe(refreshToken);
     }

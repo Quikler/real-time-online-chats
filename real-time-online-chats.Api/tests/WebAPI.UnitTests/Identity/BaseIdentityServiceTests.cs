@@ -9,12 +9,8 @@ using real_time_online_chats.Server.Services.Identity;
 
 namespace WebAPI.UnitTests.Identity;
 
-public class BaseIdentityServiceTests
+public class BaseIdentityServiceTests : BaseUnitTests
 {
-    protected const string TestEmail = "test@test.com";
-    protected const string TestPassword = "testtest";
-    protected const string TestPhone = "380777777777";
-
     protected virtual Mock<AppDbContext> DbContextMock { get; }
     protected virtual Mock<UserManager<UserEntity>> UserManagerMock { get; }
 
@@ -59,12 +55,4 @@ public class BaseIdentityServiceTests
 
         IdentityService = new IdentityService(DbContextMock.Object, UserManagerMock.Object, TokenProvider, jwtConfigurationOptions);
     }
-
-    protected static UserEntity CreateUserEntity() => new()
-    {
-        Id = Guid.NewGuid(),
-        Email = TestEmail,
-        UserName = TestEmail,
-        PhoneNumber = TestPhone,
-    };
 }
