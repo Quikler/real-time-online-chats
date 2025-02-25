@@ -20,7 +20,9 @@ public class MessageService(AppDbContext dbContext, IMessageAuthorizationService
     {
         if (!await _messageAuthorizationService.UserOwnsMessageAsync(messageId, userId)) return FailureDto.Forbidden("User doesn't own this message.");
 
-        var message = await _dbContext.Messages.FindAsync(messageId);
+        var message = await _dbContext.Messages
+            .Include(m => m.User)
+            .FirstOrDefaultAsync(m => m.Id == messageId);
 
         return message is null ? FailureDto.NotFound("Message not found.") : message.ToMessageChat();
     }

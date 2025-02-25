@@ -9,14 +9,8 @@ using real_time_online_chats.Server.Services.Google;
 
 namespace WebAPI.UnitTests.Google;
 
-public class BaseGoogleServiceTests
+public class BaseGoogleServiceTests : BaseUnitTests
 {
-    protected const string TestEmail = "test@test.com";
-    protected const string TestPassword = "testtest";
-    protected const string TestPhone = "380777777777";
-    protected const string TestFirstName = "TestFirstName";
-    protected const string TestLastName = "TestLastName";
-
     protected virtual Mock<AppDbContext> DbContextMock { get; }
     protected virtual Mock<UserManager<UserEntity>> UserManagerMock { get; }
 
@@ -54,17 +48,9 @@ public class BaseGoogleServiceTests
 
         var googleConfigurationOptions = Options.Create(GoogleConfiguration);
 
-        GoogleService = new GoogleService(googleConfigurationOptions, 
-            DbContextMock.Object, 
-            UserManagerMock.Object, 
+        GoogleService = new GoogleService(googleConfigurationOptions,
+            DbContextMock.Object,
+            UserManagerMock.Object,
             TokenProvider, jwtConfigurationOptions);
     }
-
-    protected static UserEntity CreateUserEntity() => new()
-    {
-        Id = Guid.NewGuid(),
-        Email = TestEmail,
-        UserName = TestEmail,
-        PhoneNumber = TestPhone,
-    };
 }

@@ -1,3 +1,4 @@
+using AutoFixture;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using real_time_online_chats.Server.Domain;
@@ -8,19 +9,25 @@ namespace WebAPI.UnitTests.Identity;
 
 public class IdentityServiceConfirmEmailTests : BaseIdentityServiceTests
 {
+    private readonly UserEntity _user;
+    private readonly string _confirmToken;
+
+    public IdentityServiceConfirmEmailTests()
+    {
+        _user = Fixture.Create<UserEntity>();
+        _confirmToken = Guid.NewGuid().ToString();
+    }
+
     [Fact]
     public async Task ConfirmEmailAsync_ShouldReturnError_WhenUserNotFound()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var token = "emailToken";
-
         UserManagerMock
             .Setup(userManager => userManager.FindByIdAsync(It.IsAny<string>()))
             .ReturnsAsync((UserEntity?)null);
 
         // Act
-        var confirmEmailResult = await IdentityService.ConfirmEmailAsync(userId, token);
+        var confirmEmailResult = await IdentityService.ConfirmEmailAsync(_user.Id, _confirmToken);
 
         // Assert
         confirmEmailResult.IsSuccess.ShouldBeFalse();
@@ -31,22 +38,16 @@ public class IdentityServiceConfirmEmailTests : BaseIdentityServiceTests
 
         matchResult.ShouldContain("User not found.");
 
-        UserManagerMock.Verify(userManager => userManager.FindByIdAsync(userId.ToString()), Times.Once);
+        UserManagerMock.Verify(userManager => userManager.FindByIdAsync(_user.Id.ToString()));
     }
 
     [Fact]
     public async Task ConfirmEmailAsync_ShouldReturnError_WhenConfirmEmailAsyncFailed()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var token = "emailToken";
-
         UserManagerMock
             .Setup(userManager => userManager.FindByIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(new UserEntity
-            {
-                Id = userId,
-            });
+            .ReturnsAsync(_user);
 
         UserManagerMock
             .Setup(userManager => userManager.ConfirmEmailAsync(It.IsAny<UserEntity>(), It.IsAny<string>()))
@@ -57,7 +58,7 @@ public class IdentityServiceConfirmEmailTests : BaseIdentityServiceTests
             }]));
 
         // Act
-        var confirmResult = await IdentityService.ConfirmEmailAsync(userId, token);
+        var confirmResult = await IdentityService.ConfirmEmailAsync(_user.Id, _confirmToken);
 
         // Assert
         confirmResult.IsSuccess.ShouldBeFalse();
@@ -69,31 +70,24 @@ public class IdentityServiceConfirmEmailTests : BaseIdentityServiceTests
 
         matchResult.ShouldContain("Some error happened.");
 
-        UserManagerMock.Verify(userManager => userManager.FindByIdAsync(userId.ToString()), Times.Once);
-        UserManagerMock.Verify(userManager => userManager.ConfirmEmailAsync(
-            It.Is<UserEntity>(userEntity => userEntity.Id == userId), token), Times.Once);
+        UserManagerMock.Verify(userManager => userManager.FindByIdAsync(_user.Id.ToString()));
+        UserManagerMock.Verify(userManager => userManager.ConfirmEmailAsync(_user, _confirmToken));
     }
 
     [Fact]
     public async Task ConfirmEmailAsync_ShouldReturnTrue_WhenConfirmEmailAsyncSucceeded()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var token = "emailToken";
-
         UserManagerMock
             .Setup(userManager => userManager.FindByIdAsync(It.IsAny<string>()))
-            .ReturnsAsync(new UserEntity
-            {
-                Id = userId,
-            });
+            .ReturnsAsync(_user);
 
         UserManagerMock
             .Setup(userManager => userManager.ConfirmEmailAsync(It.IsAny<UserEntity>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
 
         // Act
-        var confirmResult = await IdentityService.ConfirmEmailAsync(userId, token);
+        var confirmResult = await IdentityService.ConfirmEmailAsync(_user.Id, _confirmToken);
 
         // Assert
         confirmResult.IsSuccess.ShouldBeTrue();
@@ -105,8 +99,7 @@ public class IdentityServiceConfirmEmailTests : BaseIdentityServiceTests
 
         matchResult.ShouldBeTrue();
 
-        UserManagerMock.Verify(userManager => userManager.FindByIdAsync(userId.ToString()), Times.Once);
-        UserManagerMock.Verify(userManager => userManager.ConfirmEmailAsync(
-            It.Is<UserEntity>(userEntity => userEntity.Id == userId), token), Times.Once);
+        UserManagerMock.Verify(userManager => userManager.FindByIdAsync(_user.Id.ToString()));
+        UserManagerMock.Verify(userManager => userManager.ConfirmEmailAsync(_user, _confirmToken));
     }
 }

@@ -1,3 +1,4 @@
+using AutoFixture;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using real_time_online_chats.Server.Domain;
@@ -9,16 +10,25 @@ namespace WebAPI.UnitTests.Identity
 {
     public class IdentityServiceLoginTests : BaseIdentityServiceTests
     {
+        private readonly LoginUserDto _loginUserDto;
+        private readonly UserEntity _user;
+
+        public IdentityServiceLoginTests()
+        {
+            _loginUserDto = Fixture.Create<LoginUserDto>();
+            _user = Fixture.Build<UserEntity>()
+                .With(u => u.Email, _loginUserDto.Email)
+                .Create();
+        }
+
         [Fact]
         public async Task LoginAsync_ShouldReturnError_WhenUserNotFound()
         {
             // Arrange
-            var loginUserDto = CreateLoginUserDto(TestEmail, TestPassword);
-
             UserManagerMock.SetupFindByEmailAsync(null);
 
             // Act
-            var loginResult = await IdentityService.LoginAsync(loginUserDto);
+            var loginResult = await IdentityService.LoginAsync(_loginUserDto);
 
             // Assert
             loginResult.IsSuccess.ShouldBeFalse();
@@ -30,21 +40,18 @@ namespace WebAPI.UnitTests.Identity
 
             matchResult.ShouldContain("Invalid email or password.");
 
-            UserManagerMock.VerifyFindByEmailAsync(loginUserDto.Email);
+            UserManagerMock.VerifyFindByEmailAsync(_loginUserDto.Email);
         }
 
         [Fact]
         public async Task LoginAsync_ShouldReturnError_WhenPasswordIsInvalid()
         {
             // Arrange
-            var loginUserDto = CreateLoginUserDto(TestEmail, TestPassword);
-            var user = CreateUserEntity();
-
-            UserManagerMock.SetupFindByEmailAsync(user);
+            UserManagerMock.SetupFindByEmailAsync(_user);
             UserManagerMock.SetupCheckPasswordAsync(false);
 
             // Act
-            var loginResult = await IdentityService.LoginAsync(loginUserDto);
+            var loginResult = await IdentityService.LoginAsync(_loginUserDto);
 
             // Assert
             loginResult.IsSuccess.ShouldBeFalse();
@@ -56,23 +63,20 @@ namespace WebAPI.UnitTests.Identity
 
             matchResult.ShouldContain("Invalid email or password.");
 
-            UserManagerMock.VerifyFindByEmailAsync(loginUserDto.Email);
-            UserManagerMock.VerifyCheckPasswordAsync(user, loginUserDto.Password);
+            UserManagerMock.VerifyFindByEmailAsync(_loginUserDto.Email);
+            UserManagerMock.VerifyCheckPasswordAsync(_user, _loginUserDto.Password);
         }
 
         [Fact]
         public async Task LoginAsync_ShouldReturnError_WhenEmailNotConfirmed()
         {
             // Arrange
-            var loginUserDto = CreateLoginUserDto(TestEmail, TestPassword);
-            var user = CreateUserEntity();
-
-            UserManagerMock.SetupFindByEmailAsync(user);
+            UserManagerMock.SetupFindByEmailAsync(_user);
             UserManagerMock.SetupCheckPasswordAsync(true);
             UserManagerMock.SetupIsEmailConfirmedAsync(false);
 
             // Act
-            var loginResult = await IdentityService.LoginAsync(loginUserDto);
+            var loginResult = await IdentityService.LoginAsync(_loginUserDto);
 
             // Assert
             loginResult.IsSuccess.ShouldBeFalse();
@@ -84,25 +88,22 @@ namespace WebAPI.UnitTests.Identity
 
             matchResult.ShouldContain("Email is not confirmed.");
 
-            UserManagerMock.VerifyFindByEmailAsync(loginUserDto.Email);
-            UserManagerMock.VerifyCheckPasswordAsync(user, loginUserDto.Password);
-            UserManagerMock.VerifyIsEmailConfirmedAsync(user);
+            UserManagerMock.VerifyFindByEmailAsync(_loginUserDto.Email);
+            UserManagerMock.VerifyCheckPasswordAsync(_user, _loginUserDto.Password);
+            UserManagerMock.VerifyIsEmailConfirmedAsync(_user);
         }
 
         [Fact]
         public async Task LoginAsync_ShouldReturnError_WhenAccountIsLocked()
         {
             // Arrange
-            var loginUserDto = CreateLoginUserDto(TestEmail, TestPassword);
-            var user = CreateUserEntity();
-
-            UserManagerMock.SetupFindByEmailAsync(user);
+            UserManagerMock.SetupFindByEmailAsync(_user);
             UserManagerMock.SetupCheckPasswordAsync(true);
             UserManagerMock.SetupIsEmailConfirmedAsync(true);
             UserManagerMock.SetupIsLockedOutAsync(true);
 
             // Act
-            var loginResult = await IdentityService.LoginAsync(loginUserDto);
+            var loginResult = await IdentityService.LoginAsync(_loginUserDto);
 
             // Assert
             loginResult.IsSuccess.ShouldBeFalse();
@@ -114,31 +115,28 @@ namespace WebAPI.UnitTests.Identity
 
             matchResult.ShouldContain("Account is locked. Please try again later.");
 
-            UserManagerMock.VerifyFindByEmailAsync(loginUserDto.Email);
-            UserManagerMock.VerifyCheckPasswordAsync(user, loginUserDto.Password);
-            UserManagerMock.VerifyIsEmailConfirmedAsync(user);
-            UserManagerMock.VerifyIsLockedOutAsync(user);
+            UserManagerMock.VerifyFindByEmailAsync(_loginUserDto.Email);
+            UserManagerMock.VerifyCheckPasswordAsync(_user, _loginUserDto.Password);
+            UserManagerMock.VerifyIsEmailConfirmedAsync(_user);
+            UserManagerMock.VerifyIsLockedOutAsync(_user);
         }
 
         [Fact]
         public async Task LoginAsync_ShouldReturnGenerateSuccessDtoForUser_WhenEveryCheckPasses()
         {
             // Arrange
-            var loginUserDto = CreateLoginUserDto(TestEmail, TestPassword);
-            var user = CreateUserEntity();
-
             var refreshTokensDbSetMock = new Mock<DbSet<RefreshTokenEntity>>();
             DbContextMock
                 .Setup(dbContext => dbContext.RefreshTokens)
                 .Returns(refreshTokensDbSetMock.Object);
 
-            UserManagerMock.SetupFindByEmailAsync(user);
+            UserManagerMock.SetupFindByEmailAsync(_user);
             UserManagerMock.SetupCheckPasswordAsync(true);
             UserManagerMock.SetupIsEmailConfirmedAsync(true);
             UserManagerMock.SetupIsLockedOutAsync(false);
 
             // Act
-            var loginResult = await IdentityService.LoginAsync(loginUserDto);
+            var loginResult = await IdentityService.LoginAsync(_loginUserDto);
 
             // Assert
             loginResult.IsSuccess.ShouldBeTrue();
@@ -148,20 +146,14 @@ namespace WebAPI.UnitTests.Identity
                 failure => throw new Exception("Should not be failure.")
             );
 
-            matchResult.User.Id.ShouldBe(user.Id);
+            matchResult.User.Id.ShouldBe(_user.Id);
             matchResult.Token.ShouldNotBeNullOrWhiteSpace();
             matchResult.RefreshToken.ShouldNotBeNullOrWhiteSpace();
 
-            UserManagerMock.VerifyFindByEmailAsync(loginUserDto.Email);
-            UserManagerMock.VerifyCheckPasswordAsync(user, loginUserDto.Password);
-            UserManagerMock.VerifyIsEmailConfirmedAsync(user);
-            UserManagerMock.VerifyIsLockedOutAsync(user);
+            UserManagerMock.VerifyFindByEmailAsync(_loginUserDto.Email);
+            UserManagerMock.VerifyCheckPasswordAsync(_user, _loginUserDto.Password);
+            UserManagerMock.VerifyIsEmailConfirmedAsync(_user);
+            UserManagerMock.VerifyIsLockedOutAsync(_user);
         }
-
-        private static LoginUserDto CreateLoginUserDto(string email, string password) => new()
-        {
-            Email = email,
-            Password = password,
-        };
     }
 }

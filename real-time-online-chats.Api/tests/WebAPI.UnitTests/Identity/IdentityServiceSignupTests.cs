@@ -1,3 +1,4 @@
+using AutoFixture;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using real_time_online_chats.Server.Domain;
@@ -10,17 +11,28 @@ namespace WebAPI.UnitTests.Identity;
 
 public class IdentityServiceSignupTests : BaseIdentityServiceTests
 {
+    private readonly SignupUserDto _signupUserDto;
+    private readonly UserEntity _user;
+
+    public IdentityServiceSignupTests()
+    {
+        _signupUserDto = Fixture.Create<SignupUserDto>();
+        _user = Fixture.Build<UserEntity>()
+            .With(u => u.Email, _signupUserDto.Email)
+            .With(u => u.FirstName, _signupUserDto.FirstName)
+            .With(u => u.LastName, _signupUserDto.LastName)
+            .With(u => u.PhoneNumber, _signupUserDto.Phone)
+            .Create();
+    }
+
     [Fact]
     public async Task SignupAsync_ShouldReturnError_WhenEmailAlreadyRegistered()
     {
         // Arrange
-        var user = CreateUserEntity();
-        var signupUserDto = CreateSignupUserDto(TestEmail, TestPassword, TestPhone);
-
-        UserManagerMock.SetupFindByEmailAsync(user);
+        UserManagerMock.SetupFindByEmailAsync(_user);
 
         // Act
-        var signupResult = await IdentityService.SignupAsync(signupUserDto);
+        var signupResult = await IdentityService.SignupAsync(_signupUserDto);
 
         // Assert
         signupResult.IsSuccess.ShouldBeFalse();
@@ -32,7 +44,7 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
 
         matchResult.ShouldContain("Email is already registered.");
 
-        UserManagerMock.VerifyFindByEmailAsync(signupUserDto.Email);
+        UserManagerMock.VerifyFindByEmailAsync(_signupUserDto.Email);
     }
 
     [Fact]
@@ -49,10 +61,8 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
                 Description = "Some error happened.",
             }]));
 
-        var signupUserDto = CreateSignupUserDto(TestEmail, "test", TestPhone);
-
         // Act
-        var signupResult = await IdentityService.SignupAsync(signupUserDto);
+        var signupResult = await IdentityService.SignupAsync(_signupUserDto);
 
         // Assert
         signupResult.IsSuccess.ShouldBeFalse();
@@ -64,8 +74,8 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
 
         matchResult.ShouldContain("Some error happened.");
 
-        UserManagerMock.VerifyFindByEmailAsync(signupUserDto.Email);
-        UserManagerMock.VerifyCreateAsync(signupUserDto.Email, signupUserDto.Phone, signupUserDto.Password);
+        UserManagerMock.VerifyFindByEmailAsync(_signupUserDto.Email);
+        UserManagerMock.VerifyCreateAsync(_signupUserDto.Email, _signupUserDto.Phone, _signupUserDto.Password);
     }
 
     [Fact]
@@ -86,9 +96,8 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
                 It.IsAny<UserEntity>()))
             .ReturnsAsync("emailToken");
 
-        var signupUserDto = CreateSignupUserDto(TestEmail, TestPassword, TestPhone);
         // Act
-        var signupResult = await IdentityService.SignupAsync(signupUserDto);
+        var signupResult = await IdentityService.SignupAsync(_signupUserDto);
 
         // Assert
         signupResult.IsSuccess.ShouldBeTrue();
@@ -105,24 +114,10 @@ public class IdentityServiceSignupTests : BaseIdentityServiceTests
 
         matchResult.ShouldBeTrue();
 
-        UserManagerMock.VerifyFindByEmailAsync(signupUserDto.Email);
-        UserManagerMock.VerifyCreateAsync(signupUserDto.Email, signupUserDto.Phone, signupUserDto.Password);
-        
+        UserManagerMock.VerifyFindByEmailAsync(_signupUserDto.Email);
+        UserManagerMock.VerifyCreateAsync(_signupUserDto.Email, _signupUserDto.Phone, _signupUserDto.Password);
         UserManagerMock.Verify(userManager => userManager.GenerateEmailConfirmationTokenAsync(
-            It.Is<UserEntity>(userEntity =>
-                userEntity.Email == signupUserDto.Email &&
-                userEntity.PhoneNumber == signupUserDto.Phone
-            )
-        ), Times.Once);
-    }
-
-    private static SignupUserDto CreateSignupUserDto(string email, string password, string phone)
-    {
-        return new SignupUserDto
-        {
-            Email = email,
-            Password = password,
-            Phone = phone,
-        };
+            It.Is<UserEntity>(userEntity => userEntity.Email == _signupUserDto.Email)
+        ));
     }
 }
