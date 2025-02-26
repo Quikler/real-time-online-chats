@@ -4,21 +4,23 @@ using real_time_online_chats.Server.Data;
 using real_time_online_chats.Server.Domain;
 using real_time_online_chats.Server.DTOs;
 using real_time_online_chats.Server.DTOs.Chat;
-using real_time_online_chats.Server.DTOs.Message;
 using real_time_online_chats.Server.DTOs.User;
 using real_time_online_chats.Server.Mapping;
+using real_time_online_chats.Server.Repositories.Chat;
 
 namespace real_time_online_chats.Server.Services.Chat;
 
-public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatAuthorizationService) : IChatService
+public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatAuthorizationService, IChatRepository chatRepository) : IChatService
 {
-    private readonly AppDbContext _dbContext = dbContext;
-    private readonly IChatAuthorizationService _chatAuthorizationService = chatAuthorizationService;
-
     public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize)
     {
-        int totalRecords = await _dbContext.Chats.CountAsync();
-        List<ChatEntity> chats = await _dbContext.Chats
+        if (pageNumber <= 0 || pageSize <= 0)
+        {
+            return FailureDto.BadRequest("Invalid page size or page number.");
+        }
+
+        int totalRecords = await dbContext.Chats.CountAsync();
+        List<ChatEntity> chats = await dbContext.Chats
             .AsNoTracking()
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -29,8 +31,13 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
 
     public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetAllOwnedChatsAsync(int pageNumber, int pageSize, Guid userId)
     {
-        int totalRecords = await _dbContext.Chats.CountAsync(c => c.OwnerId == userId);
-        List<ChatEntity> chats = await _dbContext.Chats
+        if (pageNumber <= 0 || pageSize <= 0)
+        {
+            return FailureDto.BadRequest("Invalid page size or page number.");
+        }
+
+        int totalRecords = await dbContext.Chats.CountAsync(c => c.OwnerId == userId);
+        List<ChatEntity> chats = await dbContext.Chats
             .Where(c => c.OwnerId == userId)
             .AsNoTracking()
             .Skip((pageNumber - 1) * pageSize)
@@ -47,7 +54,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
 
     public async Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId)
     {
-        ChatEntity? chat = await _dbContext.Chats
+        ChatEntity? chat = await dbContext.Chats
             .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.Owner)
@@ -56,70 +63,42 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
                 .ThenInclude(m => m.User)
             .FirstOrDefaultAsync(c => c.Id == chatId);
 
-        // ChatEntity? chat = await _dbContext.Chats
-        //     .AsNoTracking()
-        //     .Include(c => c.Owner)
-        //     .Include(c => c.Members)
-        //         .ThenInclude(m => m.Messages.Where(m => m.ChatId == chatId).OrderBy(m => m.CreationTime))
-        //     .FirstOrDefaultAsync(c => c.Id == chatId);
-
-        if (chat is null) return FailureDto.NotFound("Chat not found");
-
-        return new ChatDetailedDto
-        {
-            Id = chat.Id,
-            OwnerId = chat.OwnerId,
-            Title = chat.Title,
-            CreationTime = chat.CreationTime,
-            Messages = chat.Messages.Select(m => new MessageChatDto
-            {
-                Id = m.Id,
-                User = m.User.ToUserChat(),
-                Content = m.Content,
-            }),
-            Users = chat.Members.Append(chat.Owner).Select(m => m.ToUserChat())
-        };
+        return chat is not null ? chat.ToChatDetailed() : FailureDto.NotFound("Chat not found");
     }
 
     public async Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto)
     {
         ChatEntity chat = createChatDto.ToChat();
 
-        await _dbContext.Chats.AddAsync(chat);
-        int rows = await _dbContext.SaveChangesAsync();
+        await dbContext.Chats.AddAsync(chat);
+        int rows = await dbContext.SaveChangesAsync();
 
         return rows == 0 ? FailureDto.BadRequest("Cannot create chat") : chat.ToChatPreview();
     }
 
     public async Task<Result<bool, FailureDto>> UpdateChatAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId)
     {
-        if (!await _chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
 
-        int rows = await _dbContext.Chats
-            .Where(c => c.Id == chatId)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(c => c.Title, updateChatDto.Title)
-            );
+        int rows = await chatRepository.UpdateChatTitleAsync(chatId, updateChatDto.Title);
 
         return rows == 0 ? FailureDto.BadRequest("Cannot update chat") : true;
     }
 
     public async Task<Result<bool, FailureDto>> DeleteChatAsync(Guid chatId, Guid userId)
     {
-        if (!await _chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
 
-        int rows = await _dbContext.Chats
-            .Where(c => c.Id == chatId)
-            .ExecuteDeleteAsync();
+        int rows = await chatRepository.DeleteChatAsync(chatId);
 
         return rows == 0 ? FailureDto.BadRequest("Cannot delete chat") : true;
     }
 
     public async Task<Result<UserChatDto, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
     {
-        if (await _chatAuthorizationService.IsUserExistInChatAsync(chatId, userId))
+        if (await chatAuthorizationService.IsUserExistInChatAsync(chatId, userId))
         {
-            var userChatDto = await _dbContext.Users
+            var userChatDto = await dbContext.Users
                 .Where(u => u.Id == userId)
                 .Select(u => u.ToUserChat())
                 .FirstOrDefaultAsync();
@@ -127,17 +106,17 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
             return userChatDto is null ? FailureDto.NotFound("User not found") : userChatDto;
         }
 
-        var chat = await _dbContext.Chats
+        var chat = await dbContext.Chats
             //.Include(c => c.Members)
             .FirstOrDefaultAsync(c => c.Id == chatId);
 
         if (chat is null) return FailureDto.NotFound("Chat not found");
 
-        var user = await _dbContext.Users.FindAsync(userId);
+        var user = await dbContext.Users.FindAsync(userId);
         if (user is null) return FailureDto.NotFound("User not found");
 
         chat.Members.Add(user);
-        int rows = await _dbContext.SaveChangesAsync();
+        int rows = await dbContext.SaveChangesAsync();
 
         return rows == 0 ? FailureDto.BadRequest("Cannot join chat") : user.ToUserChat();
     }
@@ -145,7 +124,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
     public async Task<Result<UserChatDto, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId)
     {
         // Find the user and include both OwnedChats and MemberChats
-        var user = await _dbContext.Users
+        var user = await dbContext.Users
             .Include(u => u.OwnedChats.Where(c => c.Id == chatId))
                 .ThenInclude(oc => oc.Members.Take(1))
             .Include(u => u.MemberChats)
@@ -176,7 +155,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
             else
             {
                 // No other members in the chat, so delete the chat
-                _dbContext.Chats.Remove(ownedChat);
+                dbContext.Chats.Remove(ownedChat);
             }
         }
         else
@@ -190,16 +169,16 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         }
 
         // Save changes to the database
-        int rows = await _dbContext.SaveChangesAsync();
+        int rows = await dbContext.SaveChangesAsync();
 
         return rows == 0 ? FailureDto.BadRequest("Cannot leave the chat") : user.ToUserChat();
     }
 
     public async Task<Result<bool, FailureDto>> KickMemberAsync(Guid chatId, Guid memberId, Guid userId)
     {
-        if (!await _chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own chat.");
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own chat.");
 
-        var chat = await _dbContext.Chats
+        var chat = await dbContext.Chats
             .Where(c => c.Id == chatId)
             .Include(c => c.Members.Where(m => m.Id == memberId))
             .FirstOrDefaultAsync();
@@ -208,7 +187,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
 
         chat.Members.Clear();
 
-        int rows = await _dbContext.SaveChangesAsync();
+        int rows = await dbContext.SaveChangesAsync();
         return rows == 0 ? FailureDto.BadRequest("Cannot kick user") : true;
     }
 

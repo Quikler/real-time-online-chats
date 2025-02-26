@@ -81,6 +81,24 @@ public static class DomainToDTO
         };
     }
 
+    public static ChatDetailedDto ToChatDetailed(this ChatEntity chatEntity)
+    {
+        return new ChatDetailedDto
+        {
+            Id = chatEntity.Id,
+            OwnerId = chatEntity.OwnerId,
+            Title = chatEntity.Title,
+            CreationTime = chatEntity.CreationTime,
+            Messages = chatEntity.Messages.Select(m => new MessageChatDto
+            {
+                Id = m.Id,
+                User = m.User.ToUserChat(),
+                Content = m.Content,
+            }),
+            Users = chatEntity.Members.Append(chatEntity.Owner).Select(m => m.ToUserChat())
+        };
+    }
+
     public static MessageChatDto ToMessageChat(this MessageEntity messageEntity)
     {
         return new MessageChatDto

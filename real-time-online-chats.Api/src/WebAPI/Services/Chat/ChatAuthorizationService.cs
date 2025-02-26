@@ -8,7 +8,7 @@ public class ChatAuthorizationService(AppDbContext dbContext) : IChatAuthorizati
 {
     private readonly AppDbContext _dbContext = dbContext;
 
-    public async Task<bool> IsUserOwnsChatAsync(Guid chatId, Guid userId)
+    public virtual async Task<bool> IsUserOwnsChatAsync(Guid chatId, Guid userId)
     {
         return await _dbContext.Chats
             .Where(c => c.Id == chatId)
@@ -16,7 +16,7 @@ public class ChatAuthorizationService(AppDbContext dbContext) : IChatAuthorizati
             .FirstOrDefaultAsync() == userId;
     }
 
-    public Task<bool> IsUserExistInChatAsync(Guid chatId, Guid userId)
+    public virtual Task<bool> IsUserExistInChatAsync(Guid chatId, Guid userId)
     {
         return _dbContext.Chats
             .Where(c => c.Id == chatId)

@@ -13,6 +13,7 @@ using real_time_online_chats.Server.Factories.SmtpClient;
 using real_time_online_chats.Server.Filters;
 using real_time_online_chats.Server.Hubs;
 using real_time_online_chats.Server.Providers;
+using real_time_online_chats.Server.Repositories.Chat;
 using real_time_online_chats.Server.Services.Chat;
 using real_time_online_chats.Server.Services.Cloudinary;
 using real_time_online_chats.Server.Services.Google;
@@ -102,6 +103,8 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IMessageAuthorizationService, MessageAuthorizationService>();
 builder.Services.AddScoped<IGoogleService, GoogleService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 var jwtConfig = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>()
     ?? throw new InvalidOperationException("Configuration for JwtConfiguration is missing or invalid.");

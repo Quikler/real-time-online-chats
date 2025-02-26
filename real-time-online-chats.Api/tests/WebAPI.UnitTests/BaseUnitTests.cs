@@ -4,9 +4,9 @@ namespace WebAPI.UnitTests;
 
 public class BaseUnitTests
 {
-    protected virtual Fixture Fixture { get; init; }
+    protected static Fixture Fixture { get; }
 
-    public BaseUnitTests()
+    static BaseUnitTests()
     {
         Fixture = new Fixture();
         Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
