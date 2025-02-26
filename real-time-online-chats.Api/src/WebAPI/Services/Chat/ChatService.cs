@@ -10,7 +10,10 @@ using real_time_online_chats.Server.Repositories.Chat;
 
 namespace real_time_online_chats.Server.Services.Chat;
 
-public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatAuthorizationService, IChatRepository chatRepository) : IChatService
+public class ChatService(AppDbContext dbContext,
+    IChatAuthorizationService chatAuthorizationService,
+    IChatRepository chatRepository)
+    : IChatService
 {
     public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize)
     {
@@ -70,8 +73,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
     {
         ChatEntity chat = createChatDto.ToChat();
 
-        await dbContext.Chats.AddAsync(chat);
-        int rows = await dbContext.SaveChangesAsync();
+        int rows = await chatRepository.AddChatAsync(chat);
 
         return rows == 0 ? FailureDto.BadRequest("Cannot create chat") : chat.ToChatPreview();
     }
@@ -133,6 +135,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         if (user is null) return FailureDto.NotFound("User not found");
 
         // Check if the user is the owner of the chat
+
         var ownedChat = user.OwnedChats.FirstOrDefault(c => c.Id == chatId);
         if (ownedChat is not null)
         {
@@ -190,8 +193,35 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         return rows == 0 ? FailureDto.BadRequest("Cannot kick user") : true;
     }
 
-    public Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId)
+    public async Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId, Guid userId)
     {
-        throw new NotImplementedException();
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
+
+        var chat = await dbContext.Chats
+            .Where(c => c.Id == chatId)
+            .Include(c => c.Owner)
+            .Include(c => c.Members.Where(m => m.Id == newOwnerId))
+            .FirstOrDefaultAsync();
+
+        if (chat is null) return FailureDto.NotFound("Chat not found");
+
+        var newOwner = chat.Members.FirstOrDefault();
+        if (newOwner is null) return FailureDto.NotFound("User not found");
+        var owner = chat.Owner;
+
+        // Transfer ownership to the new owner
+        chat.OwnerId = newOwner.Id;
+        chat.Owner = newOwner;
+
+        // Remove the chat from the current owner's OwnedChats
+        owner.OwnedChats.Remove(chat);
+        owner.MemberChats.Add(chat);
+
+        // Add the chat to the new owner's OwnedChats and remove it from MemberChats because he's a new owner
+        newOwner.OwnedChats.Add(chat);
+        newOwner.MemberChats.Remove(chat);
+
+        int rows = await dbContext.SaveChangesAsync();
+        return rows == 0 ? FailureDto.BadRequest("Cannot change owner") : true;
     }
 }
