@@ -94,7 +94,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         return rows == 0 ? FailureDto.BadRequest("Cannot delete chat") : true;
     }
 
-    public async Task<Result<UserChatDto, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
+    public async Task<Result<(UserChatDto user, bool isAlreadyInChat), FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
     {
         if (await chatAuthorizationService.IsUserExistInChatAsync(chatId, userId))
         {
@@ -103,7 +103,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
                 .Select(u => u.ToUserChat())
                 .FirstOrDefaultAsync();
 
-            return userChatDto is null ? FailureDto.NotFound("User not found") : userChatDto;
+            return userChatDto is null ? FailureDto.NotFound("User not found") : (userChatDto, true);
         }
 
         var chat = await dbContext.Chats
@@ -118,7 +118,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         chat.Members.Add(user);
         int rows = await dbContext.SaveChangesAsync();
 
-        return rows == 0 ? FailureDto.BadRequest("Cannot join chat") : user.ToUserChat();
+        return rows == 0 ? FailureDto.BadRequest("Cannot join chat") : (user.ToUserChat(), false);
     }
 
     public async Task<Result<UserChatDto, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId)
@@ -161,8 +161,7 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
         else
         {
             // User is a member of the chat
-            var memberChat = user.MemberChats.FirstOrDefault(c => c.Id == chatId);
-            if (memberChat is null) return FailureDto.BadRequest("User doesn't exist in the chat"); // User is not a member of the chat
+            var memberChat = user.MemberChats.First(c => c.Id == chatId);
 
             // Remove the chat from the user's MemberChats
             user.MemberChats.Remove(memberChat);
@@ -176,14 +175,14 @@ public class ChatService(AppDbContext dbContext, IChatAuthorizationService chatA
 
     public async Task<Result<bool, FailureDto>> KickMemberAsync(Guid chatId, Guid memberId, Guid userId)
     {
-        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own chat.");
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
 
         var chat = await dbContext.Chats
             .Where(c => c.Id == chatId)
             .Include(c => c.Members.Where(m => m.Id == memberId))
             .FirstOrDefaultAsync();
 
-        if (chat is null) return FailureDto.NotFound("Chat not found.");
+        if (chat is null) return FailureDto.NotFound("Chat not found");
 
         chat.Members.Clear();
 

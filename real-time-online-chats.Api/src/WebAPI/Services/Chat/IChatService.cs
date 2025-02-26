@@ -16,7 +16,7 @@ public interface IChatService
     Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto);
     Task<Result<bool, FailureDto>> UpdateChatAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId);
     Task<Result<bool, FailureDto>> DeleteChatAsync(Guid chatId, Guid userId);
-    Task<Result<UserChatDto, FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId);
+    Task<Result<(UserChatDto user, bool isAlreadyInChat), FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId);
     Task<Result<UserChatDto, FailureDto>> UserLeaveChatAsync(Guid chatId, Guid userId);
     Task<Result<bool, FailureDto>> KickMemberAsync(Guid chatId, Guid userId, Guid currentUserId);
     Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId);
