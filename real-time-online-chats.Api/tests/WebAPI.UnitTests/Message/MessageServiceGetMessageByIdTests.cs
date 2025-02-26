@@ -14,8 +14,8 @@ public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
 
     public MessageServiceGetMessageByIdTests()
     {
-        _message = Fixture.Create<MessageEntity>();
         _user = Fixture.Create<UserEntity>();
+        _message = Fixture.Create<MessageEntity>();
     }
 
     [Fact]
@@ -75,8 +75,6 @@ public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
     public async Task GetMessageByIdAsync_ShouldReturnMessage_WhenEveryCheckPasses()
     {
         // Arrange
-        const string testContent = "test_content";
-        _message.Content = testContent;
         _message.User = _user;
         _message.UserId = _user.Id;
 
@@ -101,7 +99,7 @@ public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
             failure => throw new Exception("Should not be failure.")
         );
 
-        matchResult.Content.ShouldBe(testContent);
+        matchResult.Content.ShouldBe(_message.Content);
         matchResult.Id.ShouldBe(_message.Id);
         matchResult.User.Id.ShouldBe(_user.Id);
 
