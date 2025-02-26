@@ -31,12 +31,12 @@ public class ChatServiceDeleteChatTests : BaseChatServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var updateResult = await ChatService.DeleteChatAsync(chatId, _user.Id);
+        var deleteResult = await ChatService.DeleteChatAsync(chatId, _user.Id);
 
         // Assert
-        updateResult.IsSuccess.ShouldBeFalse();
+        deleteResult.IsSuccess.ShouldBeFalse();
 
-        var matchResult = updateResult.Match(
+        var matchResult = deleteResult.Match(
             chatPreviewDto => throw new Exception("Should not be success"),
             failure => failure
         );

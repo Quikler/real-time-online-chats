@@ -34,12 +34,12 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var updateResult = await ChatService.UpdateChatAsync(chatId, _updateChatDto, _user.Id);
+        var createResult = await ChatService.UpdateChatAsync(chatId, _updateChatDto, _user.Id);
 
         // Assert
-        updateResult.IsSuccess.ShouldBeFalse();
+        createResult.IsSuccess.ShouldBeFalse();
 
-        var matchResult = updateResult.Match(
+        var matchResult = createResult.Match(
             chatPreviewDto => throw new Exception("Should not be success"),
             failure => failure
         );

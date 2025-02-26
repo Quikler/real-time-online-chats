@@ -107,14 +107,14 @@ public class ChatsController(
     [HttpPost(ApiRoutes.Chats.Join)]
     public async Task<IActionResult> Join([FromRoute] Guid chatId)
     {
-        if (await _chatAuthorizationService.IsUserExistInChatAsync(chatId, UserId)) return Ok();
-
         var result = await _chatService.UserJoinChatAsync(chatId, UserId);
 
-        return await result.MatchAsync<IActionResult>(
-            async userChatDto =>
+        return await result.MatchAsync(
+            async (userTyple) =>
             {
-                var response = userChatDto.ToResponse();
+                if (userTyple.isAlreadyInChat) return Ok();
+
+                var response = userTyple.user.ToResponse();
                 await _messageHub.Clients.Group(chatId.ToString()).JoinChat(response);
                 return Ok(response);
             },
