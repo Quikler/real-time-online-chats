@@ -22,7 +22,7 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
     }
 
     [Fact]
-    public async Task CreateChatAsync_ShouldReturnError_WhenSaveChangesReturnZero()
+    public async Task CreateChatAsync_ShouldReturnError_WhenAddChatAsyncReturnZero()
     {
         // Arrange
         List<ChatEntity> chatEntities = [.. Fixture.CreateMany<ChatEntity>()];
@@ -32,8 +32,8 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
             .Setup(dbContext => dbContext.Chats)
             .Returns(chatEntitiesDbSetMock.Object);
 
-        DbContextMock
-            .Setup(dbContext => dbContext.SaveChangesAsync(It.IsAny<CancellationToken>()))
+        ChatRepository
+            .Setup(chatRepository => chatRepository.AddChatAsync(It.IsAny<ChatEntity>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
 
         // Act
@@ -50,9 +50,9 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
         matchResult.FailureCode.ShouldBe(FailureCode.BadRequest);
         matchResult.Errors.ShouldContain("Cannot create chat");
 
-        DbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()));
-        chatEntitiesDbSetMock.Verify(chats => chats.AddAsync(
-            It.Is<ChatEntity>(c => c.Title == _createChatDto.Title && c.OwnerId == _createChatDto.OwnerId), It.IsAny<CancellationToken>()
+        ChatRepository.Verify(chatRepository => chatRepository.AddChatAsync(
+            It.Is<ChatEntity>(chat => chat.Title == _createChatDto.Title && chat.OwnerId == _createChatDto.OwnerId),
+            It.IsAny<CancellationToken>()
         ));
     }
 
@@ -68,8 +68,8 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
             .Setup(dbContext => dbContext.Chats)
             .Returns(chatEntitiesDbSetMock.Object);
 
-        DbContextMock
-            .Setup(dbContext => dbContext.SaveChangesAsync(It.IsAny<CancellationToken>()))
+        ChatRepository
+            .Setup(chatRepository => chatRepository.AddChatAsync(It.IsAny<ChatEntity>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -85,9 +85,9 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
 
         matchResult.Title.ShouldBe(_createChatDto.Title);
 
-        DbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()));
-        chatEntitiesDbSetMock.Verify(chats => chats.AddAsync(
-            It.Is<ChatEntity>(c => c.Title == _createChatDto.Title && c.OwnerId == _createChatDto.OwnerId), It.IsAny<CancellationToken>()
+        ChatRepository.Verify(chatRepository => chatRepository.AddChatAsync(
+            It.Is<ChatEntity>(chat => chat.Title == _createChatDto.Title && chat.OwnerId == _createChatDto.OwnerId),
+            It.IsAny<CancellationToken>()
         ));
     }
 

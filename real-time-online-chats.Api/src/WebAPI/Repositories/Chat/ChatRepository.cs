@@ -1,23 +1,28 @@
 
 using Microsoft.EntityFrameworkCore;
 using real_time_online_chats.Server.Data;
+using real_time_online_chats.Server.Domain;
 
 namespace real_time_online_chats.Server.Repositories.Chat;
 
 public class ChatRepository(AppDbContext dbContext) : IChatRepository
 {
-    private readonly AppDbContext _dbContext = dbContext;
-
-    public virtual async Task<int> DeleteChatAsync(Guid chatId)
+    public virtual async Task<int> AddChatAsync(ChatEntity chat, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Chats
+        await dbContext.Chats.AddAsync(chat, cancellationToken);
+        return await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public virtual async Task<int> DeleteChatAsync(Guid chatId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Chats
             .Where(c => c.Id == chatId)
             .ExecuteDeleteAsync();
     }
 
-    public virtual async Task<int> UpdateChatTitleAsync(Guid chatId, string title)
+    public virtual async Task<int> UpdateChatTitleAsync(Guid chatId, string title, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Chats
+        return await dbContext.Chats
             .Where(c => c.Id == chatId)
             .ExecuteUpdateAsync(s => s.SetProperty(c => c.Title, title));
     }

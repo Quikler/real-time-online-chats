@@ -63,7 +63,7 @@ public class ChatServiceDeleteChatTests : BaseChatServiceTests
             .ReturnsAsync(true);
 
         ChatRepository
-            .Setup(chatRepository => chatRepository.DeleteChatAsync(It.IsAny<Guid>()))
+            .Setup(chatRepository => chatRepository.DeleteChatAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -78,6 +78,6 @@ public class ChatServiceDeleteChatTests : BaseChatServiceTests
         );
 
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserOwnsChatAsync(_ownedChat.Id, _user.Id));
-        ChatRepository.Verify(chatRepository => chatRepository.DeleteChatAsync(_ownedChat.Id));
+        ChatRepository.Verify(chatRepository => chatRepository.DeleteChatAsync(_ownedChat.Id, It.IsAny<CancellationToken>()));
     }
 }

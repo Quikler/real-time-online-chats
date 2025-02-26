@@ -66,7 +66,7 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
             .ReturnsAsync(true);
 
         ChatRepository
-            .Setup(chatRepository => chatRepository.UpdateChatTitleAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(chatRepository => chatRepository.UpdateChatTitleAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         // Act
@@ -81,6 +81,6 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
         );
 
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserOwnsChatAsync(_ownedChat.Id, _user.Id));
-        ChatRepository.Verify(chatRepository => chatRepository.UpdateChatTitleAsync(_ownedChat.Id, _updateChatDto.Title));
+        ChatRepository.Verify(chatRepository => chatRepository.UpdateChatTitleAsync(_ownedChat.Id, _updateChatDto.Title, It.IsAny<CancellationToken>()));
     }
 }
