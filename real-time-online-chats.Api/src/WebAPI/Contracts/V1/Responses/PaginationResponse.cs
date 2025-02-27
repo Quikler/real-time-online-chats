@@ -1,9 +1,6 @@
-using System;
-using real_time_online_chats.Server.Contracts.V1.Responses.Chat;
-
 namespace real_time_online_chats.Server.Contracts.V1.Responses;
 
-public class PaginatedResponse<T>
+public class PaginationResponse<T>
 {
     public int TotalCount { get; set; }
     public int PageNumber { get; set; }

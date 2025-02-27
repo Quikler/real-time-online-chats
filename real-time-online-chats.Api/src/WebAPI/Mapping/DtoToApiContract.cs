@@ -53,9 +53,9 @@ public static class DtoToApiContract
         };
     }
 
-    public static PaginatedResponse<TResult> ToResponse<T, TResult>(this PaginationDto<T> paginationDto, Func<T, TResult> itemsSelect)
+    public static PaginationResponse<TResult> ToResponse<T, TResult>(this PaginationDto<T> paginationDto, Func<T, TResult> itemsSelect)
     {
-        return new PaginatedResponse<TResult>
+        return new PaginationResponse<TResult>
         {
             TotalCount = paginationDto.TotalCount,
             PageNumber = paginationDto.PageNumber,

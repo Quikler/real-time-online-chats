@@ -35,4 +35,31 @@ public class UsersController(IUserService userService) : ControllerBase
             failure => failure.ToActionResult()
         );
     }
+
+    [HttpGet(ApiRoutes.Users.OwnerChats)]
+    public async Task<IActionResult> OwnerChats([FromRoute] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+    {
+        if (page <= 0 || pageSize <= 0)
+        {
+            return BadRequest("Invalid page size or page number.");
+        }
+        
+        var result = await _userService.GetUserOwnerChatsAsync(page, pageSize, userId);
+
+        return result.Match(
+            paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),
+            failure => failure.ToActionResult()
+        );
+    }
+
+    [HttpGet(ApiRoutes.Users.MemberChats)]
+    public async Task<IActionResult> MemberChats([FromRoute] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+    {
+        var result = await _userService.GetUserMemberChatsAsync(page, pageSize, userId);
+
+        return result.Match(
+            paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),
+            failure => failure.ToActionResult()
+        );
+    }
 }

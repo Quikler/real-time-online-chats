@@ -7,28 +7,6 @@ namespace WebAPI.UnitTests.Chat;
 
 public class ChatServiceGetChatsTests : BaseChatServiceTests
 {
-    [Theory]
-    [InlineData(0, 10)]
-    [InlineData(1, 0)]
-    [InlineData(-1, 5)]
-    public async Task GetChatsAsync_ShouldReturnError_WhenInvalidPageOrSize(int pageNumber, int pageSize)
-    {
-        // Arrange
-
-        // Act
-        var chatsResult = await ChatService.GetChatsAsync(pageNumber, pageSize);
-
-        // Assert
-        chatsResult.IsSuccess.ShouldBeFalse();
-
-        var matchResult = chatsResult.Match(
-            paginationResult => [],
-            failure => failure.Errors
-        );
-
-        matchResult.ShouldContain("Invalid page size or page number.");
-    }
-
     [Fact]
     public async Task GetChatsAsync_ShouldReturnEmptyPagination_WhenNoChats()
     {

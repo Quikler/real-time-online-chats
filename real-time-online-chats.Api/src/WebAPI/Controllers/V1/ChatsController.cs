@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using real_time_online_chats.Server.Attributes;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
 using real_time_online_chats.Server.DTOs.Chat;
@@ -45,7 +44,6 @@ public class ChatsController(
     }
 
     [HttpGet(ApiRoutes.Chats.GetDetailed)]
-    [RequireUserId]
     public async Task<IActionResult> GetDetailed([FromRoute] Guid chatId)
     {
         var result = await _chatService.GetChatDetailedByIdAsync(chatId);
@@ -56,19 +54,7 @@ public class ChatsController(
         );
     }
 
-    [HttpGet(ApiRoutes.Chats.GetAllOwned)]
-    public async Task<IActionResult> GetAllOwned([FromQuery] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
-    {
-        var result = await _chatService.GetAllOwnedChatsAsync(page, pageSize, userId);
-
-        return result.Match(
-            paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),
-            failure => failure.ToActionResult()
-        );
-    }
-
     [HttpPost(ApiRoutes.Chats.Create)]
-    [RequireUserId]
     public async Task<IActionResult> Create([FromBody] CreateChatRequest request)
     {
         CreateChatDto createChatDto = request.ToDto(UserId);
