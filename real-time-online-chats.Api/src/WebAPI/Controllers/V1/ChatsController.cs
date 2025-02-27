@@ -43,15 +43,28 @@ public class ChatsController(
         );
     }
 
-    [HttpGet(ApiRoutes.Chats.GetDetailed)]
-    public async Task<IActionResult> GetDetailed([FromRoute] Guid chatId)
+    [HttpGet(ApiRoutes.Chats.Get)]
+    public async Task<IActionResult> Get([FromRoute] Guid chatId, [FromQuery] ChatLevel level = ChatLevel.Preview)
     {
-        var result = await _chatService.GetChatDetailedByIdAsync(chatId);
+        switch (level)
+        {
+            case ChatLevel.Preview:
+                var chatPreviewResult = await _chatService.GetChatPreviewByIdAsync(chatId);
+                return chatPreviewResult.Match(
+                    chatPreviewDto => Ok(chatPreviewDto.ToResponse()),
+                    failure => failure.ToActionResult()
+                );
 
-        return result.Match(
-            chatDetailedDto => Ok(chatDetailedDto.ToResponse()),
-            failure => failure.ToActionResult()
-        );
+            case ChatLevel.Detailed:
+                var chatDetailedResult = await _chatService.GetChatDetailedByIdAsync(chatId);
+                return chatDetailedResult.Match(
+                    chatDetailedDto => Ok(chatDetailedDto.ToResponse()),
+                    failure => failure.ToActionResult()
+                );
+
+            default:
+                return BadRequest("Invalid chat level");
+        }
     }
 
     [HttpPost(ApiRoutes.Chats.Create)]
@@ -61,7 +74,7 @@ public class ChatsController(
         var result = await _chatService.CreateChatAsync(createChatDto);
 
         return result.Match(
-            chatPreviewDto => CreatedAtAction(nameof(GetDetailed), new { chatId = chatPreviewDto.Id }, chatPreviewDto.ToResponse()),
+            chatPreviewDto => CreatedAtAction(nameof(Get), new { chatId = chatPreviewDto.Id }, chatPreviewDto.ToResponse()),
             failure => failure.ToActionResult()
         );
     }

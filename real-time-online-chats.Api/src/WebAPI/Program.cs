@@ -1,8 +1,10 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using real_time_online_chats.Server.Configurations;
@@ -38,10 +40,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<ValidateModelStateFilter>();
-});
+builder.Services
+    .AddControllers(options =>
+    {
+        options.Filters.Add<ValidateModelStateFilter>();
+    })
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddSignalR();
 

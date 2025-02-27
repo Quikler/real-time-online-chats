@@ -28,6 +28,16 @@ public class ChatService(AppDbContext dbContext,
         return chats.ToPagination(c => c.ToChatPreview(), totalRecords, pageNumber, pageSize);
     }
 
+    public async Task<Result<ChatPreviewDto, FailureDto>> GetChatPreviewByIdAsync(Guid chatId)
+    {
+        ChatPreviewDto? chatPreviewDto = await dbContext.Chats
+            .Where(c => c.Id == chatId)
+            .Select(c => c.ToChatPreview())
+            .FirstOrDefaultAsync();
+
+        return chatPreviewDto is not null ? chatPreviewDto : FailureDto.NotFound("Chat not found");
+    }
+
     public async Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId)
     {
         ChatEntity? chat = await dbContext.Chats
