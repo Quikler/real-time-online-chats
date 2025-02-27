@@ -17,12 +17,10 @@ namespace real_time_online_chats.Server.Controllers.V1;
 [Authorize]
 public class ChatsController(
     IChatService chatService,
-    IHubContext<MessageHub, IMessageClient> messageHub,
-    IChatAuthorizationService chatAuthorizationService)
+    IHubContext<MessageHub, IMessageClient> messageHub)
     : BaseController
 {
     private readonly IChatService _chatService = chatService;
-    private readonly IChatAuthorizationService _chatAuthorizationService = chatAuthorizationService;
     private readonly IHubContext<MessageHub, IMessageClient> _messageHub = messageHub;
 
     [HttpGet(ApiRoutes.Chats.GetAll)]
@@ -149,6 +147,21 @@ public class ChatsController(
             {
                 await _messageHub.Clients.Group(chatId.ToString()).KickMember(memberId);
                 return NoContent();
+            },
+            failure => failure.ToActionResult()
+        );
+    }
+
+    [HttpPatch(ApiRoutes.Chats.ChangeOwner)]
+    public async Task<IActionResult> ChangeOwner([FromRoute] Guid chatId, [FromQuery] Guid newOwnerId)
+    {
+        var result = await _chatService.ChangeOwnerAsync(chatId, newOwnerId, UserId);
+
+        return await result.MatchAsync<IActionResult>(
+            async success =>
+            {
+                await _messageHub.Clients.Group(chatId.ToString()).ChangeOwner(UserId, newOwnerId);
+                return Ok();
             },
             failure => failure.ToActionResult()
         );
