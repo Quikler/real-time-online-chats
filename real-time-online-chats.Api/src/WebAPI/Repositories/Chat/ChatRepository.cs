@@ -20,6 +20,11 @@ public class ChatRepository(AppDbContext dbContext) : IChatRepository
             .ExecuteDeleteAsync(cancellationToken: cancellationToken);
     }
 
+    public virtual Task<bool> IsChatExistAsync(Guid chatId, CancellationToken cancellationToken = default)
+    {
+        return dbContext.Chats.AnyAsync(c => c.Id == chatId, cancellationToken: cancellationToken);
+    }
+
     public virtual async Task<int> UpdateChatTitleAsync(Guid chatId, string title, CancellationToken cancellationToken = default)
     {
         return await dbContext.Chats

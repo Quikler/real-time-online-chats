@@ -10,14 +10,19 @@ namespace WebAPI.UnitTests.Chat;
 
 public class ChatServiceCreateChatTests : BaseChatServiceTests
 {
-    private readonly UserEntity _user;
+    private readonly UserEntity _owner;
     private readonly CreateChatDto _createChatDto;
+    private readonly List<UserEntity> _membersToAdd;
 
     public ChatServiceCreateChatTests()
     {
-        _user = Fixture.Create<UserEntity>();
+        _owner = Fixture.Create<UserEntity>();
+
+        _membersToAdd = [.. Fixture.CreateMany<UserEntity>(3)];
+
         _createChatDto = Fixture.Build<CreateChatDto>()
-            .With(c => c.OwnerId, _user.Id)
+            .With(c => c.OwnerId, _owner.Id)
+            .With(c => c.UsersIdToAdd, _membersToAdd.Select(u => u.Id))
             .Create();
     }
 
@@ -25,12 +30,19 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
     public async Task CreateChatAsync_ShouldReturnError_WhenAddChatAsyncReturnZero()
     {
         // Arrange
-        List<ChatEntity> chatEntities = [.. Fixture.CreateMany<ChatEntity>()];
+        List<ChatEntity> chatEntities = [];
         var chatEntitiesDbSetMock = chatEntities.BuildMockDbSet();
+
+        List<UserEntity> userEntities = [];
+        var userEntitiesDbSetMock = userEntities.BuildMockDbSet();
 
         DbContextMock
             .Setup(dbContext => dbContext.Chats)
             .Returns(chatEntitiesDbSetMock.Object);
+
+        DbContextMock
+            .Setup(dbContext => dbContext.Users)
+            .Returns(userEntitiesDbSetMock.Object);
 
         ChatRepository
             .Setup(chatRepository => chatRepository.AddChatAsync(It.IsAny<ChatEntity>(), It.IsAny<CancellationToken>()))
@@ -60,13 +72,18 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
     public async Task CreateChatAsync_ShouldReturnChatPreview_WhenSuccess()
     {
         // Arrange
-        List<ChatEntity> chatEntities = [.. Fixture.CreateMany<ChatEntity>()];
-
+        List<ChatEntity> chatEntities = [];
         var chatEntitiesDbSetMock = chatEntities.BuildMockDbSet();
+
+        var userEntitiesDbSetMock = _membersToAdd.BuildMockDbSet();
 
         DbContextMock
             .Setup(dbContext => dbContext.Chats)
             .Returns(chatEntitiesDbSetMock.Object);
+
+        DbContextMock
+            .Setup(dbContext => dbContext.Users)
+            .Returns(userEntitiesDbSetMock.Object);
 
         ChatRepository
             .Setup(chatRepository => chatRepository.AddChatAsync(It.IsAny<ChatEntity>(), It.IsAny<CancellationToken>()))
@@ -95,19 +112,23 @@ public class ChatServiceCreateChatTests : BaseChatServiceTests
     public async Task CreateChatAsync_ShouldReturnError_WhenTitleIsEmpty()
     {
         // Arrange
+        _createChatDto.Title = string.Empty;
+
         List<ChatEntity> chatEntities = [];
         var chatEntitiesDbSetMock = chatEntities.BuildMockDbSet();
 
-        var invalidChatDto = Fixture.Build<CreateChatDto>()
-            .With(c => c.Title, string.Empty) // Empty title
-            .Create();
+        var userEntitiesDbSetMock = _membersToAdd.BuildMockDbSet();
 
         DbContextMock
             .Setup(dbContext => dbContext.Chats)
             .Returns(chatEntitiesDbSetMock.Object);
 
+        DbContextMock
+            .Setup(dbContext => dbContext.Users)
+            .Returns(userEntitiesDbSetMock.Object);
+
         // Act
-        var createResult = await ChatService.CreateChatAsync(invalidChatDto);
+        var createResult = await ChatService.CreateChatAsync(_createChatDto);
 
         // Assert
         createResult.IsSuccess.ShouldBeFalse();

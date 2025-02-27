@@ -55,15 +55,19 @@ public class ChatService(AppDbContext dbContext,
     public async Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto)
     {
         ChatEntity chat = createChatDto.ToChat();
+        List<UserEntity> existingUsers = await dbContext.Users
+            .Where(u => createChatDto.UsersIdToAdd.Contains(u.Id))
+            .ToListAsync();
+        chat.Members.AddRange(existingUsers);
 
         int rows = await chatRepository.AddChatAsync(chat);
-
         return rows == 0 ? FailureDto.BadRequest("Cannot create chat") : chat.ToChatPreview();
     }
 
     public async Task<Result<bool, FailureDto>> UpdateChatAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId)
     {
-        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
+        var validationResult = await ValidateChatOwnershipAsync(chatId, userId);
+        if (!validationResult.IsSuccess) return validationResult;
 
         int rows = await chatRepository.UpdateChatTitleAsync(chatId, updateChatDto.Title);
 
@@ -72,7 +76,8 @@ public class ChatService(AppDbContext dbContext,
 
     public async Task<Result<bool, FailureDto>> DeleteChatAsync(Guid chatId, Guid userId)
     {
-        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
+        var validationResult = await ValidateChatOwnershipAsync(chatId, userId);
+        if (!validationResult.IsSuccess) return validationResult;
 
         int rows = await chatRepository.DeleteChatAsync(chatId);
 
@@ -81,6 +86,7 @@ public class ChatService(AppDbContext dbContext,
 
     public async Task<Result<(UserChatDto user, bool isAlreadyInChat), FailureDto>> UserJoinChatAsync(Guid chatId, Guid userId)
     {
+        if (!await chatRepository.IsChatExistAsync(chatId)) return FailureDto.NotFound("Chat not found");
         if (await chatAuthorizationService.IsUserExistInChatAsync(chatId, userId))
         {
             var userChatDto = await dbContext.Users
@@ -206,5 +212,16 @@ public class ChatService(AppDbContext dbContext,
 
         int rows = await dbContext.SaveChangesAsync();
         return rows == 0 ? FailureDto.BadRequest("Cannot change owner") : true;
+    }
+    
+    private async Task<Result<bool, FailureDto>> ValidateChatOwnershipAsync(Guid chatId, Guid userId)
+    {
+        if (!await chatRepository.IsChatExistAsync(chatId)) 
+            return FailureDto.NotFound("Chat not found");
+
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) 
+            return FailureDto.Forbidden("User doesn't own this chat");
+
+        return true;
     }
 }

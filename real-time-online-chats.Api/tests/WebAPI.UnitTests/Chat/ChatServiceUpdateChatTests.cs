@@ -25,10 +25,40 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
     }
 
     [Fact]
+    public async Task UpdateChatAsync_ShouldReturnError_WhenChatNotFound()
+    {
+        // Arrange
+        var chatId = Guid.NewGuid();
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var createResult = await ChatService.UpdateChatAsync(chatId, _updateChatDto, _user.Id);
+
+        // Assert
+        createResult.IsSuccess.ShouldBeFalse();
+
+        var matchResult = createResult.Match(
+            chatPreviewDto => throw new Exception("Should not be success"),
+            failure => failure
+        );
+
+        matchResult.FailureCode.ShouldBe(FailureCode.NotFound);
+        matchResult.Errors.ShouldContain("Chat not found");
+
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(chatId, It.IsAny<CancellationToken>()));
+    }
+
+    [Fact]
     public async Task UpdateChatAsync_ShouldReturnError_WhenUserDoesntOwnChat()
     {
         // Arrange
         var chatId = Guid.NewGuid();
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         ChatAuthorizationService
             .Setup(chatAuthorizationService => chatAuthorizationService.IsUserOwnsChatAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
             .ReturnsAsync(false);
@@ -47,15 +77,20 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
         matchResult.FailureCode.ShouldBe(FailureCode.Forbidden);
         matchResult.Errors.ShouldContain("User doesn't own this chat");
 
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(chatId, It.IsAny<CancellationToken>()));
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserOwnsChatAsync(chatId, _user.Id));
     }
 
     [Fact]
-    public async Task CreateChatAsync_ShouldReturnChatPreview_WhenUserOwnsChat()
+    public async Task UpdateChatAsync_ShouldReturnChatPreview_WhenUserOwnsChat()
     {
         // Arrange
         List<ChatEntity> chatEntities = [_ownedChat];
         var chatEntitiesDbSetMock = chatEntities.BuildMockDbSet();
+
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         DbContextMock
             .Setup(dbContext => dbContext.Chats)
@@ -80,6 +115,7 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
             failure => throw new Exception("Should not be failure")
         );
 
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(_ownedChat.Id, It.IsAny<CancellationToken>()));
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserOwnsChatAsync(_ownedChat.Id, _user.Id));
         ChatRepository.Verify(chatRepository => chatRepository.UpdateChatTitleAsync(_ownedChat.Id, _updateChatDto.Title, It.IsAny<CancellationToken>()));
     }

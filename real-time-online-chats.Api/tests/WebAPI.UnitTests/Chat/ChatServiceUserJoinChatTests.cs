@@ -22,6 +22,10 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
     public async Task UserJoinChatAsync_ShouldReturnUserWithTrueFlag_WhenUserAlreadyInChat()
     {
         // Arrange
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         ChatAuthorizationService
             .Setup(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id))
             .ReturnsAsync(true);
@@ -49,6 +53,7 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
 
         isAlreadyInChat.ShouldBeTrue();
 
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(_chat.Id, It.IsAny<CancellationToken>()));
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id));
     }
 
@@ -56,8 +61,8 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
     public async Task UserJoinChatAsync_ShouldReturnError_WhenChatNotFound()
     {
         // Arrange
-        ChatAuthorizationService
-            .Setup(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id))
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         List<ChatEntity> chatEntities = [];
@@ -81,13 +86,17 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
         matchResult.FailureCode.ShouldBe(FailureCode.NotFound);
         matchResult.Errors.ShouldContain("Chat not found");
 
-        ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id));
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(_chat.Id, It.IsAny<CancellationToken>()));
     }
 
     [Fact]
     public async Task UserJoinChatAsync_ShouldReturnError_WhenUserNotFound()
     {
         // Arrange
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         ChatAuthorizationService
             .Setup(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id))
             .ReturnsAsync(false);
@@ -120,6 +129,7 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
         matchResult.FailureCode.ShouldBe(FailureCode.NotFound);
         matchResult.Errors.ShouldContain("User not found");
 
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(_chat.Id, It.IsAny<CancellationToken>()));
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id));
         userEntitiesDbSetMock.Verify(usersDbSet => usersDbSet.FindAsync(_user.Id));
     }
@@ -128,6 +138,10 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
     public async Task UserJoinChatAsync_ShouldReturnError_WhenSaveChangesAsyncReturnsZero()
     {
         // Arrange
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         ChatAuthorizationService
             .Setup(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id))
             .ReturnsAsync(false);
@@ -168,6 +182,7 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
         matchResult.FailureCode.ShouldBe(FailureCode.BadRequest);
         matchResult.Errors.ShouldContain("Cannot join chat");
 
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(_chat.Id, It.IsAny<CancellationToken>()));
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id));
         userEntitiesDbSetMock.Verify(usersDbSet => usersDbSet.FindAsync(_user.Id));
         DbContextMock.Verify(dbContext => dbContext.SaveChangesAsync(It.IsAny<CancellationToken>()));
@@ -177,6 +192,10 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
     public async Task UserJoinChatAsync_ShouldReturnUser_WhenEveryCheckPass()
     {
         // Arrange
+        ChatRepository
+            .Setup(chatRepository => chatRepository.IsChatExistAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         ChatAuthorizationService
             .Setup(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id))
             .ReturnsAsync(false);
@@ -218,6 +237,7 @@ public class ChatServiceUserJoinChatTests : BaseChatServiceTests
         user.Id.ShouldBe(_user.Id);
         user.Email.ShouldBe(_user.Email);
 
+        ChatRepository.Verify(chatRepository => chatRepository.IsChatExistAsync(_chat.Id, It.IsAny<CancellationToken>()));
         ChatAuthorizationService.Verify(chatAuthorizationService => chatAuthorizationService.IsUserExistInChatAsync(_chat.Id, _user.Id));
         userEntitiesDbSetMock.Verify(usersDbSet => usersDbSet.FindAsync(_user.Id));
         DbContextMock.Verify(dbContext => dbContext.SaveChangesAsync(It.IsAny<CancellationToken>()));
