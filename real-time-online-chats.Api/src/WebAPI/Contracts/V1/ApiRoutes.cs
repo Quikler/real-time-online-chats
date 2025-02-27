@@ -32,6 +32,7 @@ public static class ApiRoutes
         public const string GetOwnedDetailed = BASE + "/chats/owned/detailed";
         public const string Create = BASE + "/chats";
         public const string Update = BASE + "/chats/{chatId}";
+        public const string ChangeOwner = BASE + "/chats/{chatId}/owner";
         public const string Delete = BASE + "/chats/{chatId}";
         public const string Join = BASE + "/chats/{chatId}/join";
         public const string Leave = BASE + "/chats/{chatId}/leave";

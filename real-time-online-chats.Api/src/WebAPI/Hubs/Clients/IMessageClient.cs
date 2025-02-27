@@ -11,4 +11,5 @@ public interface IMessageClient
     Task LeaveChat(UserChatResponse response);
     Task JoinChat(UserChatResponse response);
     Task KickMember(Guid memberId);
+    Task ChangeOwner(Guid oldOwner, Guid newOwner);
 }

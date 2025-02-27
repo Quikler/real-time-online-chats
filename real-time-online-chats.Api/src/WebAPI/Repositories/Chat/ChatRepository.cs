@@ -17,13 +17,13 @@ public class ChatRepository(AppDbContext dbContext) : IChatRepository
     {
         return await dbContext.Chats
             .Where(c => c.Id == chatId)
-            .ExecuteDeleteAsync();
+            .ExecuteDeleteAsync(cancellationToken: cancellationToken);
     }
 
     public virtual async Task<int> UpdateChatTitleAsync(Guid chatId, string title, CancellationToken cancellationToken = default)
     {
         return await dbContext.Chats
             .Where(c => c.Id == chatId)
-            .ExecuteUpdateAsync(s => s.SetProperty(c => c.Title, title));
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.Title, title), cancellationToken: cancellationToken);
     }
 }
