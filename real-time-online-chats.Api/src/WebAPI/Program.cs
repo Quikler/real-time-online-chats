@@ -4,7 +4,6 @@ using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using real_time_online_chats.Server.Configurations;
@@ -23,6 +22,8 @@ using real_time_online_chats.Server.Services.Identity;
 using real_time_online_chats.Server.Services.Mail;
 using real_time_online_chats.Server.Services.Message;
 using real_time_online_chats.Server.Services.User;
+using FluentValidation;
+using real_time_online_chats.Server.Validators;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -43,9 +44,11 @@ builder.Services.AddCors(options =>
 builder.Services
     .AddControllers(options =>
     {
-        options.Filters.Add<ValidateModelStateFilter>();
+        options.Filters.Add<ValidationFilter>();
     })
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddSignalR();
 

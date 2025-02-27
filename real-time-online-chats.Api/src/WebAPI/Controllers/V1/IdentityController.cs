@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
@@ -13,9 +12,9 @@ namespace real_time_online_chats.Server.Controllers.V1;
 public class IdentityController(IIdentityService identityService, IMailService mailService) : ControllerBase
 {
     [HttpGet(ApiRoutes.Identity.ConfirmEmail)]
-    public async Task<IActionResult> ConfirmEmail([FromQuery][Required] Guid userId, [FromQuery][Required] string token)
+    public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request)
     {
-        var result = await identityService.ConfirmEmailAsync(userId, token);
+        var result = await identityService.ConfirmEmailAsync(request.UserId, request.Token);
 
         return result.Match(
             success => Ok("Email confirmed successfully. Now you can login."),

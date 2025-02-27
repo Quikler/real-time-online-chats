@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -12,18 +11,15 @@ using real_time_online_chats.Server.Services.Message;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-public class MessagesController(IMessageService chatService, IHubContext<MessageHub, IMessageClient> messagehub) : ControllerBase
+[Authorize]
+public class MessagesController(IMessageService messageService, IHubContext<MessageHub, IMessageClient> messagehub) : ControllerBase
 {
-    private readonly IMessageService _messageService = chatService;
-    private readonly IHubContext<MessageHub, IMessageClient> _messageHub = messagehub;
-
     [HttpGet(ApiRoutes.Messages.Get)]
     public async Task<IActionResult> Get([FromRoute] Guid messageId)
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var result = await _messageService.GetMessageByIdAsync(messageId, userId);
+        var result = await messageService.GetMessageByIdAsync(messageId, userId);
 
         return result.Match(
             messageChatDto => Ok(messageChatDto.ToResponse()),
@@ -36,14 +32,14 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var result = await _messageService.CreateMessageAsync(request.ToDto(userId));
+        var result = await messageService.CreateMessageAsync(request.ToDto(userId));
 
         return await result.MatchAsync<IActionResult>(
             async messageChatDto =>
             {
                 var response = messageChatDto.ToResponse();
 
-                await _messageHub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
+                await messagehub.Clients.Group(request.ChatId.ToString()).SendMessage(response);
                 return CreatedAtAction(nameof(Get), new { messageId = response.Id }, response);
             },
             failure => failure.ToActionResult()
@@ -55,14 +51,14 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var result = await _messageService.UpdateMessageAsync(messageId, request.ToDto(userId));
+        var result = await messageService.UpdateMessageAsync(messageId, request.ToDto(userId));
 
         return await result.MatchAsync<IActionResult>(
             async messageChatDto =>
             {
                 var response = messageChatDto.ToResponse();
 
-                await _messageHub.Clients.Group(request.ChatId.ToString()).UpdateMessage(response);
+                await messagehub.Clients.Group(request.ChatId.ToString()).UpdateMessage(response);
                 return Ok(response);
             },
             failure => failure.ToActionResult()
@@ -74,11 +70,11 @@ public class MessagesController(IMessageService chatService, IHubContext<Message
     {
         if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
 
-        var result = await _messageService.DeleteMessageAsync(messageId, userId);
+        var result = await messageService.DeleteMessageAsync(messageId, userId);
 
         if (result.IsSuccess)
         {
-            await _messageHub.Clients.Group(chatId.ToString()).DeleteMessage(messageId);
+            await messagehub.Clients.Group(chatId.ToString()).DeleteMessage(messageId);
         }
 
         return result.Match(

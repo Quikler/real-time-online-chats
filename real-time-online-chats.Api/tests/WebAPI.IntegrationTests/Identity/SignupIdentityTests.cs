@@ -15,7 +15,7 @@ public class SignupIdentityTests(IntegrationTestWebApplicationFactory factory) :
         Email = email,
         Password = password,
         ConfirmPassword = confirmPassword,
-        Phone = "+380777777777",
+        Phone = "0977777777",
         FirstName = "Test",
         LastName = "Test",
     };
