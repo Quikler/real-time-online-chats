@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using real_time_online_chats.Server.Contracts.V1;
+using real_time_online_chats.Server.Contracts.V1.Requests;
 using real_time_online_chats.Server.Contracts.V1.Requests.User;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Mapping;
@@ -9,12 +10,10 @@ namespace real_time_online_chats.Server.Controllers.V1;
 
 public class UsersController(IUserService userService) : ControllerBase
 {
-    private readonly IUserService _userService = userService;
-
     [HttpGet(ApiRoutes.Users.GetProfile)]
     public async Task<IActionResult> GetProfile(Guid userId)
     {
-        var result = await _userService.GetUserProfileAsync(userId);
+        var result = await userService.GetUserProfileAsync(userId);
 
         return result.Match(
             userProfileDto => Ok(userProfileDto.ToResponse()),
@@ -28,7 +27,7 @@ public class UsersController(IUserService userService) : ControllerBase
         if (!HttpContext.TryGetUserId(out var currentUserId)) return Unauthorized();
         if (userId != currentUserId) return Forbid();
 
-        var result = await _userService.UpdateUserProfileAsync(userId, request.ToDto());
+        var result = await userService.UpdateUserProfileAsync(userId, request.ToDto());
 
         return result.Match(
             userProfileDto => Ok(userProfileDto.ToResponse()),
@@ -37,14 +36,9 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpGet(ApiRoutes.Users.OwnerChats)]
-    public async Task<IActionResult> OwnerChats([FromRoute] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+    public async Task<IActionResult> OwnerChats([FromRoute] Guid userId, [FromQuery] PaginationRequest request)
     {
-        if (page <= 0 || pageSize <= 0)
-        {
-            return BadRequest("Invalid page size or page number.");
-        }
-        
-        var result = await _userService.GetUserOwnerChatsAsync(page, pageSize, userId);
+        var result = await userService.GetUserOwnerChatsAsync(request.PageNumber, request.PageSize, userId);
 
         return result.Match(
             paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),
@@ -53,9 +47,9 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpGet(ApiRoutes.Users.MemberChats)]
-    public async Task<IActionResult> MemberChats([FromRoute] Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+    public async Task<IActionResult> MemberChats([FromRoute] Guid userId, [FromQuery] PaginationRequest request)
     {
-        var result = await _userService.GetUserMemberChatsAsync(page, pageSize, userId);
+        var result = await userService.GetUserMemberChatsAsync(request.PageNumber, request.PageSize, userId);
 
         return result.Match(
             paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),

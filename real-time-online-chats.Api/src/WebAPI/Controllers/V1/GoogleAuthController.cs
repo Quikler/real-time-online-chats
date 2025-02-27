@@ -8,15 +8,13 @@ namespace real_time_online_chats.Server.Controllers.V1;
 
 public class GoogleAuthController(IGoogleService googleService) : ControllerBase
 {
-    private readonly IGoogleService _googleService = googleService;
-
     [HttpPost(ApiRoutes.Google.Login)]
     public async Task<IActionResult> LoginGoogle([FromQuery] string credential)
     {
-        var payload = await _googleService.ValidateGoogleTokenAsync(credential);
+        var payload = await googleService.ValidateGoogleTokenAsync(credential);
         if (payload is null) return BadRequest("Invalid Google credential.");
 
-        var result = await _googleService.LoginAsync(payload);
+        var result = await googleService.LoginAsync(payload);
 
         return result.Match(
             authResult =>
@@ -31,10 +29,10 @@ public class GoogleAuthController(IGoogleService googleService) : ControllerBase
     [HttpPost(ApiRoutes.Google.Signup)]
     public async Task<IActionResult> SignupGoogle([FromQuery] string credential)
     {
-        var payload = await _googleService.ValidateGoogleTokenAsync(credential);
+        var payload = await googleService.ValidateGoogleTokenAsync(credential);
         if (payload is null) return BadRequest("Invalid Google credential.");
 
-        var result = await _googleService.SignupAsync(payload);
+        var result = await googleService.SignupAsync(payload);
 
         return result.Match(
             authResult =>
