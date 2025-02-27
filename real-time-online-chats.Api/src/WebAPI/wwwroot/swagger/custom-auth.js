@@ -4,6 +4,8 @@
   const tokenKey = "jwt_token"; // Key to store the token in localStorage
   const refreshUrl = "/api/v1/identity/refresh"; // Refresh token endpoint
 
+  console.log("Token: " + localStorage.getItem(tokenKey));
+
   // Intercept API responses
   const originalFetch = window.fetch;
   window.fetch = async (url, options) => {
