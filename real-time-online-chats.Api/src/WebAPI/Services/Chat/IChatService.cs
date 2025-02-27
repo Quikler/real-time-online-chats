@@ -10,7 +10,6 @@ public interface IChatService
     // Queries (Read Operations)
     Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize);
     Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId);
-    Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetAllOwnedChatsAsync(int pageNumber, int pageSize, Guid userId);
 
     // Commands (Write Operations)
     Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto);

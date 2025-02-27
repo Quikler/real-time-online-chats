@@ -17,42 +17,15 @@ public class ChatService(AppDbContext dbContext,
 {
     public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize)
     {
-        if (pageNumber <= 0 || pageSize <= 0)
-        {
-            return FailureDto.BadRequest("Invalid page size or page number.");
-        }
-
         int totalRecords = await dbContext.Chats.CountAsync();
         List<ChatEntity> chats = await dbContext.Chats
             .AsNoTracking()
+            //.OrderBy(c => Guid.NewGuid())
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         return chats.ToPagination(c => c.ToChatPreview(), totalRecords, pageNumber, pageSize);
-    }
-
-    public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetAllOwnedChatsAsync(int pageNumber, int pageSize, Guid userId)
-    {
-        if (pageNumber <= 0 || pageSize <= 0)
-        {
-            return FailureDto.BadRequest("Invalid page size or page number.");
-        }
-
-        int totalRecords = await dbContext.Chats.CountAsync(c => c.OwnerId == userId);
-        List<ChatEntity> chats = await dbContext.Chats
-            .Where(c => c.OwnerId == userId)
-            .AsNoTracking()
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return chats.ToPagination(c => c.ToChatPreview(), totalRecords, pageNumber, pageSize);
-    }
-
-    public Task<PaginationDto<ChatPreviewDto>> GetOwnedChatsWithDetailsAsync(int pageNumber, int pageSize, Guid userId)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId)

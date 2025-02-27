@@ -26,10 +26,7 @@ public static class ApiRoutes
     public static class Chats
     {
         public const string GetAll = BASE + "/chats";
-        public const string Get = BASE + "/chats/{chatId}";
-        public const string GetAllOwned = BASE + "/chats/owned";
         public const string GetDetailed = BASE + "/chats/{chatId}/detailed";
-        public const string GetOwnedDetailed = BASE + "/chats/owned/detailed";
         public const string Create = BASE + "/chats";
         public const string Update = BASE + "/chats/{chatId}";
         public const string ChangeOwner = BASE + "/chats/{chatId}/owner";
@@ -52,5 +49,7 @@ public static class ApiRoutes
     {
         public const string GetProfile = BASE + "/users/{userId}/profile";
         public const string EditProfile = BASE + "/users/{userId}/profile";
+        public const string OwnerChats = BASE + "/users/{userId}/owner-chats";
+        public const string MemberChats = BASE + "/users/{userId}/member-chats";
     }
 }

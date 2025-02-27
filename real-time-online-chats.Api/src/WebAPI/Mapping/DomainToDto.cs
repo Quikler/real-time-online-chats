@@ -61,14 +61,14 @@ public static class DomainToDTO
         };
     }
 
-    public static PaginationDto<TResult> ToPagination<T, TResult>(this List<T> list, Func<T, TResult> itemsSelect, int totalRecords, int pageNumber, int pageSize)
+    public static PaginationDto<TResult> ToPagination<T, TResult>(this IEnumerable<T> collection, Func<T, TResult> itemsSelect, int totalRecords, int pageNumber, int pageSize)
     {
         return new PaginationDto<TResult>
         {
             TotalCount = totalRecords,
             PageNumber = pageNumber,
             PageSize = pageSize,
-            Items = list.Select(itemsSelect)
+            Items = collection.Select(itemsSelect)
         };
     }
 
