@@ -7,6 +7,16 @@ namespace real_time_online_chats.Server.Repositories.Chat;
 
 public class ChatRepository(AppDbContext dbContext) : IChatRepository
 {
+    public virtual async Task<List<ChatEntity>> GetChatsAsync(int pageNumber, int pageSize)
+    {
+        return await dbContext.Chats
+            .AsNoTracking()
+            //.OrderBy(c => Guid.NewGuid())
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
     public virtual async Task<int> AddChatAsync(ChatEntity chat, CancellationToken cancellationToken = default)
     {
         await dbContext.Chats.AddAsync(chat, cancellationToken);
