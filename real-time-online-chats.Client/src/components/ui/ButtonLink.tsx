@@ -9,12 +9,12 @@ type CustomLinkProps = LinkProps & {
 export default function ButtonLink({ variant = "primary", className, ...rest }: CustomLinkProps) {
   const v = useVariant(
     [
-      { key: "primary", style: "bg-slate-600 hover:bg-slate-700" },
+      { key: "primary", style: "bg-slate-600 hover:bg-slate-500" },
       { key: "secondary", style: "bg-slate-400 hover:bg-slate-500" },
       { key: "danger", style: "bg-rose-600 hover:bg-rose-700" },
     ],
     variant,
-    "inline-flex items-center justify-center gap-2 text-slate-100 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-200 shadow-lg hover:shadow-slate-400/30"
+    "text-white px-6 py-2 inline-flex items-center justify-center gap-2 disabled:opacity-50 rounded-lg transition-colors duration-300"
   );
 
   return <Link {...rest} className={twMerge(`${v} ${className}`)} />;

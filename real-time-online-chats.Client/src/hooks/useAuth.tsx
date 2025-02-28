@@ -13,7 +13,7 @@ export type UserProfile = {
   email: string;
 };
 
-interface AuthContextType {
+type AuthContextType = {
   token: string | null | undefined;
   user: UserProfile | null | undefined;
   loginUser: (request: LoginRequest) => Promise<void>;
@@ -24,11 +24,11 @@ interface AuthContextType {
   isUserLoggedIn: () => boolean;
 }
 
-type Props = { children: React.ReactNode };
+type AuthProviderProps = { children: React.ReactNode };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-export const AuthProvider = ({ children }: Props) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const navigate = useNavigate();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null | undefined>(undefined);

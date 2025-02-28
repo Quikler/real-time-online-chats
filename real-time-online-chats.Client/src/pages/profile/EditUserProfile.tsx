@@ -1,74 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import FriendPreview from "./FriendPreview";
 import { UserService } from "@src/services/api/UserService";
-import { EditUserProfileType, UserFriendType, UserProfileType } from "./profile.types";
+import { EditUserProfileType } from "./profile.types";
 import EditProfileUserCard from "./EditProfileUserCard";
+import { useUserProfile } from "./UserProfileContext";
+import ErrorScreen from "@src/components/ui/ErrorScreen";
 
 const EditUserProfile = () => {
+  const { refreshUser, friends, ...userProfile } = useUserProfile();
   const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
 
-  if (!userId) return;
+  const [editUserProfile, setEditUserProfile] = useState<EditUserProfileType>(userProfile);
 
-  const [userProfile, setUserProfile] = useState<UserProfileType>({
-    id: "",
-    email: "",
-    firstName: "",
-    lastName: "",
-    aboutMe: "",
-    activityStatus: "",
-    casualStatus: "",
-    moodStatus: "",
-    workStatus: "",
-    gamingStatus: "",
-    avatarUrl: "",
-  });
+  const isChanged = useMemo(() => {
+    return JSON.stringify(userProfile) !== JSON.stringify(editUserProfile);
+  }, [userProfile, editUserProfile]);
 
-  const [editUserProfile, setEditUserProfile] = useState<EditUserProfileType>({
-    aboutMe: "",
-    activityStatus: "",
-    casualStatus: "",
-    moodStatus: "",
-    workStatus: "",
-    gamingStatus: "",
-  });
+  if (!userId) return <ErrorScreen />;
 
-  const [friends, setFriends] = useState<UserFriendType[]>();
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const abortController = new AbortController();
-
-    UserService.getUserProfile(userId, { signal: abortController.signal })
-      .then((data) => {
-        if (data) {
-          setUserProfile(data);
-          setFriends(data.friends);
-        }
-      })
-      .catch((e) => console.error("Error fetching profile:", e.message));
-
-    return () => abortController.abort();
-  }, [userId]);
-
-  const handleEditFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("Edit data:", editUserProfile);
-
-    UserService.updateUserProfile(userId, editUserProfile)
+    await UserService.updateUserProfile(userId, editUserProfile)
       .then(() => {
         console.log("Updated profile successfully");
       })
-      .catch((e) => console.error("Error updating progile:", e.message));
+      .catch((e) => console.error("Error updating profile:", e.message));
+
+    navigate(-1);
   };
 
-  const handleInputChange = (field: keyof UserProfileType, value: string) => {
+  const handleInputChange = (field: keyof EditUserProfileType, value: any) => {
     setEditUserProfile((prev) => ({ ...prev, [field]: value }));
   };
-
-  if (!userProfile) return;
 
   return (
     <>
@@ -79,20 +45,9 @@ const EditUserProfile = () => {
         >
           <div className="flex gap-8 lg:flex-row flex-col">
             <EditProfileUserCard
-              onAvatarChange={(file) => {
-                setEditUserProfile({ ...editUserProfile, avatar: file });
-              }}
+              isSubmitButtonEnabled={isChanged}
+              onAvatarChange={(value) => handleInputChange("avatar", value)}
               className="w-full flex-grow"
-              firstName={userProfile?.firstName}
-              lastName={userProfile?.lastName}
-              email={userProfile?.email}
-              activityStatus={userProfile?.activityStatus}
-              casualStatus={userProfile?.casualStatus}
-              moodStatus={userProfile?.moodStatus}
-              workStatus={userProfile?.workStatus}
-              gamingStatus={userProfile?.gamingStatus}
-              avatarUrl={userProfile?.avatarUrl}
-              socialLinks={{ github: "test", facebook: "" }}
               onActivityStatusChange={(value) => handleInputChange("activityStatus", value)}
               onCasualStatusChange={(value) => handleInputChange("casualStatus", value)}
               onMoodStatusChange={(value) => handleInputChange("moodStatus", value)}
@@ -106,6 +61,7 @@ const EditUserProfile = () => {
                 <div className="flex gap-8 lg:flex-row flex-col">
                   <div className="w-full flex flex-col gap-6 ">
                     <textarea
+                      value={editUserProfile.aboutMe}
                       name="aboutMe"
                       onChange={(e) => handleInputChange("aboutMe", e.target.value)}
                       placeholder="Write about yourself..."
