@@ -47,10 +47,9 @@ public class ChatsController(
                     chatDetailedDto => Ok(chatDetailedDto.ToResponse()),
                     failure => failure.ToActionResult()
                 );
-
-            default:
-                return BadRequest("Invalid chat level");
         }
+
+        return BadRequest("Invalid chat level");
     }
 
     [HttpPost(ApiRoutes.Chats.Create)]
@@ -76,6 +75,21 @@ public class ChatsController(
         );
     }
 
+    [HttpPatch(ApiRoutes.Chats.ChangeOwner)]
+    public async Task<IActionResult> ChangeOwner([FromRoute] Guid chatId, [FromQuery] Guid newOwnerId)
+    {
+        var result = await chatService.ChangeOwnerAsync(chatId, newOwnerId, UserId);
+
+        return await result.MatchAsync<IActionResult>(
+            async success =>
+            {
+                await messageHub.Clients.Group(chatId.ToString()).ChangeOwner(UserId, newOwnerId);
+                return Ok();
+            },
+            failure => failure.ToActionResult()
+        );
+    }
+
     [HttpDelete(ApiRoutes.Chats.Delete)]
     public async Task<IActionResult> Delete([FromRoute] Guid chatId)
     {
@@ -87,8 +101,8 @@ public class ChatsController(
         );
     }
 
-    [HttpPost(ApiRoutes.Chats.Join)]
-    public async Task<IActionResult> Join([FromRoute] Guid chatId)
+    [HttpPost(ApiRoutes.Chats.AddMemberMe)]
+    public async Task<IActionResult> AddMemberMe([FromRoute] Guid chatId)
     {
         var result = await chatService.UserJoinChatAsync(chatId, UserId);
 
@@ -105,30 +119,13 @@ public class ChatsController(
         );
     }
 
-    [HttpPost(ApiRoutes.Chats.Leave)]
-    public async Task<IActionResult> Leave([FromRoute] Guid chatId)
+    [HttpDelete(ApiRoutes.Chats.DeleteMember)]
+    public async Task<IActionResult> DeleteMember([FromRoute] Guid chatId, [FromRoute] Guid memberId)
     {
-        var result = await chatService.UserLeaveChatAsync(chatId, UserId);
+        var kickResult = await chatService.KickMemberAsync(chatId, memberId, UserId);
 
-        return await result.MatchAsync<IActionResult>(
+        return await kickResult.MatchAsync<IActionResult>(
             async userChatDto =>
-            {
-                var response = userChatDto.ToResponse();
-
-                await messageHub.Clients.Group(chatId.ToString()).LeaveChat(response);
-                return Ok(response);
-            },
-            failure => failure.ToActionResult()
-        );
-    }
-
-    [HttpDelete(ApiRoutes.Chats.Kick)]
-    public async Task<IActionResult> Kick([FromRoute] Guid chatId, [FromRoute] Guid memberId)
-    {
-        var result = await chatService.KickMemberAsync(chatId, memberId, UserId);
-
-        return await result.MatchAsync<IActionResult>(
-            async success =>
             {
                 await messageHub.Clients.Group(chatId.ToString()).KickMember(memberId);
                 return NoContent();
@@ -137,16 +134,16 @@ public class ChatsController(
         );
     }
 
-    [HttpPatch(ApiRoutes.Chats.ChangeOwner)]
-    public async Task<IActionResult> ChangeOwner([FromRoute] Guid chatId, [FromQuery] Guid newOwnerId)
+    [HttpDelete(ApiRoutes.Chats.DeleteMemberMe)]
+    public async Task<IActionResult> DeleteMe([FromRoute] Guid chatId)
     {
-        var result = await chatService.ChangeOwnerAsync(chatId, newOwnerId, UserId);
+        var leaveResult = await chatService.UserLeaveChatAsync(chatId, UserId);
 
-        return await result.MatchAsync<IActionResult>(
-            async success =>
+        return await leaveResult.MatchAsync<IActionResult>(
+            async userChatDto =>
             {
-                await messageHub.Clients.Group(chatId.ToString()).ChangeOwner(UserId, newOwnerId);
-                return Ok();
+                await messageHub.Clients.Group(chatId.ToString()).LeaveChat(userChatDto.ToResponse());
+                return NoContent();
             },
             failure => failure.ToActionResult()
         );

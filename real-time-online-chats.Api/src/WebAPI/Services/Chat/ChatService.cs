@@ -153,7 +153,8 @@ public class ChatService(AppDbContext dbContext,
         else
         {
             // User is a member of the chat
-            var memberChat = user.MemberChats.First(c => c.Id == chatId);
+            var memberChat = user.MemberChats.FirstOrDefault(c => c.Id == chatId);
+            if (memberChat is null) return FailureDto.BadRequest("User not the member of chat");
 
             // Remove the chat from the user's MemberChats
             user.MemberChats.Remove(memberChat);
@@ -213,13 +214,13 @@ public class ChatService(AppDbContext dbContext,
         int rows = await dbContext.SaveChangesAsync();
         return rows == 0 ? FailureDto.BadRequest("Cannot change owner") : true;
     }
-    
+
     private async Task<Result<bool, FailureDto>> ValidateChatOwnershipAsync(Guid chatId, Guid userId)
     {
-        if (!await chatRepository.IsChatExistAsync(chatId)) 
+        if (!await chatRepository.IsChatExistAsync(chatId))
             return FailureDto.NotFound("Chat not found");
 
-        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) 
+        if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId))
             return FailureDto.Forbidden("User doesn't own this chat");
 
         return true;
