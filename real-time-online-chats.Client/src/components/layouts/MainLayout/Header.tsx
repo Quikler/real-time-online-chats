@@ -1,5 +1,5 @@
 import { useAuth } from "@src/hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShortArrowDown } from "@src/components/svg/SVGCommon";
 import Button from "@src/components/ui/Button";
@@ -57,6 +57,8 @@ export default function Header() {
     return "bg-transparent";
   };
 
+  const menuButtonRef = useRef<HTMLDivElement>(null)
+
   return (
     <header className={`fixed z-[999] w-full ${getBackgroundColor()}`}>
       <nav
@@ -69,7 +71,7 @@ export default function Header() {
           <div className="flex items-center lg:order-2">
             <div className="">
               {isUserLoggedIn() ? (
-                <div>
+                <div ref={menuButtonRef}>
                   <Button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     id="dropdownInformationButton"
@@ -81,16 +83,16 @@ export default function Header() {
                   </Button>
                   {/* Dropdown menu */}
                   {isUserMenuOpen && (
-                    <div
+                    <div style={{width: menuButtonRef.current?.clientWidth}}
                       id="dropdownInformation"
                       className={`z-10 absolute bg-white divide-y divide-gray-100 shadow w-44 dark:bg-gray-700 dark:divide-gray-600 ${
                         isUserMenuOpen ? "" : "hidden"
                       }`}
                     >
                       <div className="px-4 py-3 text-sm text-white">
-                        <div>
+                        {/* <div>
                           {user?.firstName} {user?.lastName}
-                        </div>
+                        </div> */}
                         <div className="font-medium truncate">{user?.email}</div>
                       </div>
                       <ul

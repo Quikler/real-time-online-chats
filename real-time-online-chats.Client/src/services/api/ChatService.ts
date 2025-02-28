@@ -5,6 +5,11 @@ import { CreateChatResponse } from "@src/models/dtos/Chat";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
 import { CreateChatFormData } from "@src/pages/chats/CreateChatForm";
 
+export enum ChatLevel {
+  Preview,
+  Detail,
+}
+
 export abstract class ChatService {
   static async createChat(data: CreateChatFormData, config?: AxiosRequestConfig<any> | undefined) {
     try {
@@ -15,9 +20,13 @@ export abstract class ChatService {
     }
   }
 
-  static async getChat(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+  static async getChat(
+    chatId: string,
+    level: ChatLevel,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
     try {
-      const response = await api.get(`${ChatRoutes.base}/${chatId}`, config);
+      const response = await api.get(`${ChatRoutes.base}/${chatId}?level=${level}`, config);
       return response.data;
     } catch (e) {
       throwIfErrorNotCancelError(e);
@@ -40,7 +49,11 @@ export abstract class ChatService {
     }
   }
 
-  static async getOwnedChats(page: number, pageSize: number, config?: AxiosRequestConfig<any> | undefined) {
+  static async getOwnedChats(
+    page: number,
+    pageSize: number,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
     try {
       const response = await api.get(
         `${ChatRoutes.owned}?page=${page}&pageSize=${pageSize}`,
@@ -52,14 +65,14 @@ export abstract class ChatService {
     }
   }
 
-  static async getChatDetailed(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
-    try {
-      const response = await api.get(`${ChatRoutes.base}/${chatId}/${ChatRoutes.detailed}`, config);
-      return response.data;
-    } catch (e) {
-      throwIfErrorNotCancelError(e);
-    }
-  }
+  // static async getChatDetailed(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+  //   try {
+  //     const response = await api.get(`${ChatRoutes.base}/${chatId}/${ChatRoutes.detailed}`, config);
+  //     return response.data;
+  //   } catch (e) {
+  //     throwIfErrorNotCancelError(e);
+  //   }
+  // }
 
   static async deleteChat(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
     try {
@@ -70,18 +83,32 @@ export abstract class ChatService {
     }
   }
 
-  static async joinChat(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+  static async addMemberMe(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
     try {
-      const response = await api.post(`${ChatRoutes.base}/${chatId}/join`, {}, config);
+      const response = await api.post(`${ChatRoutes.base}/${chatId}/members/me`, {}, config);
       return response.data;
     } catch (e) {
       throwIfErrorNotCancelError(e);
     }
   }
 
-  static async leaveChat(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+  static async deleteMember(
+    chatId: string,
+    memberId: string,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
     try {
-      const response = await api.post(`${ChatRoutes.base}/${chatId}/leave`, {}, config);
+      console.log("CALL", `${ChatRoutes.base}/${chatId}/members/${memberId}`);
+      const response = await api.delete(`${ChatRoutes.base}/${chatId}/members/${memberId}`, config);
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
+  }
+
+  static async deleteMemberMe(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+    try {
+      const response = await api.delete(`${ChatRoutes.base}/${chatId}/members/me`, config);
       return response.data;
     } catch (e) {
       throwIfErrorNotCancelError(e);

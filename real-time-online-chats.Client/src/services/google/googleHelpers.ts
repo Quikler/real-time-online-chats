@@ -4,6 +4,7 @@ export const initGoogleGSIScript = (onScriptLoad: () => void) => {
   const script = document.createElement("script");
   script.src = GOOGLE_CLIENT_GSI;
   script.async = true;
+  script.defer = true;
   script.onload = onScriptLoad;
   document.body.appendChild(script);
 };

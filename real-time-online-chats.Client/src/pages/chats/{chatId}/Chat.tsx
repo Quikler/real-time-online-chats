@@ -114,13 +114,13 @@ const Chat = () => {
   useEffect(() => {
     if (messages?.length > 0 && !hasScrolled.current) {
       scrollToBottomOfBody();
-      hasScrolled.current = true; // Mark as executed
+      hasScrolled.current = true;
     }
   }, [messages]);
 
   const handleChatLeave = () => {
     if (chatId) {
-      ChatService.leaveChat(chatId)
+      ChatService.deleteMemberMe(chatId)
         .then(() => navigate("/chats"))
         .catch((e) => console.error("Error leaving chat:", e.message));
     }

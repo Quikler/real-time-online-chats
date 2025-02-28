@@ -1,51 +1,41 @@
-import { Facebook } from "@src/components/svg/SVGAuthProviders";
-import { GitHub } from "@src/components/svg/SVGSocMediaReferences";
 import Button from "@src/components/ui/Button";
 import React, { useRef } from "react";
 import { twMerge } from "tailwind-merge";
+import { useUserProfile } from "./UserProfileContext";
 
 type EditProfileUserCardProps = React.HTMLAttributes<HTMLDivElement> & {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  activityStatus?: string;
-  casualStatus?: string;
-  moodStatus?: string;
-  workStatus?: string;
-  gamingStatus?: string;
-  avatarUrl?: string;
-  socialLinks: {
-    github: string;
-    facebook: string;
-  };
   onActivityStatusChange: (value: string) => void;
   onCasualStatusChange: (value: string) => void;
   onMoodStatusChange: (value: string) => void;
   onWorkStatusChange: (value: string) => void;
   onGamingStatusChange: (value: string) => void;
   onAvatarChange: (file: File) => void;
+  isSubmitButtonEnabled: boolean;
 };
 
 const EditProfileUserCard = ({
-  firstName,
-  lastName,
-  email,
-  activityStatus,
-  casualStatus,
-  moodStatus,
-  workStatus,
-  gamingStatus,
-  avatarUrl,
-  socialLinks,
-  className,
   onActivityStatusChange,
   onCasualStatusChange,
   onMoodStatusChange,
   onWorkStatusChange,
   onGamingStatusChange,
   onAvatarChange,
+  isSubmitButtonEnabled,
+  className,
   ...rest
 }: EditProfileUserCardProps) => {
+    const {
+      avatarUrl,
+      firstName,
+      lastName,
+      email,
+      activityStatus,
+      casualStatus,
+      moodStatus,
+      workStatus,
+      gamingStatus,
+    } = useUserProfile();
+
   const inputFileRef = useRef<HTMLInputElement>(null);
   const avatarRef = useRef<HTMLImageElement>(null);
 
@@ -118,29 +108,10 @@ const EditProfileUserCard = ({
           </span>
         </div>
 
-        <div className="flex justify-center gap-4 mt-6">
-          <a
-            href={socialLinks.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white hover:text-slate-300 transition-colors duration-300"
-          >
-            <GitHub className="w-6 h-6" />
-          </a>
-          <a
-            href={socialLinks.facebook}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:text-blue-400 transition-colors duration-300"
-          >
-            <Facebook className="w-6 h-6" />
-          </a>
-        </div>
-
         <div className="mt-6">
-          <button className="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-500 transition-colors duration-300">
+          <Button disabled={!isSubmitButtonEnabled} className="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-500 transition-colors duration-300">
             Submit
-          </button>
+          </Button>
         </div>
       </div>
     </div>

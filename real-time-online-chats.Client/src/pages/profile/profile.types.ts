@@ -13,6 +13,8 @@ export type UserProfileType = {
   gamingStatus: string;
 
   avatarUrl: string;
+
+  friends: UserFriendType[];
 };
 
 export type UserFriendType = {
@@ -34,4 +36,4 @@ export type EditUserProfileType = {
   gamingStatus: string;
 
   avatar?: File;
-}
+};
