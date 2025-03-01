@@ -5,6 +5,8 @@ import { CreateMessageRequest } from "@src/models/dtos/Message";
 import { MessageService } from "@src/services/api/MessageService";
 
 const MessageInput = () => {
+  console.count("MessageInput render");
+
   const { chatInfo } = useChat();
   const { message, setMessage, editableMessage, setEditableMessage } = useMessages();
 

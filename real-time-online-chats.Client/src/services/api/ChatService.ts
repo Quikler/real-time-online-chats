@@ -64,7 +64,11 @@ export abstract class ChatService {
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      const response = await api.patch(`${ChatRoutes.base}/${chatId}/owner`, newOwnerId, config);
+      const response = await api.patch(
+        `${ChatRoutes.base}/${chatId}/owner`,
+        { newOwnerId },
+        config
+      );
       return response.data;
     } catch (e) {
       throwIfErrorNotCancelError(e);

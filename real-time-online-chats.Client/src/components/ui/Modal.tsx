@@ -5,6 +5,7 @@ type ModalProps = React.HTMLAttributes<HTMLDivElement> & {
   title?: string;
   children: React.ReactNode;
   isModalOpen: boolean;
+  isHeaderEllipsis?: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -14,6 +15,7 @@ const Modal = ({
   isModalOpen,
   setIsModalOpen,
   className,
+  isHeaderEllipsis = false,
   ...rest
 }: ModalProps) => {
   const modalBackgroundStyles = `fixed inset-0 bg-slate-900/50 transition-opacity z-40 ${
@@ -24,7 +26,8 @@ const Modal = ({
     isModalOpen ? "flex" : "hidden"
   } overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full`;
 
-  const modalContentStyles = "bg-gradient-to-br from-slate-700 to-slate-900 rounded-lg shadow-lg w-full max-w-md";
+  const modalContentStyles =
+    "bg-gradient-to-br from-slate-700 to-slate-900 rounded-lg shadow-lg w-full max-w-md";
 
   const closeButtonStyles =
     "text-slate-400 bg-transparent hover:bg-slate-700 hover:text-slate-200 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center";
@@ -43,7 +46,13 @@ const Modal = ({
         <div className="p-4 w-full max-w-md max-h-full">
           <div className={modalContentStyles}>
             <div className="flex items-center justify-between p-4 md:p-5 border-b border-slate-700 rounded-t">
-              <h3 className="text-xl font-semibold text-slate-200">{title}</h3>
+              <h3
+                className={`text-xl font-semibold text-slate-200 ${
+                  isHeaderEllipsis ? "text-nowrap text-ellipsis overflow-hidden" : ""
+                }`}
+              >
+                {title}
+              </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
                 type="button"

@@ -1,20 +1,38 @@
 import { Garbage, Edit } from "@src/components/svg/SVGCommon";
 import Button from "@src/components/ui/Button";
 import Modal from "@src/components/ui/Modal";
+import { MessageService } from "@src/services/api/MessageService";
 import { useState } from "react";
+import { useChat } from "./ChatContext";
+import { useMessages } from "./MessagesContext";
 
 type MessageActionsProps = {
   messageId: string;
-  onDelete?: (messageId: string) => void;
-  onEdit?: (messageId: string) => void;
 };
 
-const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) => {
+const MessageActions = ({ messageId }: MessageActionsProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleYesClick = () => {
+  const { messages, chatInfo } = useChat();
+  const { setEditableMessage, setMessage } = useMessages();
+
+  const handleMessageDelete = () => {
     setIsModalOpen(false);
-    onDelete?.(messageId);
+    MessageService.deleteMessage(messageId, chatInfo.id)
+      .then((data) => console.log("Message: " + data + " deleted"))
+      .catch((e) => console.error("Error deleting message:", e.message));
+
+    setEditableMessage(null);
+    setMessage("");
+  };
+
+  const handleMessageEdit = () => {
+    const message = messages.find((m) => m.id === messageId);
+    console.log("Message:", message);
+    if (!message) return;
+
+    setEditableMessage(message);
+    setMessage(message.content);
   };
 
   return (
@@ -22,7 +40,7 @@ const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) =>
       <button onClick={() => setIsModalOpen(true)}>
         <Garbage cursor="pointer" />
       </button>
-      <button onClick={() => onEdit?.(messageId)}>
+      <button onClick={handleMessageEdit}>
         <Edit cursor="pointer" />
       </button>
 
@@ -32,7 +50,7 @@ const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) =>
         setIsModalOpen={setIsModalOpen}
       >
         <div className="flex gap-2">
-          <Button onClick={handleYesClick} variant="danger">
+          <Button onClick={handleMessageDelete} variant="danger">
             Yes
           </Button>
           <Button onClick={() => setIsModalOpen(false)}>No</Button>

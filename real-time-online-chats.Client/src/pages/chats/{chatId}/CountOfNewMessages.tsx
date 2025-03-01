@@ -1,13 +1,24 @@
 import { ShortArrowDown } from "@src/components/svg/SVGCommon";
 import { scrollToBottomOfBody } from "@src/utils/helpers";
 import { useChat } from "./ChatContext";
+import { useRef, useEffect } from "react";
 
 type CountOfNewMessagesProps = {
   onCountOfNewMessagesReset?: () => void;
 };
 
 const CountOfNewMessages = ({ onCountOfNewMessagesReset }: CountOfNewMessagesProps) => {
-  const { countOfNewMessages, setCountOfNewMessages } = useChat();
+  console.count("CountOfNewMessages render")
+  
+  const { countOfNewMessages, setCountOfNewMessages, messages } = useChat();
+
+  const hasScrolled = useRef(false);
+  useEffect(() => {
+    if (messages?.length > 0 && !hasScrolled.current) {
+      scrollToBottomOfBody();
+      hasScrolled.current = true;
+    }
+  }, [messages]);
 
   const onClick = () => {
     scrollToBottomOfBody();

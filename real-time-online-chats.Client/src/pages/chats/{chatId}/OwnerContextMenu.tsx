@@ -1,4 +1,6 @@
+import { ChatService } from "@src/services/api/ChatService";
 import { Link } from "react-router-dom";
+import { useChat } from "./ChatContext";
 
 type OwnerContextMenuProps = React.HTMLAttributes<HTMLDivElement> & {
   isVisible: boolean;
@@ -7,7 +9,25 @@ type OwnerContextMenuProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const OwnerContextMenu = ({ isVisible, position, userId, ...rest }: OwnerContextMenuProps) => {
+  const { chatInfo } = useChat();
+
   if (!isVisible) return null;
+
+  const handleKick = async () => {
+    try {
+      await ChatService.deleteMember(chatInfo.id, userId);
+    } catch (e: any) {
+      console.error("Cannot kick user from chat:", e.message);
+    }
+  };
+
+  const handleUpdateOwner = async () => {
+    try {
+      await ChatService.updateChatOwner(chatInfo.id, userId);
+    } catch (e: any) {
+      console.error("Cannot update chat owner:", e.message);
+    }
+  };
 
   return (
     <div
@@ -20,13 +40,26 @@ const OwnerContextMenu = ({ isVisible, position, userId, ...rest }: OwnerContext
     >
       <ul className="divide-y divide-slate-600">
         <li>
-          <button className="w-full px-6 py-3 text-white hover:bg-slate-600 transition-colors duration-200 text-left">
-            <Link to={`/profile/${userId}`}>Visit profile</Link>
+          <Link to={`/profile/${userId}`}>
+            <button className="w-full px-6 py-3 text-white hover:bg-slate-600 transition-colors duration-200 text-left">
+              Visit profile
+            </button>
+          </Link>
+        </li>
+        <li>
+          <button
+            onClick={handleKick}
+            className="w-full px-6 py-3 text-white hover:bg-slate-600 transition-colors duration-200 text-left"
+          >
+            Kick user
           </button>
         </li>
         <li>
-          <button className="w-full px-6 py-3 text-white hover:bg-slate-600 transition-colors duration-200 text-left">
-            Kick user
+          <button
+            onClick={handleUpdateOwner}
+            className="w-full px-6 py-3 text-white hover:bg-slate-600 transition-colors duration-200 text-left"
+          >
+            Make owner
           </button>
         </li>
         <li>

@@ -15,7 +15,6 @@ import EditUserProfile from "@src/pages/profile/EditUserProfile";
 import UserProfile from "@src/pages/profile/UserProfile";
 import MainLayout from "@src/components/layouts/MainLayout/MainLayout";
 import { UserProfileProvider } from "@src/pages/profile/UserProfileContext";
-import { ChatContextProvider } from "@src/pages/chats/{chatId}/ChatContext";
 
 export const router = createBrowserRouter([
   {
@@ -70,9 +69,7 @@ export const router = createBrowserRouter([
         path: "chats", // Moved outside the `MainLayout` wrapper
         element: (
           <ProtectedRoute>
-            <ChatContextProvider>
-              <Outlet />
-            </ChatContextProvider>
+            <Outlet />
           </ProtectedRoute>
         ),
         children: [{ path: ":chatId", element: <Chat /> }],
