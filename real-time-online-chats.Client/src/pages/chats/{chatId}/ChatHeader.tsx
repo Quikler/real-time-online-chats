@@ -15,6 +15,7 @@ type ChatHeaderProps = {
 };
 
 const ChatHeader = ({ onChatLeave, onChatDelete }: ChatHeaderProps) => {
+  console.count("ChatHeader render")
   const { user } = useAuth();
 
   const { users, chatInfo } = useChat();
@@ -72,8 +73,10 @@ const ChatHeader = ({ onChatLeave, onChatDelete }: ChatHeaderProps) => {
       >
         ←
       </ButtonLink>
-      <div className="text-white flex flex-col flex-grow ml-4">
-        <p className="text-3xl font-semibold">{chatInfo?.title}</p>
+      <div className="text-white flex flex-col overflow-hidden flex-grow mx-4">
+        <p className="text-3xl font-semibold overflow-hidden text-ellipsis text-nowrap">
+          {chatInfo?.title}
+        </p>
         <p className="text-lg text-opacity-80">3/52 members online</p>
       </div>
       <Button
@@ -84,6 +87,7 @@ const ChatHeader = ({ onChatLeave, onChatDelete }: ChatHeaderProps) => {
       </Button>
 
       <Modal
+        isHeaderEllipsis={true}
         className="flex flex-col gap-4 p-6 shadow-lg"
         title={chatInfo?.title}
         isModalOpen={isModalOpen}

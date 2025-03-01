@@ -12,7 +12,7 @@ type MessagesProviderProps = { children: React.ReactNode };
 
 const MessagesContext = createContext({} as MessagesContextType);
 
-export const MessageContextProvider = ({ children }: MessagesProviderProps) => {
+export const MessagesContextProvider = ({ children }: MessagesProviderProps) => {
   const [message, setMessage] = useState<string>("");
   const [editableMessage, setEditableMessage] = useState<MessageChat | null | undefined>();
 
@@ -23,7 +23,7 @@ export const MessageContextProvider = ({ children }: MessagesProviderProps) => {
       editableMessage,
       setEditableMessage,
     }),
-    [message, editableMessage,]
+    [message, editableMessage]
   );
 
   return <MessagesContext.Provider value={value}>{children}</MessagesContext.Provider>;
