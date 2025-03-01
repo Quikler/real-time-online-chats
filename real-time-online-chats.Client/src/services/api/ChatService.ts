@@ -49,34 +49,22 @@ export abstract class ChatService {
     }
   }
 
-  static async getOwnedChats(
-    page: number,
-    pageSize: number,
-    config?: AxiosRequestConfig<any> | undefined
-  ) {
+  static async deleteChat(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
     try {
-      const response = await api.get(
-        `${ChatRoutes.owned}?page=${page}&pageSize=${pageSize}`,
-        config
-      );
+      const response = await api.delete(`${ChatRoutes.base}/${chatId}`, config);
       return response.data;
     } catch (e) {
       throwIfErrorNotCancelError(e);
     }
   }
 
-  // static async getChatDetailed(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
-  //   try {
-  //     const response = await api.get(`${ChatRoutes.base}/${chatId}/${ChatRoutes.detailed}`, config);
-  //     return response.data;
-  //   } catch (e) {
-  //     throwIfErrorNotCancelError(e);
-  //   }
-  // }
-
-  static async deleteChat(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+  static async updateChatOwner(
+    chatId: string,
+    newOwnerId: string,
+    config?: AxiosRequestConfig<any> | undefined
+  ) {
     try {
-      const response = await api.delete(`${ChatRoutes.base}/${chatId}`, config);
+      const response = await api.patch(`${ChatRoutes.base}/${chatId}/owner`, newOwnerId, config);
       return response.data;
     } catch (e) {
       throwIfErrorNotCancelError(e);
@@ -98,7 +86,6 @@ export abstract class ChatService {
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      console.log("CALL", `${ChatRoutes.base}/${chatId}/members/${memberId}`);
       const response = await api.delete(`${ChatRoutes.base}/${chatId}/members/${memberId}`, config);
       return response.data;
     } catch (e) {

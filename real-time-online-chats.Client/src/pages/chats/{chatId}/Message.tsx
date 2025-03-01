@@ -3,32 +3,37 @@ import { MessageChat } from "./{chatId}.types";
 import MessageActions from "./MessageActions";
 import { MessageService } from "@src/services/api/MessageService";
 import UserAvatarLink from "./UserAvatarLink";
+import { useChat } from "./ChatContext";
+import { useMessages } from "./MessagesContext";
 
 type MessageProps = {
-  chatId: string;
   messageChat: MessageChat;
   isCurrentUser: boolean;
   showUserInfo: boolean;
-  onDelete?: (messageId: string) => void;
-  onEdit?: (messageId: string) => void;
 };
 
-const Message = ({
-  chatId,
-  onDelete,
-  onEdit,
-  messageChat,
-  isCurrentUser,
-  showUserInfo,
-}: MessageProps) => {
+const Message = ({ messageChat, isCurrentUser, showUserInfo }: MessageProps) => {
   const avatarSize = "64px";
 
+  const { setEditableMessage, setMessage } = useMessages();
+  const { messages, chatInfo } = useChat();
+
   const handleMessageDelete = (messageId: string) => {
-    MessageService.deleteMessage(messageId, chatId)
+    MessageService.deleteMessage(messageId, chatInfo.id)
       .then((data) => console.log("Message: " + data + " deleted"))
       .catch((e) => console.error("Error deleting message:", e.message));
 
-    onDelete?.(messageId);
+    setEditableMessage(null);
+    setMessage("");
+  };
+
+  const onMessageEdit = (messageId: string) => {
+    const message = messages.find((m) => m.id === messageId);
+    console.log("Message:", message);
+    if (!message) return;
+
+    setEditableMessage(message);
+    setMessage(message.content);
   };
 
   return (
@@ -59,7 +64,7 @@ const Message = ({
               {isCurrentUser && (
                 <MessageActions
                   messageId={messageChat.id}
-                  onEdit={onEdit}
+                  onEdit={onMessageEdit}
                   onDelete={handleMessageDelete}
                 />
               )}
@@ -78,7 +83,7 @@ const Message = ({
             {isCurrentUser && (
               <MessageActions
                 messageId={messageChat.id}
-                onEdit={onEdit}
+                onEdit={onMessageEdit}
                 onDelete={handleMessageDelete}
               />
             )}

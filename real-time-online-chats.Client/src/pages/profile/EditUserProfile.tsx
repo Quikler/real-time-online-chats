@@ -23,11 +23,13 @@ const EditUserProfile = () => {
   const handleEditFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await UserService.updateUserProfile(userId, editUserProfile)
-      .then(() => {
-        console.log("Updated profile successfully");
-      })
-      .catch((e) => console.error("Error updating profile:", e.message));
+    try {
+      await UserService.updateUserProfile(userId, editUserProfile);
+      await refreshUser();
+      console.log("Updated profile successfully");
+    } catch (e: any) {
+      console.error("Error updating profile:", e.message);
+    }
 
     navigate(-1);
   };

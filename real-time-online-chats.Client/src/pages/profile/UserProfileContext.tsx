@@ -9,9 +9,7 @@ type UserProfileContextType = UserProfileType & {
   refreshUser: () => Promise<void>;
 };
 
-const UserProfileContext = React.createContext<UserProfileContextType | undefined | null>(
-  undefined
-);
+const UserProfileContext = React.createContext({} as UserProfileContextType);
 
 type UserProfileProviderProps = { children: React.ReactNode };
 
@@ -71,7 +69,7 @@ export const useUserProfile = () => {
   const userProfileContext = useContext(UserProfileContext);
 
   if (!userProfileContext) {
-    throw new Error("useUserAuth must be used within a UserAuthProvider");
+    throw new Error("useUserProfile must be used within a UserProfileContextProvider");
   }
 
   return userProfileContext;

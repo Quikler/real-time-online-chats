@@ -10,6 +10,7 @@ type UserProfileCardProps = React.HTMLAttributes<HTMLDivElement> & {};
 const UserProfileCard = ({ className, ...rest }: UserProfileCardProps) => {
   const { user } = useAuth();
   const {
+    id,
     avatarUrl,
     firstName,
     lastName,
@@ -61,9 +62,11 @@ const UserProfileCard = ({ className, ...rest }: UserProfileCardProps) => {
         </div>
 
         <div className="mt-6">
-          <Button type="button" onClick={() => navigate(`/profile/${user?.id}/edit`)}>
-            Edit Profile
-          </Button>
+          {user?.id === id && (
+            <Button type="button" onClick={() => navigate(`/profile/${user?.id}/edit`)}>
+              Edit Profile
+            </Button>
+          )}
         </div>
       </div>
     </div>

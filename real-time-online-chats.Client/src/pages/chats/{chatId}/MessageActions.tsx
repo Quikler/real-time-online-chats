@@ -12,6 +12,11 @@ type MessageActionsProps = {
 const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const handleYesClick = () => {
+    setIsModalOpen(false);
+    onDelete?.(messageId);
+  };
+
   return (
     <div className="flex gap-2">
       <button onClick={() => setIsModalOpen(true)}>
@@ -20,19 +25,14 @@ const MessageActions = ({ messageId, onDelete, onEdit }: MessageActionsProps) =>
       <button onClick={() => onEdit?.(messageId)}>
         <Edit cursor="pointer" />
       </button>
+
       <Modal
         title="Are you sure you want to delete this message?"
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       >
         <div className="flex gap-2">
-          <Button
-            onClick={() => {
-              setIsModalOpen(false);
-              onDelete?.(messageId);
-            }}
-            variant="danger"
-          >
+          <Button onClick={handleYesClick} variant="danger">
             Yes
           </Button>
           <Button onClick={() => setIsModalOpen(false)}>No</Button>

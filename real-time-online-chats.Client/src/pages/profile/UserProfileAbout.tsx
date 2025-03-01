@@ -10,7 +10,7 @@ const UserProfileAbout = () => {
         <div className="flex gap-8 lg:flex-row flex-col">
           <div className="w-full flex flex-col gap-6 p-8 bg-slate-600 rounded-2xl shadow-lg">
             <p className="text-white leading-relaxed text-opacity-90">
-              {aboutMe != null ? <>{aboutMe}</> : <>There is nothing yet...</>}
+              {aboutMe ? <>{aboutMe}</> : <>There is nothing yet...</>}
             </p>
           </div>
         </div>
