@@ -7,9 +7,10 @@ public interface IMessageClient
 {
     Task SendMessage(MessageChatResponse response);
     Task UpdateMessage(MessageChatResponse response);
+    Task UpdateOwner(Guid oldOwnerId, Guid newOwnerId);
     Task DeleteMessage(Guid messageId);
     Task LeaveChat(UserChatResponse response);
     Task JoinChat(UserChatResponse response);
+    Task DeleteChat();
     Task KickMember(Guid memberId);
-    Task ChangeOwner(Guid oldOwner, Guid newOwner);
 }

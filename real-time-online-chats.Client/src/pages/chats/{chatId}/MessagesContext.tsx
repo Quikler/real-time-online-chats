@@ -13,6 +13,7 @@ type MessagesProviderProps = { children: React.ReactNode };
 const MessagesContext = createContext({} as MessagesContextType);
 
 export const MessagesContextProvider = ({ children }: MessagesProviderProps) => {
+  console.count("MessagesContextProvider render")
   const [message, setMessage] = useState<string>("");
   const [editableMessage, setEditableMessage] = useState<MessageChat | null | undefined>();
 

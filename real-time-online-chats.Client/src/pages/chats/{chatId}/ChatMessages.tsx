@@ -22,7 +22,7 @@ const ChatMessages = () => {
 
           return (
             <li
-              key={index}
+              key={message.id}
               className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${
                 isCurrentUser ? "justify-end" : "justify-start"
               }`}

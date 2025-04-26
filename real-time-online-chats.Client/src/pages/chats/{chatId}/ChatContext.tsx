@@ -1,5 +1,5 @@
 import { ChatService, ChatLevel } from "@src/services/api/ChatService";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { ChatInfo, MessageChat, UserChat } from "./{chatId}.types";
 import { useNavigate, useParams } from "react-router-dom";
 import ErrorScreen from "@src/components/ui/ErrorScreen";
@@ -16,6 +16,30 @@ type ChatContextType = {
   users: UserChat[];
   countOfNewMessages: number;
   setCountOfNewMessages: React.Dispatch<React.SetStateAction<number>>;
+};
+
+type MessagesAction =
+  | { type: "SET_MESSAGES"; payload: MessageChat[] }
+  | { type: "UPDATE_MESSAGES"; payload: MessageChat }
+  | { type: "ADD_MESSAGE"; payload: MessageChat }
+  | { type: "REMOVE_MESSAGE"; payload: string };
+
+// Reducer Function
+const messagesReducer = (state: MessageChat[], action: MessagesAction): MessageChat[] => {
+  switch (action.type) {
+    case "SET_MESSAGES":
+      return action.payload;
+    case "UPDATE_MESSAGES":
+      return state.map((m) =>
+        m.id === action.payload.id ? { ...m, content: action.payload.content } : m
+      );
+    case "ADD_MESSAGE":
+      return [...state, action.payload];
+    case "REMOVE_MESSAGE":
+      return state.filter((msg) => msg.id !== action.payload);
+    default:
+      return state;
+  }
 };
 
 type ChatProviderProps = { children: React.ReactNode };
@@ -35,7 +59,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
   const [error, setError] = useState(false);
 
   const [chatInfo, setChatInfo] = useState<ChatInfo>({} as ChatInfo);
-  const [messages, setMessages] = useState<MessageChat[]>([]);
+  const [messages, messagesDispatch] = useReducer(messagesReducer, []);
   const [users, setUsers] = useState<UserChat[]>([]);
 
   const [countOfNewMessages, setCountOfNewMessages] = useState(0);
@@ -79,7 +103,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
             ownerId: data.ownerId,
             creationTime: data.creationTime,
           });
-          setMessages(data.messages);
+          messagesDispatch({ type: "SET_MESSAGES", payload: data.messages });
           setUsers(data.users);
           setLoading(false);
         }
@@ -103,7 +127,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
     const registerSignalREventHandlers = (connection: HubConnection) => {
       connection.off("SendMessage");
       connection.on("SendMessage", (message: MessageChat) => {
-        setMessages((prev) => [...prev, message]);
+        messagesDispatch({ type: "ADD_MESSAGE", payload: message });
         if (message.user.id !== user?.id) {
           setCountOfNewMessages((prev) => prev + 1);
         }
@@ -122,7 +146,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
           `<!-- User ${joinedUser.email} joined chat -->`
         );
 
-        setMessages((prev) => [...prev, message]);
+        messagesDispatch({ type: "ADD_MESSAGE", payload: message });
         setUsers((prev) => [...prev, joinedUser]);
       });
 
@@ -143,7 +167,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
             : `<!-- User ${leavedUser.email} left the chat -->`
         );
 
-        setMessages((prev) => [...prev, message]);
+        messagesDispatch({ type: "ADD_MESSAGE", payload: message });
 
         setChatInfo((prevChatInfo) =>
           prevChatInfo ? { ...prevChatInfo, ownerId: newOwner.id } : prevChatInfo
@@ -169,20 +193,18 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
           `<!-- User ${kickedMember.email} has been kicked from chat by owner ${owner.email} -->`
         );
 
-        setMessages((prev) => [...prev, message]);
+        messagesDispatch({ type: "ADD_MESSAGE", payload: message });
         setUsers(newUsers);
       });
 
       connection.off("DeleteMessage");
       connection.on("DeleteMessage", (messageId: string) => {
-        setMessages((prev) => prev.filter((message) => message.id !== messageId));
+        messagesDispatch({ type: "REMOVE_MESSAGE", payload: messageId });
       });
 
       connection.off("UpdateMessage");
       connection.on("UpdateMessage", (message: MessageChat) => {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === message.id ? { ...m, content: message.content } : m))
-        );
+        messagesDispatch({ type: "UPDATE_MESSAGES", payload: message });
       });
 
       connection.off("UpdateOwner");
@@ -199,7 +221,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
           `<!-- ${oldOwner.email} granted ${newOwner.email} to owner -->`
         );
 
-        setMessages([...messages, message]);
+        messagesDispatch({ type: "ADD_MESSAGE", payload: message });
       });
     };
 

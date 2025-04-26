@@ -64,7 +64,7 @@ public class ChatService(AppDbContext dbContext,
         return rows == 0 ? FailureDto.BadRequest("Cannot create chat") : chat.ToChatPreview();
     }
 
-    public async Task<Result<bool, FailureDto>> UpdateChatAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId)
+    public async Task<Result<bool, FailureDto>> UpdateChatTitleAsync(Guid chatId, UpdateChatDto updateChatDto, Guid userId)
     {
         var validationResult = await ValidateChatOwnershipAsync(chatId, userId);
         if (!validationResult.IsSuccess) return validationResult;
@@ -183,7 +183,7 @@ public class ChatService(AppDbContext dbContext,
         return rows == 0 ? FailureDto.BadRequest("Cannot kick user") : true;
     }
 
-    public async Task<Result<bool, FailureDto>> ChangeOwnerAsync(Guid chatId, Guid newOwnerId, Guid userId)
+    public async Task<Result<bool, FailureDto>> UpdateOwnerAsync(Guid chatId, Guid newOwnerId, Guid userId)
     {
         if (!await chatAuthorizationService.IsUserOwnsChatAsync(chatId, userId)) return FailureDto.Forbidden("User doesn't own this chat");
 
