@@ -34,7 +34,7 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var createResult = await ChatService.UpdateChatAsync(chatId, _updateChatDto, _user.Id);
+        var createResult = await ChatService.UpdateChatTitleAsync(chatId, _updateChatDto, _user.Id);
 
         // Assert
         createResult.IsSuccess.ShouldBeFalse();
@@ -64,7 +64,7 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var createResult = await ChatService.UpdateChatAsync(chatId, _updateChatDto, _user.Id);
+        var createResult = await ChatService.UpdateChatTitleAsync(chatId, _updateChatDto, _user.Id);
 
         // Assert
         createResult.IsSuccess.ShouldBeFalse();
@@ -105,7 +105,7 @@ public class ChatServiceUpdateChatTests : BaseChatServiceTests
             .ReturnsAsync(1);
 
         // Act
-        var createResult = await ChatService.UpdateChatAsync(_ownedChat.Id, _updateChatDto, _user.Id);
+        var createResult = await ChatService.UpdateChatTitleAsync(_ownedChat.Id, _updateChatDto, _user.Id);
 
         // Assert
         createResult.IsSuccess.ShouldBeTrue();

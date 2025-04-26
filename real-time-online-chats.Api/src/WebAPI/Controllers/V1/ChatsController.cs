@@ -64,10 +64,10 @@ public class ChatsController(
         );
     }
 
-    [HttpPut(ApiRoutes.Chats.Update)]
-    public async Task<IActionResult> Update([FromRoute] Guid chatId, [FromBody] UpdateChatRequest request)
+    [HttpPatch(ApiRoutes.Chats.UpdateTitle)]
+    public async Task<IActionResult> UpdateTitle([FromRoute] Guid chatId, [FromBody] UpdateChatRequest request)
     {
-        var result = await chatService.UpdateChatAsync(chatId, request.ToDto(), UserId);
+        var result = await chatService.UpdateChatTitleAsync(chatId, request.ToDto(), UserId);
 
         return result.Match(
             success => Ok(),
@@ -75,15 +75,15 @@ public class ChatsController(
         );
     }
 
-    [HttpPatch(ApiRoutes.Chats.ChangeOwner)]
-    public async Task<IActionResult> ChangeOwner([FromRoute] Guid chatId, [FromQuery] Guid newOwnerId)
+    [HttpPatch(ApiRoutes.Chats.UpdateOwner)]
+    public async Task<IActionResult> UpdateOwner([FromRoute] Guid chatId, [FromBody] UpdateChatOwnerRequest request)
     {
-        var result = await chatService.ChangeOwnerAsync(chatId, newOwnerId, UserId);
+        var result = await chatService.UpdateOwnerAsync(chatId, request.NewOwnerId, UserId);
 
         return await result.MatchAsync<IActionResult>(
             async success =>
             {
-                await messageHub.Clients.Group(chatId.ToString()).ChangeOwner(UserId, newOwnerId);
+                await messageHub.Clients.Group(chatId.ToString()).UpdateOwner(UserId, request.NewOwnerId);
                 return Ok();
             },
             failure => failure.ToActionResult()
@@ -95,8 +95,12 @@ public class ChatsController(
     {
         var result = await chatService.DeleteChatAsync(chatId, UserId);
 
-        return result.Match(
-            success => NoContent(),
+        return await result.MatchAsync<IActionResult>(
+            async success =>
+            {
+                await messageHub.Clients.Group(chatId.ToString()).DeleteChat();
+                return NoContent();
+            },
             failure => failure.ToActionResult()
         );
     }

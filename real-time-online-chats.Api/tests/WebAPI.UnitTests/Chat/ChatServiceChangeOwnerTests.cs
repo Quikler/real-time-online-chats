@@ -45,7 +45,7 @@ public class ChatServiceChangeOwnerTests : BaseChatServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var changeOwnerResult = await ChatService.ChangeOwnerAsync(randomChatId, _member.Id, _owner.Id);
+        var changeOwnerResult = await ChatService.UpdateOwnerAsync(randomChatId, _member.Id, _owner.Id);
 
         // Assert
         changeOwnerResult.IsSuccess.ShouldBeFalse();
@@ -77,7 +77,7 @@ public class ChatServiceChangeOwnerTests : BaseChatServiceTests
             .ReturnsAsync(true);
 
         // Act
-        var changeOwnerResult = await ChatService.ChangeOwnerAsync(_chat.Id, _member.Id, _owner.Id);
+        var changeOwnerResult = await ChatService.UpdateOwnerAsync(_chat.Id, _member.Id, _owner.Id);
 
         // Assert
         changeOwnerResult.IsSuccess.ShouldBeFalse();
@@ -111,7 +111,7 @@ public class ChatServiceChangeOwnerTests : BaseChatServiceTests
             .ReturnsAsync(true);
 
         // Act
-        var changeOwnerResult = await ChatService.ChangeOwnerAsync(_chat.Id, _member.Id, _owner.Id);
+        var changeOwnerResult = await ChatService.UpdateOwnerAsync(_chat.Id, _member.Id, _owner.Id);
 
         // Assert
         changeOwnerResult.IsSuccess.ShouldBeFalse();
@@ -147,7 +147,7 @@ public class ChatServiceChangeOwnerTests : BaseChatServiceTests
             .ReturnsAsync(0);
 
         // Act
-        var changeOwnerResult = await ChatService.ChangeOwnerAsync(_chat.Id, _member.Id, _owner.Id);
+        var changeOwnerResult = await ChatService.UpdateOwnerAsync(_chat.Id, _member.Id, _owner.Id);
 
         // Assert
         changeOwnerResult.IsSuccess.ShouldBeFalse();
@@ -189,7 +189,7 @@ public class ChatServiceChangeOwnerTests : BaseChatServiceTests
             .ReturnsAsync(1);
 
         // Act
-        var changeOwnerResult = await ChatService.ChangeOwnerAsync(_chat.Id, _member.Id, _owner.Id);
+        var changeOwnerResult = await ChatService.UpdateOwnerAsync(_chat.Id, _member.Id, _owner.Id);
 
         // Assert
         changeOwnerResult.IsSuccess.ShouldBeTrue();
