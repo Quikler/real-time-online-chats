@@ -23,7 +23,8 @@ using real_time_online_chats.Server.Services.Mail;
 using real_time_online_chats.Server.Services.Message;
 using real_time_online_chats.Server.Services.User;
 using FluentValidation;
-using real_time_online_chats.Server.Validators;
+
+Console.Write("Test");
 
 const string CORS_POLICY = "MY_CORS";
 
