@@ -1,0 +1,39 @@
+services:
+  client:
+    container_name: client
+    build:
+      context: ./real-time-online-chats.Client
+      dockerfile: Dockerfile.client
+    ports:
+      - "5173:5173"
+      - "5174:5174"
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - api
+  api:
+    container_name: api
+    build:
+      context: ./real-time-online-chats.Api
+      dockerfile: Dockerfile.api
+    restart: always
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=5000
+      - DB_HOST=api.postgres
+      - ALLOWED_ORIGIN=http://localhost:5173
+    depends_on:
+      - api.postgres
+
+  api.postgres:
+    image: postgres:latest
+    container_name: api.postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_DB: "roc_db"
