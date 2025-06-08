@@ -16,15 +16,15 @@ services:
     build:
       context: ./real-time-online-chats.Api
       dockerfile: Dockerfile.api
+    env_file:
+      - ./real-time-online-chats.Api/src/WebAPI/.env
     restart: always
     ports:
-      - "5000:5000"
-      - "5001:5001"
+      - "5039:5039"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=5000
+      - ASPNETCORE_HTTP_PORTS=5039
       - DB_HOST=api.postgres
-      - ALLOWED_ORIGIN=http://localhost:5173
     depends_on:
       - api.postgres
 
