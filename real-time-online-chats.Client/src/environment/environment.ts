@@ -1,5 +1,6 @@
 const Environment = {
-	rootApiUrl: "https://localhost:7207",
+	//rootApiUrl: "https://localhost:7207",
+    rootApiUrl: "http://localhost:5039",
 	apiUrl: "api",
 	apiUrlVersioned: "",
 	apiVersion: "v1",
