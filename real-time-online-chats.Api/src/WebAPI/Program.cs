@@ -28,6 +28,9 @@ const string CORS_POLICY = "MY_CORS";
 
 var builder = WebApplication.CreateBuilder(args);
 
+DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CORS_POLICY, policy =>
