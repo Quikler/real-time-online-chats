@@ -23,7 +23,6 @@ using real_time_online_chats.Server.Services.Mail;
 using real_time_online_chats.Server.Services.Message;
 using real_time_online_chats.Server.Services.User;
 using FluentValidation;
-using real_time_online_chats.Server.Validators;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -82,7 +81,8 @@ builder.Services
     .Configure<SwaggerConfiguration>(builder.Configuration.GetSection(nameof(SwaggerConfiguration)))
     .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)))
     .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"))
-    .Configure<MailConfiguration>(builder.Configuration.GetSection("Mail"));
+    .Configure<MailConfiguration>(builder.Configuration.GetSection("Mail"))
+    .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHA"));
 
 var cloudinary = builder.Configuration.GetSection("Cloudinary");
 CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");
@@ -141,8 +141,8 @@ builder.Services.AddAuthentication(options =>
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero,
-            ValidIssuer = "https://localhost:7183",
-            ValidAudience = "https://localhost:7183",
+            ValidIssuer = jwtConfig.ValidIssuer,
+            ValidAudience = jwtConfig.ValidAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtConfig.SecretKey))
         };
 
