@@ -19,7 +19,7 @@ export abstract class AuthService {
         request,
         {
           withCredentials: true,
-          signal: config?.signal,
+          ...config,
         }
       );
       return response.data;
@@ -38,7 +38,7 @@ export abstract class AuthService {
         request,
         {
           withCredentials: true,
-          signal: config?.signal,
+          ...config,
         }
       );
       return response.data;
@@ -52,7 +52,10 @@ export abstract class AuthService {
       const response = await api.post<AuthSuccessResponse>(
         AuthRoutes.logout,
         {},
-        { withCredentials: true, signal: config?.signal }
+        {
+          withCredentials: true,
+          ...config,
+        }
       );
       return response.data;
     } catch (e) {
@@ -64,7 +67,7 @@ export abstract class AuthService {
     try {
       const response = await api.get<AuthSuccessResponse>(AuthRoutes.me, {
         withCredentials: true,
-        signal: config?.signal,
+        ...config,
       });
       return response.data;
     } catch (e) {
