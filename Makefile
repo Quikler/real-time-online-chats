@@ -8,5 +8,8 @@ client:
 db:
 	docker-compose -f real-time-online-chats.Api/src/WebAPI/psql-compose.yaml up --build
 
+db-down:
+	docker-compose -f real-time-online-chats.Api/src/WebAPI/psql-compose.yaml down
+
 start:
 	./sh-scripts/start.sh
