@@ -3,6 +3,7 @@ import LoginForm, { LoginFormData } from "./LoginForm";
 import { useState } from "react";
 import Logo from "@src/components/ui/Logo";
 import { useAuth } from "@src/hooks/useAuth";
+import { GOOGLE_RECAPTCHA_CLIENT_KEY } from "@src/services/google/googleConstants";
 
 export default function LoginPage() {
   const { loginUser } = useAuth();
@@ -15,7 +16,13 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    loginUser(formData);
+    
+    window.grecaptcha.enterprise.ready(async () => {
+      const token = await window.grecaptcha.enterprise.execute(GOOGLE_RECAPTCHA_CLIENT_KEY, { action: 'LOGIN' });
+      console.log('Token:', token);
+
+      await loginUser(formData, { headers: { reCAPTCHAToken: token } });
+    });
   };
 
   return (

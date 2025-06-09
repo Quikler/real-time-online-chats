@@ -5,6 +5,7 @@ import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
 import { AuthRoutes } from "@src/services/api/ApiRoutes";
 import { AuthService } from "@src/services/api/AuthService";
 import { GoogleService } from "@src/services/google/GoogleService";
+import { AxiosRequestConfig } from "axios";
 
 export type UserProfile = {
   id: string;
@@ -16,7 +17,7 @@ export type UserProfile = {
 type AuthContextType = {
   token: string | null | undefined;
   user: UserProfile | null | undefined;
-  loginUser: (request: LoginRequest) => Promise<void>;
+  loginUser: (request: LoginRequest, config?: AxiosRequestConfig<any>) => Promise<void>;
   signupUser: (request: SignupRequest) => Promise<void>;
   loginGoogle: (credential: string) => Promise<void>;
   signupGoogle: (credential: string) => Promise<void>;
@@ -128,9 +129,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const loginUser = async (request: LoginRequest) => {
+  const loginUser = async (request: LoginRequest, config?: AxiosRequestConfig<any>) => {
     try {
-      const data = await AuthService.login(request);
+      const data = await AuthService.login(request, config);
       if (data) {
         setToken(data.token);
         setUser(data.user);

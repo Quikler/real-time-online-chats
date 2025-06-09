@@ -8,6 +8,7 @@ import GoogleLogin from "@src/services/google/GoogleLogin";
 import { twMerge } from "tailwind-merge";
 import Label from "@src/components/ui/Label";
 import Checkbox from "@src/components/ui/Checkbox";
+import { GOOGLE_RECAPTCHA_CLIENT_KEY } from "@src/services/google/googleConstants";
 
 export interface LoginFormData {
   email: string;
@@ -118,6 +119,8 @@ const LoginForm = ({ onSubmit, formData, setFormData, className, ...rest }: Logi
           Forgot your password?
         </Link>
       </div>
+
+      <div className="g-recaptcha" data-sitekey={GOOGLE_RECAPTCHA_CLIENT_KEY}></div>
 
       <Button type="submit" className="w-full">
         Sign in
