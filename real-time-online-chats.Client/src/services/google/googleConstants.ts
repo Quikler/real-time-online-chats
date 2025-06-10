@@ -1,7 +1,8 @@
 declare global {
   interface Window {
     google: any;
-    grecaptcha: { enterprise: any };
+    grecaptcha: any;
+    recaptchaWidgetId: any;
   }
 }
 
@@ -10,4 +11,4 @@ export const GOOGLE_CLIENT_ID =
 
 export const GOOGLE_CLIENT_GSI = "https://accounts.google.com/gsi/client";
 
-export const GOOGLE_RECAPTCHA_CLIENT_KEY = "6LcrkFkrAAAAALrrEbm0btuqH6UVaiz_7rKqv33m";
+export const GOOGLE_RECAPTCHA_CLIENT_KEY = "6Ldg61srAAAAAAywoCaSAwlLKmls3a3W-Oh_ZZix";
