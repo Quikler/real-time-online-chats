@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using real_time_online_chats.Server.Attributes;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
 using real_time_online_chats.Server.Contracts.V1.Responses;
@@ -52,6 +53,7 @@ public class IdentityController(IIdentityService identityService, IMailService m
         );
     }
 
+    [ReCAPTCHA]
     [HttpPost(ApiRoutes.Identity.Login)]
     public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
     {
