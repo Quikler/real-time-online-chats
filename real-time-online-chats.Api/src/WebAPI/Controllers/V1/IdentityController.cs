@@ -23,6 +23,7 @@ public class IdentityController(IIdentityService identityService, IMailService m
         );
     }
 
+    [ReCAPTCHA]
     [HttpPost(ApiRoutes.Identity.Signup)]
     public async Task<IActionResult> Signup([FromBody] SignupUserRequest request)
     {
