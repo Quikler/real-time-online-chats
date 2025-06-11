@@ -18,7 +18,7 @@ type AuthContextType = {
   token: string | null | undefined;
   user: UserProfile | null | undefined;
   loginUser: (request: LoginRequest, config?: AxiosRequestConfig<any>) => Promise<void>;
-  signupUser: (request: SignupRequest) => Promise<string | undefined>;
+  signupUser: (request: SignupRequest, config?: AxiosRequestConfig<any>) => Promise<string | undefined>;
   loginGoogle: (credential: string) => Promise<void>;
   signupGoogle: (credential: string) => Promise<void>;
   logoutUser: () => Promise<void>;
@@ -117,9 +117,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [user]);
 
-  const signupUser = async (request: SignupRequest) => {
+  const signupUser = async (request: SignupRequest, config?: AxiosRequestConfig<any>) => {
     try {
-      const data = await AuthService.signup(request);
+      const data = await AuthService.signup(request, config);
       return data;
     } catch (e: any) {
       console.error("Unable to signup:", e.message);
