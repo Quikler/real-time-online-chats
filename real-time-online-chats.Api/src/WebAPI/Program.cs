@@ -23,6 +23,7 @@ using real_time_online_chats.Server.Services.Mail;
 using real_time_online_chats.Server.Services.Message;
 using real_time_online_chats.Server.Services.User;
 using FluentValidation;
+using real_time_online_chats.Server.Common.Constants;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -51,6 +52,11 @@ builder.Services
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddHttpClient(HttpClientNameConstants.GoogleRecaptchaApi, client =>
+{
+    client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
+});
 
 builder.Services.AddSignalR();
 
@@ -85,7 +91,7 @@ builder.Services
     .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)))
     .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"))
     .Configure<MailConfiguration>(builder.Configuration.GetSection("Mail"))
-    .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHA"));
+    .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHAv2"));
 
 var cloudinary = builder.Configuration.GetSection("Cloudinary");
 CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");
