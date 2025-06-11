@@ -18,10 +18,14 @@ export default function SignupPage() {
     rememberMe: true,
   });
 
+  const [captchaToken, setCaptchaToken] = useState("");
+
   const handleSubmit = async () => {
-    const message = await signupUser(formData);
+    const message = await signupUser(formData, { headers: { reCAPTCHAToken: captchaToken } });
     message ? toast.success(message) : toast.error("Some errors occured during signup process.");
   };
+
+  const handleCaptchaResolved = (token: string) => setCaptchaToken(token);
 
   return (
     <>
@@ -72,7 +76,7 @@ export default function SignupPage() {
               </div>
             </div>
           </div>
-          <SignupForm onSubmit={handleSubmit} formData={formData} setFormData={setFormData} />
+          <SignupForm onSubmit={handleSubmit} onCaptchaResolved={handleCaptchaResolved} formData={formData} setFormData={setFormData} />
         </div>
       </div>
     </>
