@@ -3,6 +3,7 @@ import { Apple, Facebook } from "@src/components/svg/SVGAuthProviders";
 import { useAuth } from "@src/hooks/useAuth";
 import SignupForm, { SignupFormData } from "./SignupForm";
 import GoogleSignup from "@src/services/google/GoogleSignup";
+import { toast } from "react-toastify";
 
 export default function SignupPage() {
   const { signupUser } = useAuth();
@@ -17,9 +18,9 @@ export default function SignupPage() {
     rememberMe: true,
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    signupUser(formData);
+  const handleSubmit = async () => {
+    const message = await signupUser(formData);
+    message ? toast.success(message) : toast.error("Some errors occured during signup process.");
   };
 
   return (

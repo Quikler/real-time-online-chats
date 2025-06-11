@@ -14,7 +14,7 @@ export abstract class AuthService {
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      const response = await api.post<AuthSuccessResponse>(
+      const response = await api.post<string>(
         AuthRoutes.signup,
         request,
         {
