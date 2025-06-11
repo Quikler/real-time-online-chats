@@ -53,6 +53,10 @@ const LoginForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, classNa
               })
           })
       }
+
+      return () => {
+          window.recaptchaWidgetId = '';
+      }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
