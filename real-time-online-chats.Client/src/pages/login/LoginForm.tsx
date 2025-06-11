@@ -9,6 +9,7 @@ import { twMerge } from "tailwind-merge";
 import Label from "@src/components/ui/Label";
 import Checkbox from "@src/components/ui/Checkbox";
 import { GOOGLE_RECAPTCHA_CLIENT_KEY } from "@src/services/google/googleConstants";
+import { useEffect, useRef, useState } from "react";
 
 export interface LoginFormData {
   email: string;
@@ -19,9 +20,10 @@ export interface LoginFormData {
 type LoginFormProps = React.HTMLAttributes<HTMLFormElement> & {
   formData: LoginFormData;
   setFormData: React.Dispatch<React.SetStateAction<LoginFormData>>;
+  onCaptchaResolved: (token: string) => void;
 };
 
-const LoginForm = ({ onSubmit, formData, setFormData, className, ...rest }: LoginFormProps) => {
+const LoginForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, className, ...rest }: LoginFormProps) => {
   const { validationErrors, validate, isValid } = useFormValidation<LoginFormData>({
     email: {
       errorMessage: "Email is required",
@@ -32,6 +34,26 @@ const LoginForm = ({ onSubmit, formData, setFormData, className, ...rest }: Logi
       condition: (form) => form.password?.length >= 8,
     },
   });
+
+  const [isCaptchaResolved, setIsCaptchaResolved] = useState(false);
+
+  const reCAPTCHARef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+      if (window.grecaptcha && !window.recaptchaWidgetId) {
+          window.recaptchaWidgetId = 'rendered';
+          window.grecaptcha.ready(() => {
+              window.grecaptcha.render(reCAPTCHARef.current, {
+                  sitekey: GOOGLE_RECAPTCHA_CLIENT_KEY,
+                  callback: (token: string) => {
+                      console.log('Captcha resolved:', token);
+                      onCaptchaResolved?.(token);
+                      setIsCaptchaResolved(true);
+                  }
+              })
+          })
+      }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const updatedData = {
@@ -53,7 +75,14 @@ const LoginForm = ({ onSubmit, formData, setFormData, className, ...rest }: Logi
       return;
     }
 
+    if (!isCaptchaResolved) {
+      reCAPTCHARef.current!.children[0].classList.add("border", "border-solid", "border-red-500");
+      return;
+    }
+
     onSubmit?.(e);
+
+    reCAPTCHARef.current!.children[0].classList.remove("border", "border-solid", "border-red-500");
   };
 
   return (
@@ -120,7 +149,7 @@ const LoginForm = ({ onSubmit, formData, setFormData, className, ...rest }: Logi
         </Link>
       </div>
 
-      <div className="g-recaptcha" data-sitekey={GOOGLE_RECAPTCHA_CLIENT_KEY}></div>
+      <div ref={reCAPTCHARef} />
 
       <Button type="submit" className="w-full">
         Sign in
