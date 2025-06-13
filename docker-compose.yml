@@ -27,6 +27,7 @@ services:
       - DB_HOST=api.postgres
     depends_on:
       - api.postgres
+      - redis
 
   api.postgres:
     image: postgres:16.9-alpine
@@ -37,3 +38,9 @@ services:
       POSTGRES_USER: "root"
       POSTGRES_PASSWORD: "root"
       POSTGRES_DB: "roc_db"
+
+  redis:
+    image: redis:8.0.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
