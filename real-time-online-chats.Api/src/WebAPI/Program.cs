@@ -24,6 +24,7 @@ using real_time_online_chats.Server.Services.Message;
 using real_time_online_chats.Server.Services.User;
 using FluentValidation;
 using real_time_online_chats.Server.Common.Constants;
+using real_time_online_chats.Server.Services.Cache;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -91,7 +92,17 @@ builder.Services
     .Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)))
     .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"))
     .Configure<MailConfiguration>(builder.Configuration.GetSection("Mail"))
-    .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHAv2"));
+    .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHAv2"))
+    .Configure<RedisCacheConfiguration>(builder.Configuration.GetSection("Redis"));
+
+var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfiguration>()
+    ?? throw new InvalidOperationException("Configuration for RedisCacheConfiguration is missing or invalid.");
+
+if (redisConfig.Enabled)
+{
+    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddSingleton<IResponseCacheService, ResponseCacheService>();
+}
 
 var cloudinary = builder.Configuration.GetSection("Cloudinary");
 CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");
