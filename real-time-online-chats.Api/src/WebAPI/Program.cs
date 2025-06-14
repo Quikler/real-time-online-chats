@@ -100,7 +100,7 @@ var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfig
 
 if (redisConfig.Enabled)
 {
-    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConfig.ConnectionString);
     builder.Services.AddSingleton<IResponseCacheService, ResponseCacheService>();
 }
 
