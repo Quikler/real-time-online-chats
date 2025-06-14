@@ -28,4 +28,6 @@ public class ResponseCacheService(IDistributedCache distributedCache) : IRespons
         var cachedResponse = await distributedCache.GetStringAsync(cacheKey);
         return cachedResponse;
     }
+
+    public Task RemoveCachedResponseAsync(string cacheKey) => distributedCache.RemoveAsync(cacheKey);
 }

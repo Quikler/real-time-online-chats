@@ -16,18 +16,40 @@ public class InvalidateCacheAttribute(string template, int timeToLiveSeconds) : 
             template = template.Replace($"{{{key}}}", value?.ToString());
         }
 
-        switch (context.HttpContext.Request.Method)
+        switch (executionContext.Result)
         {
-            case "POST":
+            // POST
+            case CreatedAtActionResult created when created.Value is not null:
+                await cacheService.CacheResponseAsync(template, created.Value, TimeSpan.FromSeconds(timeToLiveSeconds));
                 break;
-            case "PUT":
-                if (executionContext.Result is not OkObjectResult ok || ok.Value is null) return;
+
+            // PUT
+            // PATCH
+            case OkObjectResult ok when ok.Value is not null:
                 await cacheService.CacheResponseAsync(template, ok.Value, TimeSpan.FromSeconds(timeToLiveSeconds));
                 break;
-            case "PATCH":
-                break;
-            case "DELETE":
+
+            // DELETE
+            case NoContentResult noContent:
+                await cacheService.RemoveCachedResponseAsync(template);
                 break;
         }
+
+        //switch (context.HttpContext.Request.Method)
+        //{
+            //case "POST":
+                //if (executionContext.Result is not CreatedAtActionResult created || created.Value is null) return;
+                //await cacheService.CacheResponseAsync(template, created.Value, TimeSpan.FromSeconds(timeToLiveSeconds));
+                //break;
+            //case "PUT":
+            //case "PATCH":
+                //if (executionContext.Result is not OkObjectResult ok || ok.Value is null) return;
+                //await cacheService.CacheResponseAsync(template, ok.Value, TimeSpan.FromSeconds(timeToLiveSeconds));
+                //break;
+            //case "DELETE":
+                //if (executionContext.Result is not NoContentResult noContent) return;
+                //await cacheService.RemoveCachedResponseAsync(template);
+                //break;
+        //}
     }
 }
