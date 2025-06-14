@@ -100,6 +100,9 @@ var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfig
 
 if (redisConfig.Enabled)
 {
+    var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
+    redisConfig.ConnectionString = redisConfig.ConnectionString.Replace("${REDIS_HOST}", redisHost);
+
     builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConfig.ConnectionString);
     builder.Services.AddSingleton<IResponseCacheService, ResponseCacheService>();
 }
