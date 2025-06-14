@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import { ChatService } from "@src/services/api/ChatService";
 import ChatHeader from "./ChatHeader";
 import { MessagesContextProvider } from "./MessagesContext";
@@ -25,7 +24,6 @@ const Chat = () => {
     if (chatId) {
       ChatService.deleteChat(chatId)
         .then(() => {
-          toast.success("Chat deleted successfully");
           navigate("/chats");
         })
         .catch((e) => console.error("Error deleting chat:", e.message));

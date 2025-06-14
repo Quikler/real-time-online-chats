@@ -135,7 +135,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
 
       connection.off("DeleteChat");
       connection.on("DeleteChat", () => {
-        toast("Chat has been deleted");
+        toast.success("Chat deleted successfully");
         navigate("/chats");
       });
 
