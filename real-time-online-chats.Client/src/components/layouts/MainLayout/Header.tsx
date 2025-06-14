@@ -59,6 +59,11 @@ export default function Header() {
 
   const menuButtonRef = useRef<HTMLDivElement>(null)
 
+  const handleLogout = () => {
+      logoutUser();
+      setIsUserMenuOpen(false);
+  }
+
   return (
     <header className={`fixed z-[999] w-full ${getBackgroundColor()}`}>
       <nav
@@ -74,8 +79,6 @@ export default function Header() {
                 <div ref={menuButtonRef}>
                   <Button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    id="dropdownInformationButton"
-                    data-dropdown-toggle="dropdownInformation"
                     type="button"
                   >
                     {user?.email}
@@ -84,7 +87,6 @@ export default function Header() {
                   {/* Dropdown menu */}
                   {isUserMenuOpen && (
                     <div style={{width: menuButtonRef.current?.clientWidth}}
-                      id="dropdownInformation"
                       className={`z-10 absolute bg-white divide-y divide-gray-100 shadow w-44 dark:bg-gray-700 dark:divide-gray-600 ${
                         isUserMenuOpen ? "" : "hidden"
                       }`}
@@ -97,7 +99,6 @@ export default function Header() {
                       </div>
                       <ul
                         className="py-2 text-sm text-gray-200"
-                        aria-labelledby="dropdownInformationButton"
                       >
                         <li>
                           <Link
@@ -120,7 +121,7 @@ export default function Header() {
                       </ul>
                       <div className="py-2 text-gray-200">
                         <button
-                          onClick={logoutUser}
+                          onClick={handleLogout}
                           className="block px-4 py-2 w-full text-left hover:bg-gray-600"
                         >
                           Log out
