@@ -16,7 +16,7 @@ namespace real_time_online_chats.Server.Controllers.V1;
 public class ChatsController(
     IChatService chatService,
     IHubContext<MessageHub, IMessageClient> messageHub)
-    : BaseController
+    : AuthorizeController
 {
     [HttpGet(ApiRoutes.Chats.GetAll)]
     public async Task<IActionResult> GetAll([FromQuery] ChatsPaginationRequest request)

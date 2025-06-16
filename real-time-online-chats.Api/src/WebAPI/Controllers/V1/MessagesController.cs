@@ -12,7 +12,7 @@ using real_time_online_chats.Server.Services.Message;
 namespace real_time_online_chats.Server.Controllers.V1;
 
 [Authorize]
-public class MessagesController(IMessageService messageService, IHubContext<MessageHub, IMessageClient> messagehub) : ControllerBase
+public class MessagesController(IMessageService messageService, IHubContext<MessageHub, IMessageClient> messagehub) : AuthorizeController
 {
     [HttpGet(ApiRoutes.Messages.Get)]
     public async Task<IActionResult> Get([FromRoute] Guid messageId)
