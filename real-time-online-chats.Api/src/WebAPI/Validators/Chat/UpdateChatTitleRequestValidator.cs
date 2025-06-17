@@ -3,9 +3,9 @@ using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
 
 namespace real_time_online_chats.Server.Validators.Chat;
 
-public class UpdateChatRequestValidator : AbstractValidator<UpdateChatRequest>
+public class UpdateChatTitleRequestValidator : AbstractValidator<UpdateChatTitleRequest>
 {
-    public UpdateChatRequestValidator()
+    public UpdateChatTitleRequestValidator()
     {
         RuleFor(x => x.Title)
             .NotEmpty().WithMessage("Title is required");
