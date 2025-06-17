@@ -37,13 +37,13 @@ public static class ApiRoutes
         public const string DeleteMember = BASE + "/chats/{chatId}/members/{memberId}";
     }
 
-    public static class Messages
+    public static class ChatMessages
     {
-        public const string GetAll = BASE + "/messages";
-        public const string Get = BASE + "/messages/{messageId}";
-        public const string Create = BASE + "/messages";
-        public const string Update = BASE + "/messages/{messageId}";
-        public const string Delete = BASE + "/messages/{messageId}";
+        public const string GetAll = BASE + "/chats/{chatId}/messages";
+        public const string Get = BASE + "/chats/{chatId}/messages/{messageId}";
+        public const string Create = BASE + "/chats/{chatId}/messages";
+        public const string Update = BASE + "/chats/{chatId}/messages/{messageId}";
+        public const string Delete = BASE + "/chats/{chatId}/messages/{messageId}";
     }
 
     public static class ChatUsers
