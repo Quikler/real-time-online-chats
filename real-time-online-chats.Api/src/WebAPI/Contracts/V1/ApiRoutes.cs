@@ -46,6 +46,16 @@ public static class ApiRoutes
         public const string Delete = BASE + "/messages/{messageId}";
     }
 
+    public static class ChatUsers
+    {
+        public const string GetAll = BASE + "/chats/{chatId}/users";
+        public const string Get = BASE + "/chats/{chatId}/users/{userId}";
+        public const string AddUser = BASE + "/chats/{chatId}/users/{userId}";
+        public const string AddUserMe = BASE + "/chats/{chatId}/users/me";
+        public const string DeleteUser = BASE + "/chats/{chatId}/users/{userId}";
+        public const string DeleteUserMe = BASE + "/chats/{chatId}/users/me";
+    }
+
     public static class Users
     {
         public const string GetProfile = BASE + "/users/{userId}/profile";
