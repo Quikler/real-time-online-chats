@@ -29,6 +29,18 @@ public class ChatsController(
         );
     }
 
+    [HttpGet(ApiRoutes.Chats.GetInfo)]
+    public async Task<IActionResult> GetInfo([FromRoute] Guid chatId)
+    {
+        var result = await chatService.GetChatInfo(chatId);
+
+        return result.Match(
+            dto => Ok(dto.ToResponse()),
+            failure => failure.ToActionResult()
+        );
+    }
+
+    [Obsolete]
     [HttpGet(ApiRoutes.Chats.Get)]
     public async Task<IActionResult> Get([FromRoute] Guid chatId, [FromQuery] ChatLevel level = ChatLevel.Preview)
     {

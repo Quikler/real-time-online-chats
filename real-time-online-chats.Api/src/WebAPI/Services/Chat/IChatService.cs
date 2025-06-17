@@ -11,6 +11,7 @@ public interface IChatService
     Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize);
     Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId);
     Task<Result<ChatPreviewDto, FailureDto>> GetChatPreviewByIdAsync(Guid chatId);
+    Task<Result<ChatInfoDto, FailureDto>> GetChatInfo(Guid chatId);
 
     // Commands (Write Operations)
     Task<Result<ChatPreviewDto, FailureDto>> CreateChatAsync(CreateChatDto createChatDto);

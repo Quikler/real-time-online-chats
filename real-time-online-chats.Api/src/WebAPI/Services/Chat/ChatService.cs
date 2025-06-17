@@ -215,6 +215,19 @@ public class ChatService(AppDbContext dbContext,
         return rows == 0 ? FailureDto.BadRequest("Cannot change owner") : true;
     }
 
+    public async Task<Result<ChatInfoDto, FailureDto>> GetChatInfo(Guid chatId)
+    {
+        var chatInfoDto = await dbContext.Chats.Select(c => new ChatInfoDto
+        {
+            Id = c.Id,
+            Title = c.Title,
+            CreationTime = c.CreationTime,
+            OwnerId = c.OwnerId,
+        }).FirstOrDefaultAsync(c => c.Id == chatId);
+
+        return chatInfoDto is not null ? chatInfoDto : FailureDto.NotFound("Chat not found.");
+    }
+
     private async Task<Result<bool, FailureDto>> ValidateChatOwnershipAsync(Guid chatId, Guid userId)
     {
         if (!await chatRepository.IsChatExistAsync(chatId))
