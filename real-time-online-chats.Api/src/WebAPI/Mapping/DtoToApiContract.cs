@@ -119,5 +119,16 @@ public static class DtoToApiContract
         };
     }
 
+    public static ChatInfoResponse ToResponse(this ChatInfoDto dto)
+    {
+        return new ChatInfoResponse
+        {
+            Id = dto.Id,
+            OwnerId = dto.OwnerId,
+            Title = dto.Title,
+            CreationTime = dto.CreationTime,
+        };
+    }
+
     public static FailureResponse ToResponse(this FailureDto failureDto) => new FailureResponse(failureDto.Errors);
 }
