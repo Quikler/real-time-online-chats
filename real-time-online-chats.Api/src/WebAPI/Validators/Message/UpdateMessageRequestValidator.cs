@@ -7,9 +7,6 @@ public class UpdateMessageRequestValidator : AbstractValidator<UpdateMessageRequ
 {
     public UpdateMessageRequestValidator()
     {
-        RuleFor(x => x.ChatId)
-            .NotNull().WithMessage("Chat Id is required");
-
         RuleFor(x => x.Content)
             .NotEmpty().WithMessage("Message is required");
     }
