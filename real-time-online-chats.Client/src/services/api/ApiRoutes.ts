@@ -13,6 +13,14 @@ export abstract class ChatRoutes {
   static readonly detailed = `detailed`;
 
   static readonly owned = `${this.base}/owned`;
+
+  static byId (chatId: string): string {
+      return `${this.base}/${chatId}`;
+  }
+
+  static info (chatId: string): string {
+      return `${this.byId(chatId)}/info`;
+  }
 }
 
 export abstract class MessageRoutes {
