@@ -33,6 +33,15 @@ export abstract class ChatService {
     }
   }
 
+  static async getChatInfo(chatId: string, config?: AxiosRequestConfig<any> | undefined) {
+      try {
+        const response = await api.get(ChatRoutes.info(chatId), config)
+        return response.data;
+      } catch (e) {
+        throwIfErrorNotCancelError(e);
+      }
+  }
+
   static async getChats(
     page: number,
     pageSize: number,
