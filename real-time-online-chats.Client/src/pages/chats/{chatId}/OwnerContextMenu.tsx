@@ -1,6 +1,7 @@
 import { ChatService } from "@src/services/api/ChatService";
 import { Link } from "react-router-dom";
 import { useChat } from "./ChatContext";
+import { ChatUsersService } from "@src/services/api/ChatUsersService";
 
 type OwnerContextMenuProps = React.HTMLAttributes<HTMLDivElement> & {
   isVisible: boolean;
@@ -15,7 +16,7 @@ const OwnerContextMenu = ({ isVisible, position, userId, ...rest }: OwnerContext
 
   const handleKick = async () => {
     try {
-      await ChatService.deleteMember(chatInfo.id, userId);
+      await ChatUsersService.deleteMember(chatInfo.id, userId);
     } catch (e: any) {
       console.error("Cannot kick user from chat:", e.message);
     }
@@ -23,7 +24,7 @@ const OwnerContextMenu = ({ isVisible, position, userId, ...rest }: OwnerContext
 
   const handleUpdateOwner = async () => {
     try {
-      await ChatService.updateChatOwner(chatInfo.id, userId);
+      await ChatUsersService.updateChatOwner(chatInfo.id, userId);
     } catch (e: any) {
       console.error("Cannot update chat owner:", e.message);
     }

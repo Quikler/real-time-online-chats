@@ -1,6 +1,7 @@
 import { ChatLevel, ChatService } from "@src/services/api/ChatService";
 import { useState, useEffect } from "react";
 import { ChatInfo, MessageChat, UserChat } from "../{chatId}.types";
+import { ChatUsersService } from "@src/services/api/ChatUsersService";
 
 const useChatDetailed = (chatId?: string) => {
   const [chatInfo, setChatInfo] = useState<ChatInfo>();
@@ -15,7 +16,7 @@ const useChatDetailed = (chatId?: string) => {
 
     const joinAndFetchChat = async () => {
       try {
-        await ChatService.addMemberMe(chatId, { signal: abortJoinChat.signal });
+        await ChatUsersService.addMe(chatId, { signal: abortJoinChat.signal });
         console.log("Joined chat:", chatId);
 
         const data = await ChatService.getChat(chatId, ChatLevel.Detail, {

@@ -1,7 +1,7 @@
 import { Garbage, Edit } from "@src/components/svg/SVGCommon";
 import Button from "@src/components/ui/Button";
 import Modal from "@src/components/ui/Modal";
-import { MessageService } from "@src/services/api/MessageService";
+import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
 import { useState } from "react";
 import { useChat } from "./ChatContext";
 import { useMessages } from "./MessagesContext";
@@ -18,7 +18,7 @@ const MessageActions = ({ messageId }: MessageActionsProps) => {
 
   const handleMessageDelete = () => {
     setIsModalOpen(false);
-    MessageService.deleteMessage(messageId, chatInfo.id)
+    ChatMessagesService.deleteMessage(chatInfo.id, messageId)
       .then((data) => console.log("Message: " + data + " deleted"))
       .catch((e) => console.error("Error deleting message:", e.message));
 
