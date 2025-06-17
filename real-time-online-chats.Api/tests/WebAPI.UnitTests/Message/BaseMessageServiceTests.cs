@@ -11,7 +11,7 @@ public class BaseMessageServiceTests : BaseUnitTests
     protected virtual Mock<MessageAuthorizationService> MessageAuthorizationService { get; }
     protected virtual Mock<ChatAuthorizationService> ChatAuthorizationService { get; }
 
-    protected virtual MessageService MessageService { get; }
+    protected virtual ChatMessageService MessageService { get; }
 
     public BaseMessageServiceTests()
     {
@@ -20,6 +20,6 @@ public class BaseMessageServiceTests : BaseUnitTests
         MessageAuthorizationService = new Mock<MessageAuthorizationService>(DbContextMock.Object);
         ChatAuthorizationService = new Mock<ChatAuthorizationService>(DbContextMock.Object);
 
-        MessageService = new MessageService(DbContextMock.Object, MessageAuthorizationService.Object, ChatAuthorizationService.Object);
+        MessageService = new ChatMessageService(DbContextMock.Object, MessageAuthorizationService.Object, ChatAuthorizationService.Object);
     }
 }
