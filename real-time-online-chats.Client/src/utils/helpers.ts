@@ -29,8 +29,8 @@ export const handleError = (error: any) => {
 
 export const throwIfErrorNotCancelError = (error: any) => {
   if (!axios.isCancel(error)) {
-    //throw error;
-    handleError(error);
+    throw error;
+    //handleError(error);
   }
 };
 
