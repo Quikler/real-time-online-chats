@@ -11,7 +11,6 @@ export abstract class AuthRoutes {
 export abstract class ChatRoutes {
   static readonly base = `chats`;
   static readonly detailed = `detailed`;
-
   static readonly owned = `${this.base}/owned`;
 
   static byId (chatId: string): string {
@@ -23,8 +22,30 @@ export abstract class ChatRoutes {
   }
 }
 
-export abstract class MessageRoutes {
-  static readonly base = `messages`;
+export abstract class ChatMessagesRoutes {
+  static readonly chats = `chats`;
+  static readonly messages = `messages`;
+
+  static byChatId (chatId: string) {
+      return `${this.chats}/${chatId}/${this.messages}`;
+  }
+
+  static byId (chatId: string, messageId: string) {
+      return `${this.byChatId(chatId)}/${messageId}`;
+  }
+}
+
+export abstract class ChatUsersRoutes {
+  static readonly chats = `chats`;
+  static readonly users = `users`;
+
+  static byChatId (chatId: string) {
+      return `${this.chats}/${chatId}/${this.users}`;
+  }
+
+  static byId (chatId: string, userId: string) {
+      return `${this.byChatId(chatId)}/${userId}`;
+  }
 }
 
 export abstract class UserRoutes {
