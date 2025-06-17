@@ -55,7 +55,6 @@ public static class ApiContractToDto
     {
         return new CreateMessageDto
         {
-            ChatId = request.ChatId,
             Content = request.Content,
             UserId = userId,
         };

@@ -32,7 +32,6 @@ public static class DtoToDomain
         return new MessageEntity
         {
             Content = createMessageDto.Content,
-            ChatId = createMessageDto.ChatId,
             UserId = createMessageDto.UserId,
         };
     }
