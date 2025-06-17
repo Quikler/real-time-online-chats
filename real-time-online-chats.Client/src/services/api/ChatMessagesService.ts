@@ -2,15 +2,24 @@ import api from "@services/axios/instance";
 import { CreateMessageRequest, UpdateMessageRequest } from "../../models/dtos/Message";
 import { AxiosRequestConfig } from "axios";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
-import { MessageRoutes } from "./ApiRoutes";
+import { ChatMessagesRoutes } from "./ApiRoutes";
 
-export abstract class MessageService {
+export abstract class ChatMessagesService {
+  static async getAllMessages(chatId: string, config?: AxiosRequestConfig<any>) {
+      try {
+        const response = await api.get(ChatMessagesRoutes.byChatId(chatId), config);
+        return response.data;
+      } catch (e) {
+        throwIfErrorNotCancelError(e);
+      }
+  }
+
   static async createMessage(
     request: CreateMessageRequest,
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      const response = await api.post(MessageRoutes.base, request, {
+      const response = await api.post(ChatMessagesRoutes.byChatId(request.chatId), request, {
         signal: config?.signal,
       });
       return response.data;
@@ -20,12 +29,13 @@ export abstract class MessageService {
   }
 
   static async updateMessage(
+    chatId: string,
     messageId: string,
     request: UpdateMessageRequest,
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      const response = await api.put(`${MessageRoutes.base}/${messageId}`, request, {
+      const response = await api.put(ChatMessagesRoutes.byId(chatId, messageId), request, {
         signal: config?.signal,
       });
       return response.data;
@@ -35,12 +45,12 @@ export abstract class MessageService {
   }
 
   static async deleteMessage(
-    messageId: string,
     chatId: string,
+    messageId: string,
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      const response = await api.delete(`${MessageRoutes.base}/${messageId}?chatId=${chatId}`, {
+      const response = await api.delete(ChatMessagesRoutes.byId(chatId, messageId), {
         signal: config?.signal,
       });
       return response.data;
