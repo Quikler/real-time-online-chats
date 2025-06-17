@@ -1,4 +1,4 @@
-import { ChatService, ChatLevel } from "@src/services/api/ChatService";
+import { ChatService } from "@src/services/api/ChatService";
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { ChatInfo, MessageChat, UserChat } from "./{chatId}.types";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,6 +9,9 @@ import { createMessageChatFromUserChat } from "./{chatId}.helpers";
 import { useAuth } from "@src/hooks/useAuth";
 import useMessageHubConnection from "./hooks/useMessageHubConnection";
 import { toast } from "react-toastify";
+import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
+import { ChatUsersService } from "@src/services/api/ChatUsersService";
+import { handleError } from "@src/utils/helpers";
 
 type ChatContextType = {
   chatInfo: ChatInfo;
@@ -80,44 +83,67 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
   }, []);
 
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || user?.id === undefined) return;
 
-    console.log("fetch chat");
+    const abort = new AbortController();
+    const abortConfig = { signal: abort.signal }
 
-    const abortChatDetailed = new AbortController();
-    const abortJoinChat = new AbortController();
+    const loadChat = async () => {
+        const joinChat = async () => {
+          try {
+            await ChatUsersService.addMe(chatId, abortConfig);
+            console.log("Joined chat:", chatId);
+          } catch (e: any) {
+            if (e?.response?.data?.errors[0] == "User already in chat") {
+              console.log('User already in chat');
+            } else {
+              handleError(e);
+              setError(true);
+            }
+          }
+        };
 
-    const joinAndFetchChat = async () => {
-      try {
-        await ChatService.addMemberMe(chatId, { signal: abortJoinChat.signal });
-        console.log("Joined chat:", chatId);
+        const fetchChatInfo = async () => {
+          try {
+            const chatInfo = await ChatService.getChatInfo(chatId, abortConfig);
+            setChatInfo(chatInfo);
+          } catch (e: any) {
+            handleError(e);
+            setError(true);
+          }
+        };
 
-        const data = await ChatService.getChat(chatId, ChatLevel.Detail, {
-          signal: abortChatDetailed.signal,
-        });
+        const fetchChatMessages = async () => {
+          try {
+            const messages = await ChatMessagesService.getAllMessages(chatId, abortConfig);
+            messagesDispatch({ type: "SET_MESSAGES", payload: messages });
+          } catch (e: any) {
+            handleError(e);
+            setError(true);
+          }
+        };
 
-        if (data) {
-          setChatInfo({
-            id: data.id,
-            title: data.title,
-            ownerId: data.ownerId,
-            creationTime: data.creationTime,
-          });
-          messagesDispatch({ type: "SET_MESSAGES", payload: data.messages });
-          setUsers(data.users);
+        const fetchChatUsers = async () => {
+          try {
+            const users = await ChatUsersService.getAllUsersByChatId(chatId, abortConfig);
+            setUsers(users);
+          } catch (e: any) {
+            handleError(e);
+            setError(true);
+          }
+        };
+
+        await Promise.all([joinChat(), fetchChatInfo(), fetchChatMessages(), fetchChatUsers()]);
+
+        if (!error) {
           setLoading(false);
         }
-      } catch (e: any) {
-        setError(true);
-        console.error("Error joining or fetching the chat:", e.message);
-      }
-    };
+    }
 
-    joinAndFetchChat();
+    loadChat();
 
     return () => {
-      abortChatDetailed.abort();
-      abortJoinChat.abort();
+      abort.abort();
     };
   }, [chatId]);
 
@@ -226,7 +252,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
     };
 
     registerSignalREventHandlers(connection);
-  }, [connection, chatInfo.ownerId]);
+  }, [connection, chatInfo?.ownerId]);
 
   const value = useMemo(
     () => ({

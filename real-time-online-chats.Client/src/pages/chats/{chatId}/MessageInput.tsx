@@ -2,7 +2,7 @@ import { isNullOrWhitespace } from "@src/utils/helpers";
 import { useMessages } from "./MessagesContext";
 import { useChat } from "./ChatContext";
 import { CreateMessageRequest } from "@src/models/dtos/Message";
-import { MessageService } from "@src/services/api/MessageService";
+import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
 
 const MessageInput = () => {
   console.count("MessageInput render");
@@ -10,18 +10,13 @@ const MessageInput = () => {
   const { chatInfo } = useChat();
   const { message, setMessage, editableMessage, setEditableMessage } = useMessages();
 
-  const onMessageSend = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleMessageSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isNullOrWhitespace(message)) return;
     setMessage("");
 
     if (editableMessage?.id) {
-      const request = {
-        chatId: chatInfo.id,
-        content: message,
-      };
-
-      MessageService.updateMessage(editableMessage?.id, request)
+      ChatMessagesService.updateMessage(chatInfo.id, editableMessage?.id, { content: message })
         .then(() => console.log("Updated message successfully."))
         .catch((e) => console.error("Error updating message:", e.message));
 
@@ -35,7 +30,7 @@ const MessageInput = () => {
       content: message,
     };
 
-    MessageService.createMessage(request)
+    ChatMessagesService.createMessage(request)
       .then(() => {
         window.scrollTo(0, document.body.scrollHeight);
       })
@@ -43,7 +38,7 @@ const MessageInput = () => {
   };
 
   return (
-    <form className="flex items-center gap-4" onSubmit={onMessageSend}>
+    <form className="flex items-center gap-4" onSubmit={handleMessageSend}>
       <input
         name="message"
         autoComplete="off"

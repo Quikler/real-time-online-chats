@@ -6,6 +6,7 @@ import ChatMessages from "./ChatMessages";
 import CountOfNewMessages from "./CountOfNewMessages";
 import MessageInputBlock from "./MessageInputBlock";
 import { ChatContextProvider } from "./ChatContext";
+import { ChatUsersService } from "@src/services/api/ChatUsersService";
 
 const Chat = () => {
   console.count("Chat render");
@@ -14,7 +15,7 @@ const Chat = () => {
 
   const handleChatLeave = () => {
     if (chatId) {
-      ChatService.deleteMemberMe(chatId)
+      ChatUsersService.deleteMemberMe(chatId)
         .then(() => navigate("/chats"))
         .catch((e) => console.error("Error leaving chat:", e.message));
     }
