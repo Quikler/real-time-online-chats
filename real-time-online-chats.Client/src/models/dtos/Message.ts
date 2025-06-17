@@ -11,5 +11,4 @@ export interface GetMessageResponse {
 
 export interface UpdateMessageRequest {
 	content: string;
-	chatId: string;
 }
