@@ -77,7 +77,7 @@ public class ChatsController(
     }
 
     [HttpPatch(ApiRoutes.Chats.UpdateTitle)]
-    public async Task<IActionResult> UpdateTitle([FromRoute] Guid chatId, [FromBody] UpdateChatRequest request)
+    public async Task<IActionResult> UpdateTitle([FromRoute] Guid chatId, [FromBody] UpdateChatTitleRequest request)
     {
         var result = await chatService.UpdateChatTitleAsync(chatId, request.ToDto(), UserId);
 

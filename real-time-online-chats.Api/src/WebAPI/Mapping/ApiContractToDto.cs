@@ -43,7 +43,7 @@ public static class ApiContractToDto
         };
     }
 
-    public static UpdateChatDto ToDto(this UpdateChatRequest request)
+    public static UpdateChatDto ToDto(this UpdateChatTitleRequest request)
     {
         return new UpdateChatDto
         {
