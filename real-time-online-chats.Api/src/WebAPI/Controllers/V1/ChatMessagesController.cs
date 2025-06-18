@@ -16,7 +16,7 @@ namespace real_time_online_chats.Server.Controllers.V1;
 public class ChatMessagesController(IChatMessageService messageService, IHubContext<MessageHub, IMessageClient> messagehub) : AuthorizeController
 {
     [HttpGet(ApiRoutes.ChatMessages.Get)]
-    [Cached(600)]
+    [Cached(60)]
     public async Task<IActionResult> Get([FromRoute] Guid chatId, [FromRoute] Guid messageId)
     {
         var result = await messageService.GetMessageByIdAsync(chatId, messageId, UserId);
@@ -28,6 +28,7 @@ public class ChatMessagesController(IChatMessageService messageService, IHubCont
     }
 
     [HttpGet(ApiRoutes.ChatMessages.GetAll)]
+    [Cached(60)]
     public async Task<IActionResult> GetAll([FromRoute] Guid chatId)
     {
         var result = await messageService.GetAllMessagesByChatIdAsync(chatId);
@@ -35,6 +36,8 @@ public class ChatMessagesController(IChatMessageService messageService, IHubCont
     }
 
     [HttpPost(ApiRoutes.ChatMessages.Create)]
+    [InvalidateCache(ApiRoutes.ChatMessages.Get, 60)]
+    [RemoveCache(ApiRoutes.ChatMessages.GetAll)]
     public async Task<IActionResult> Create([FromRoute] Guid chatId, [FromBody] CreateMessageRequest request)
     {
         var result = await messageService.CreateMessageAsync(chatId, request.ToDto(UserId));
@@ -52,7 +55,8 @@ public class ChatMessagesController(IChatMessageService messageService, IHubCont
     }
 
     [HttpPut(ApiRoutes.ChatMessages.Update)]
-    [InvalidateCache(ApiRoutes.ChatMessages.Get, 600)]
+    [InvalidateCache(ApiRoutes.ChatMessages.Get, 60)]
+    [RemoveCache(ApiRoutes.ChatMessages.GetAll)]
     public async Task<IActionResult> Update([FromRoute] Guid chatId, [FromRoute] Guid messageId, [FromBody] UpdateMessageRequest request)
     {
         var result = await messageService.UpdateMessageContentAsync(chatId, messageId, request.ToDto(UserId));
@@ -70,7 +74,8 @@ public class ChatMessagesController(IChatMessageService messageService, IHubCont
     }
 
     [HttpDelete(ApiRoutes.ChatMessages.Delete)]
-    [InvalidateCache(ApiRoutes.ChatMessages.Get, 600)]
+    [InvalidateCache(ApiRoutes.ChatMessages.Get, 60)]
+    [RemoveCache(ApiRoutes.ChatMessages.GetAll)]
     public async Task<IActionResult> Delete([FromRoute] Guid chatId, [FromRoute] Guid messageId)
     {
         var result = await messageService.DeleteMessageAsync(chatId, messageId, UserId);
