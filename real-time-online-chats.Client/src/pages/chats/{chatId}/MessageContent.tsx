@@ -1,9 +1,9 @@
 import { useAuth } from "@src/hooks/useAuth";
-import { MessageChat } from "./{chatId}.types";
+import { ChatMessage } from "./{chatId}.types";
 import { twMerge } from "tailwind-merge";
 
 type MessageContentProps = React.HTMLAttributes<HTMLDivElement> & {
-  messageChat: MessageChat;
+  messageChat: ChatMessage;
 };
 
 const MessageContent = ({ messageChat, className, ...rest }: MessageContentProps) => {

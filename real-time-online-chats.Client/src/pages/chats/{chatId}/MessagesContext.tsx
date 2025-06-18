@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
-import { MessageChat } from "./{chatId}.types";
+import { ChatMessage } from "./{chatId}.types";
 
 type MessagesContextType = {
   message: string;
   setMessage: React.Dispatch<React.SetStateAction<string>>;
-  editableMessage: MessageChat | null | undefined;
-  setEditableMessage: React.Dispatch<React.SetStateAction<MessageChat | null | undefined>>;
+  editableMessage: ChatMessage | null | undefined;
+  setEditableMessage: React.Dispatch<React.SetStateAction<ChatMessage | null | undefined>>;
 };
 
 type MessagesProviderProps = { children: React.ReactNode };
@@ -15,7 +15,7 @@ const MessagesContext = createContext({} as MessagesContextType);
 export const MessagesContextProvider = ({ children }: MessagesProviderProps) => {
   console.count("MessagesContextProvider render")
   const [message, setMessage] = useState<string>("");
-  const [editableMessage, setEditableMessage] = useState<MessageChat | null | undefined>();
+  const [editableMessage, setEditableMessage] = useState<ChatMessage | null | undefined>();
 
   const value = useMemo(
     () => ({
