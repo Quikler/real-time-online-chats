@@ -21,18 +21,13 @@ const ChatMessages = () => {
           const showUserInfo = !isCurrentUserPrevious;
 
           return (
-            <li
+            <Message
               key={message.id}
-              className={`flex gap-3 ${isCurrentUserPrevious ? "pt-2" : "pt-8"} ${
-                isCurrentUser ? "justify-end" : "justify-start"
-              }`}
-            >
-              <Message
-                messageChat={message}
-                isCurrentUser={isCurrentUser}
-                showUserInfo={showUserInfo}
-              />
-            </li>
+              message={message}
+              isCurrentUserPrevious={isCurrentUserPrevious}
+              isCurrentUser={isCurrentUser}
+              showUserInfo={showUserInfo}
+            />
           );
         })}
       </ul>
