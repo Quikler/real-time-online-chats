@@ -32,9 +32,6 @@ public static class ApiRoutes
         public const string UpdateTitle = BASE + "/chats/{chatId}";
         public const string UpdateOwner = BASE + "/chats/{chatId}/owner";
         public const string Delete = BASE + "/chats/{chatId}";
-        public const string AddMemberMe = BASE + "/chats/{chatId}/members/me";
-        public const string DeleteMemberMe = BASE + "/chats/{chatId}/members/me";
-        public const string DeleteMember = BASE + "/chats/{chatId}/members/{memberId}";
     }
 
     public static class ChatMessages
