@@ -66,4 +66,13 @@ export abstract class ChatService {
       throwIfErrorNotCancelError(e);
     }
   }
+
+  static async updateOwner(chatId: string, newOwnerId: string, config?: AxiosRequestConfig<any>) {
+    try {
+      const response = await api.patch(`${ChatRoutes.base}/${chatId}/owner`, { newOwnerId }, config);
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e);
+    }
+  }
 }

@@ -24,7 +24,7 @@ const OwnerContextMenu = ({ isVisible, position, userId, ...rest }: OwnerContext
 
   const handleUpdateOwner = async () => {
     try {
-      await ChatUsersService.updateChatOwner(chatInfo.id, userId);
+      await ChatService.updateOwner(chatInfo.id, userId);
     } catch (e: any) {
       console.error("Cannot update chat owner:", e.message);
     }
