@@ -3,11 +3,12 @@ using real_time_online_chats.Server.Services.Cache;
 
 namespace real_time_online_chats.Server.Attributes;
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RemoveCacheAttribute(string template) : Attribute, IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var executionContext = await next();
+        await next();
         var cacheService = context.HttpContext.RequestServices.GetRequiredService<IResponseCacheService>();
 
         foreach (var (key, value) in context.ActionArguments)

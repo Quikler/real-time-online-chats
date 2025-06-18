@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using real_time_online_chats.Server.Attributes;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Extensions;
 using real_time_online_chats.Server.Hubs;
@@ -14,6 +15,7 @@ namespace real_time_online_chats.Server.Controllers.V1;
 public class ChatUsersController(IChatUserService chatUserService, IHubContext<MessageHub, IMessageClient> messageHub) : AuthorizeController
 {
     [HttpGet(ApiRoutes.ChatUsers.GetAll)]
+    [Cached(600)]
     public async Task<IActionResult> GetAll([FromRoute] Guid chatId)
     {
         var result = await chatUserService.GetAllUsersByChatId(chatId);
@@ -21,6 +23,7 @@ public class ChatUsersController(IChatUserService chatUserService, IHubContext<M
     }
 
     [HttpPost(ApiRoutes.ChatUsers.AddUserMe)]
+    [RemoveCache(ApiRoutes.ChatUsers.GetAll)]
     public async Task<IActionResult> AddMe([FromRoute] Guid chatId)
     {
         var result = await chatUserService.AddUser(chatId, UserId);
@@ -37,6 +40,7 @@ public class ChatUsersController(IChatUserService chatUserService, IHubContext<M
     }
 
     [HttpDelete(ApiRoutes.ChatUsers.DeleteUserMe)]
+    [RemoveCache(ApiRoutes.ChatUsers.GetAll)]
     public async Task<IActionResult> DeleteMe([FromRoute] Guid chatId)
     {
         var kickResult = await chatUserService.DeleteUser(chatId, UserId);
@@ -53,6 +57,7 @@ public class ChatUsersController(IChatUserService chatUserService, IHubContext<M
     }
 
     [HttpDelete(ApiRoutes.ChatUsers.DeleteUser)]
+    [RemoveCache(ApiRoutes.ChatUsers.GetAll)]
     public async Task<IActionResult> DeleteMember([FromRoute] Guid chatId, [FromRoute] Guid userId)
     {
         var kickResult = await chatUserService.DeleteUser(chatId, userId, UserId);
