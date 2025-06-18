@@ -47,7 +47,7 @@ public class IdentityController(IIdentityService identityService, IMailService m
                     """);
 
                 return sent
-                    ? Ok("Account created. Before login please confirm your email.")
+                    ? Ok($"Account created. Before login please confirm your email. [Link only for tests]: {confirmationLink}")
                     : BadRequest(new FailureResponse(["Failed to send confirmation email."]));
             },
             failure => failure.ToActionResult()
