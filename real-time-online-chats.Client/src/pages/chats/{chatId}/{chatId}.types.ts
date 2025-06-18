@@ -1,10 +1,10 @@
-export type MessageChat = {
+export type ChatMessage = {
   id: string;
   content: string;
-  user: UserChat;
+  user: ChatUser;
 };
 
-export type UserChat = {
+export type ChatUser = {
   id: string;
   email: string;
   firstName?: string;

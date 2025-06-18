@@ -1,11 +1,11 @@
 import MessageContent from "./MessageContent";
-import { MessageChat } from "./{chatId}.types";
+import { ChatMessage } from "./{chatId}.types";
 import MessageActions from "./MessageActions";
 import UserAvatarLink from "./UserAvatarLink";
 import { memo } from "react";
 
 type MessageProps = {
-  message: MessageChat;
+  message: ChatMessage;
   isCurrentUser: boolean;
   isCurrentUserPrevious: boolean;
   showUserInfo: boolean;

@@ -1,6 +1,6 @@
 import { ChatService } from "@src/services/api/ChatService";
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
-import { ChatInfo, MessageChat, UserChat } from "./{chatId}.types";
+import { ChatInfo, ChatMessage, ChatUser } from "./{chatId}.types";
 import { useNavigate, useParams } from "react-router-dom";
 import ErrorScreen from "@src/components/ui/ErrorScreen";
 import { LoaderScreen } from "@src/components/ui/Loader";
@@ -15,20 +15,20 @@ import { handleError } from "@src/utils/helpers";
 
 type ChatContextType = {
   chatInfo: ChatInfo;
-  messages: MessageChat[];
-  users: UserChat[];
+  messages: ChatMessage[];
+  users: ChatUser[];
   countOfNewMessages: number;
   setCountOfNewMessages: React.Dispatch<React.SetStateAction<number>>;
 };
 
 type MessagesAction =
-  | { type: "SET_MESSAGES"; payload: MessageChat[] }
-  | { type: "UPDATE_MESSAGES"; payload: MessageChat }
-  | { type: "ADD_MESSAGE"; payload: MessageChat }
+  | { type: "SET_MESSAGES"; payload: ChatMessage[] }
+  | { type: "UPDATE_MESSAGES"; payload: ChatMessage }
+  | { type: "ADD_MESSAGE"; payload: ChatMessage }
   | { type: "REMOVE_MESSAGE"; payload: string };
 
 // Reducer Function
-const messagesReducer = (state: MessageChat[], action: MessagesAction): MessageChat[] => {
+const messagesReducer = (state: ChatMessage[], action: MessagesAction): ChatMessage[] => {
   switch (action.type) {
     case "SET_MESSAGES":
       return action.payload;
@@ -63,7 +63,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
 
   const [chatInfo, setChatInfo] = useState<ChatInfo>({} as ChatInfo);
   const [messages, messagesDispatch] = useReducer(messagesReducer, []);
-  const [users, setUsers] = useState<UserChat[]>([]);
+  const [users, setUsers] = useState<ChatUser[]>([]);
 
   const [countOfNewMessages, setCountOfNewMessages] = useState(0);
 
@@ -152,7 +152,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
 
     const registerSignalREventHandlers = (connection: HubConnection) => {
       connection.off("SendMessage");
-      connection.on("SendMessage", (message: MessageChat) => {
+      connection.on("SendMessage", (message: ChatMessage) => {
         messagesDispatch({ type: "ADD_MESSAGE", payload: message });
         if (message.user.id !== user?.id) {
           setCountOfNewMessages((prev) => prev + 1);
@@ -166,7 +166,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
       });
 
       connection.off("JoinChat");
-      connection.on("JoinChat", (joinedUser: UserChat) => {
+      connection.on("JoinChat", (joinedUser: ChatUser) => {
         const message = createMessageChatFromUserChat(
           joinedUser,
           `<!-- User ${joinedUser.email} joined chat -->`
@@ -177,7 +177,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
       });
 
       connection.off("LeaveChat");
-      connection.on("LeaveChat", (leavedUser: UserChat) => {
+      connection.on("LeaveChat", (leavedUser: ChatUser) => {
         console.log("Current owner:", chatInfo.ownerId);
         console.log("Left the chat:", leavedUser.id);
 
@@ -229,7 +229,7 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
       });
 
       connection.off("UpdateMessage");
-      connection.on("UpdateMessage", (message: MessageChat) => {
+      connection.on("UpdateMessage", (message: ChatMessage) => {
         messagesDispatch({ type: "UPDATE_MESSAGES", payload: message });
       });
 
