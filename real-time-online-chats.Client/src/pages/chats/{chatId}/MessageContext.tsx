@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useMemo, useState } from "react";
 import { ChatMessage } from "./{chatId}.types";
+import { useCustomHook } from "@src/utils/helpers";
 
 type MessageContextType = {
   message: string;
@@ -30,12 +31,4 @@ export const MessageContextProvider = ({ children }: MessageProviderProps) => {
   return <MessageContext.Provider value={value}>{children}</MessageContext.Provider>;
 };
 
-export const useMessage = () => {
-  const useMessageContext = useContext(MessageContext);
-
-  if (!useMessageContext) {
-    throw new Error("useMessageContext must be used within a MessageContextProvider");
-  }
-
-  return useMessageContext;
-};
+export const useMessage = () => useCustomHook(MessageContext, useMessage.name);

@@ -1,5 +1,5 @@
 import { ChatService } from "@src/services/api/ChatService";
-import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
+import { createContext, useEffect, useMemo, useReducer, useState } from "react";
 import { ChatInfo, ChatMessage, ChatUser } from "./{chatId}.types";
 import { useNavigate, useParams } from "react-router-dom";
 import ErrorScreen from "@src/components/ui/ErrorScreen";
@@ -11,7 +11,7 @@ import useMessageHubConnection from "./hooks/useMessageHubConnection";
 import { toast } from "react-toastify";
 import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
 import { ChatUsersService } from "@src/services/api/ChatUsersService";
-import { handleError } from "@src/utils/helpers";
+import { handleError, useCustomHook } from "@src/utils/helpers";
 
 type ChatContextType = {
   chatInfo: ChatInfo;
@@ -271,12 +271,4 @@ export const ChatContextProvider = ({ children }: ChatProviderProps) => {
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
 
-export const useChat = () => {
-  const chatContext = useContext(ChatContext);
-
-  if (!chatContext) {
-    throw new Error("useChat must be used within a ChatContextProvider");
-  }
-
-  return chatContext;
-};
+export const useChat = () => useCustomHook(ChatContext, useChat.name);

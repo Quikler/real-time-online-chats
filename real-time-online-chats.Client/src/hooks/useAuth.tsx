@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { createContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@services/axios/instance";
 import { LoginRequest, SignupRequest } from "@src/models/dtos/Auth";
@@ -6,6 +6,7 @@ import { AuthRoutes } from "@src/services/api/ApiRoutes";
 import { AuthService } from "@src/services/api/AuthService";
 import { GoogleService } from "@src/services/google/GoogleService";
 import { AxiosRequestConfig } from "axios";
+import { useCustomHook } from "@src/utils/helpers";
 
 export type UserProfile = {
   id: string;
@@ -195,12 +196,4 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   return <AuthContext.Provider value={value}>{isReady ? children : null}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  const authContext = useContext(AuthContext);
-
-  if (!authContext) {
-    throw new Error("useUserAuth must be used within a UserAuthProvider");
-  }
-
-  return authContext;
-};
+export const useAuth = () => useCustomHook(AuthContext, useAuth.name);

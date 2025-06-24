@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { UserProfileType } from "./profile.types";
 import { UserService } from "@src/services/api/UserService";
 import { useParams } from "react-router-dom";
 import { LoaderScreen } from "@src/components/ui/Loader";
 import ErrorScreen from "@src/components/ui/ErrorScreen";
+import { useCustomHook } from "@src/utils/helpers";
 
 type UserProfileContextType = UserProfileType & {
   refreshUser: () => Promise<void>;
@@ -65,12 +66,4 @@ export const UserProfileProvider = ({ children }: UserProfileProviderProps) => {
   return <UserProfileContext.Provider value={value}>{children}</UserProfileContext.Provider>;
 };
 
-export const useUserProfile = () => {
-  const userProfileContext = useContext(UserProfileContext);
-
-  if (!userProfileContext) {
-    throw new Error("useUserProfile must be used within a UserProfileContextProvider");
-  }
-
-  return userProfileContext;
-};
+export const useUserProfile = () => useCustomHook(UserProfileContext, useUserProfile.name);

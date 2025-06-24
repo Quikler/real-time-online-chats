@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useContext } from "react";
 import { toast } from "react-toastify";
 
 export function isNullOrWhitespace(input?: string) {
@@ -46,3 +47,13 @@ export const loadScript = (src: string) => {
 };
 
 export const scrollToBottomOfBody = () => window.scrollTo(0, document.body.scrollHeight);
+
+export const useCustomHook = <T extends {}>(context: React.Context<T>, contextName?: string | undefined) => {
+  const ctx = useContext(context);
+
+  if (!ctx) {
+    throw new Error(`${ctx.constructor.name} must be used within a ${contextName}`);
+  }
+
+  return ctx;
+}
