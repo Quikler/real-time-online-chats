@@ -1,19 +1,19 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { ChatMessage } from "./{chatId}.types";
 
-type MessagesContextType = {
+type MessageContextType = {
   message: string;
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   editableMessage: ChatMessage | null | undefined;
   setEditableMessage: React.Dispatch<React.SetStateAction<ChatMessage | null | undefined>>;
 };
 
-type MessagesProviderProps = { children: React.ReactNode };
+type MessageProviderProps = { children: React.ReactNode };
 
-const MessagesContext = createContext({} as MessagesContextType);
+const MessageContext = createContext({} as MessageContextType);
 
-export const MessagesContextProvider = ({ children }: MessagesProviderProps) => {
-  console.count("MessagesContextProvider render")
+export const MessageContextProvider = ({ children }: MessageProviderProps) => {
+  console.count("MessageContextProvider render")
   const [message, setMessage] = useState<string>("");
   const [editableMessage, setEditableMessage] = useState<ChatMessage | null | undefined>();
 
@@ -27,14 +27,14 @@ export const MessagesContextProvider = ({ children }: MessagesProviderProps) => 
     [message, editableMessage]
   );
 
-  return <MessagesContext.Provider value={value}>{children}</MessagesContext.Provider>;
+  return <MessageContext.Provider value={value}>{children}</MessageContext.Provider>;
 };
 
-export const useMessages = () => {
-  const useMessageContext = useContext(MessagesContext);
+export const useMessage = () => {
+  const useMessageContext = useContext(MessageContext);
 
   if (!useMessageContext) {
-    throw new Error("useMessagesContext must be used within a MessagesContextProvider");
+    throw new Error("useMessageContext must be used within a MessageContextProvider");
   }
 
   return useMessageContext;

@@ -4,7 +4,7 @@ import Modal from "@src/components/ui/Modal";
 import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
 import { useState } from "react";
 import { useChat } from "./ChatContext";
-import { useMessages } from "./MessagesContext";
+import { useMessage } from "./MessageContext";
 
 type MessageActionsProps = {
   messageId: string;
@@ -14,7 +14,7 @@ const MessageActions = ({ messageId }: MessageActionsProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { messages, chatInfo } = useChat();
-  const { setEditableMessage, setMessage } = useMessages();
+  const { setEditableMessage, setMessage } = useMessage();
 
   const handleMessageDelete = () => {
     setIsModalOpen(false);

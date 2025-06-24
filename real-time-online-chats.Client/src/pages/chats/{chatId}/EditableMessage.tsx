@@ -1,10 +1,10 @@
 import { Close } from "@src/components/svg/SVGCommon";
-import { useMessages } from "./MessagesContext";
+import { useMessage } from "./MessageContext";
 
 const EditableMessage = () => {
   console.count("EditableMessage render");
 
-  const { editableMessage, setEditableMessage, setMessage } = useMessages();
+  const { editableMessage, setEditableMessage, setMessage } = useMessage();
 
   const handleClick = () => {
     setEditableMessage(null);

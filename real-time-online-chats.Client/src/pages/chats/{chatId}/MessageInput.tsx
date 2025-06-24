@@ -1,5 +1,5 @@
 import { isNullOrWhitespace } from "@src/utils/helpers";
-import { useMessages } from "./MessagesContext";
+import { useMessage } from "./MessageContext";
 import { useChat } from "./ChatContext";
 import { CreateMessageRequest } from "@src/models/dtos/Message";
 import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
@@ -8,7 +8,7 @@ const MessageInput = () => {
   console.count("MessageInput render");
 
   const { chatInfo } = useChat();
-  const { message, setMessage, editableMessage, setEditableMessage } = useMessages();
+  const { message, setMessage, editableMessage, setEditableMessage } = useMessage();
 
   const handleMessageSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

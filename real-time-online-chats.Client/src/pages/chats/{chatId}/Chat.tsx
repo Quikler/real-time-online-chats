@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ChatService } from "@src/services/api/ChatService";
 import ChatHeader from "./ChatHeader";
-import { MessagesContextProvider } from "./MessagesContext";
+import { MessageContextProvider } from "./MessageContext";
 import ChatMessages from "./ChatMessages";
 import CountOfNewMessages from "./CountOfNewMessages";
 import MessageInputBlock from "./MessageInputBlock";
@@ -41,10 +41,10 @@ const Chat = () => {
 
         <CountOfNewMessages />
 
-        <MessagesContextProvider>
+        <MessageContextProvider>
           <ChatMessages />
           <MessageInputBlock />
-        </MessagesContextProvider>
+        </MessageContextProvider>
       </ChatContextProvider>
     </div>
   );
