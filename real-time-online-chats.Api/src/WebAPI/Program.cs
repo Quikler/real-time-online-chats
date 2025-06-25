@@ -25,6 +25,7 @@ using real_time_online_chats.Server.Services.User;
 using FluentValidation;
 using real_time_online_chats.Server.Common.Constants;
 using real_time_online_chats.Server.Services.Cache;
+using real_time_online_chats.Server.Data.Seed.User;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -260,6 +261,9 @@ if (app.Environment.IsDevelopment())
 
     // Apply all ef core migrations before running application
     app.ApplyMigrations();
+
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.SeedDefaultUsersAsync();
 }
 
 app.Run();
