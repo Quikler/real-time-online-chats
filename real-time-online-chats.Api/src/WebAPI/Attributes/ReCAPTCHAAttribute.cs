@@ -7,6 +7,7 @@ using real_time_online_chats.Server.Contracts.V1.Responses.Google;
 
 namespace real_time_online_chats.Server.Attributes;
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class ReCAPTCHAAttribute : Attribute, IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
