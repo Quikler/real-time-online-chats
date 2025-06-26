@@ -5,8 +5,10 @@ import { MessageContextProvider } from "./MessageContext";
 import ChatMessages from "./ChatMessages";
 import CountOfNewMessages from "./CountOfNewMessages";
 import MessageInputBlock from "./MessageInputBlock";
-import { ChatContextProvider } from "./ChatContext";
 import { ChatUsersService } from "@src/services/api/ChatUsersService";
+import { ChatUsersContextProvider } from "./ChatUsersContext";
+import { ChatInfoContextProvider } from "./ChatInfoContext";
+import { ChatMessagesContextProvider } from "./ChatMessagesContext";
 
 const Chat = () => {
   console.count("Chat render");
@@ -36,16 +38,20 @@ const Chat = () => {
       className="flex flex-col bg-gradient-to-br from-slate-700 to-slate-900 lg:px-16 flex-grow"
       style={{ minHeight: "720px" }}
     >
-      <ChatContextProvider>
-        <ChatHeader onChatDelete={handleChatDelete} onChatLeave={handleChatLeave} />
+      <ChatUsersContextProvider>
+        <ChatInfoContextProvider>
+          <ChatHeader onChatDelete={handleChatDelete} onChatLeave={handleChatLeave} />
 
-        <CountOfNewMessages />
+          <ChatMessagesContextProvider>
+            <CountOfNewMessages />
 
-        <MessageContextProvider>
-          <ChatMessages />
-          <MessageInputBlock />
-        </MessageContextProvider>
-      </ChatContextProvider>
+            <MessageContextProvider>
+              <ChatMessages />
+              <MessageInputBlock />
+            </MessageContextProvider>
+          </ChatMessagesContextProvider>
+        </ChatInfoContextProvider>
+      </ChatUsersContextProvider>
     </div>
   );
 };

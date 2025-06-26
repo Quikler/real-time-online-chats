@@ -1,7 +1,7 @@
 import { ChatService } from "@src/services/api/ChatService";
 import { Link } from "react-router-dom";
-import { useChat } from "./ChatContext";
 import { ChatUsersService } from "@src/services/api/ChatUsersService";
+import { useChatInfo } from "./ChatInfoContext";
 
 type OwnerContextMenuProps = React.HTMLAttributes<HTMLDivElement> & {
   isVisible: boolean;
@@ -10,7 +10,7 @@ type OwnerContextMenuProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const OwnerContextMenu = ({ isVisible, position, userId, ...rest }: OwnerContextMenuProps) => {
-  const { chatInfo } = useChat();
+  const { chatInfo } = useChatInfo();
 
   if (!isVisible) return null;
 

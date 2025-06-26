@@ -1,13 +1,12 @@
 import { isNullOrWhitespace } from "@src/utils/helpers";
 import { useMessage } from "./MessageContext";
-import { useChat } from "./ChatContext";
-import { CreateMessageRequest } from "@src/models/dtos/Message";
 import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
+import { useChatInfo } from "./ChatInfoContext";
 
 const MessageInput = () => {
   console.count("MessageInput render");
 
-  const { chatInfo } = useChat();
+  const { chatInfo } = useChatInfo();
   const { message, setMessage, editableMessage, setEditableMessage } = useMessage();
 
   const handleMessageSend = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -25,12 +24,7 @@ const MessageInput = () => {
       return;
     }
 
-    const request: CreateMessageRequest = {
-      chatId: chatInfo.id,
-      content: message,
-    };
-
-    ChatMessagesService.createMessage(request)
+    ChatMessagesService.createMessage(chatInfo.id, { content: message })
       .then(() => {
         window.scrollTo(0, document.body.scrollHeight);
       })

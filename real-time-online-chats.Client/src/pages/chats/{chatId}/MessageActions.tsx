@@ -3,8 +3,9 @@ import Button from "@src/components/ui/Button";
 import Modal from "@src/components/ui/Modal";
 import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
 import { useState } from "react";
-import { useChat } from "./ChatContext";
 import { useMessage } from "./MessageContext";
+import { useChatMessages } from "./ChatMessagesContext";
+import { useChatInfo } from "./ChatInfoContext";
 
 type MessageActionsProps = {
   messageId: string;
@@ -13,7 +14,8 @@ type MessageActionsProps = {
 const MessageActions = ({ messageId }: MessageActionsProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { messages, chatInfo } = useChat();
+  const { chatInfo } = useChatInfo();
+  const { chatMessages } = useChatMessages();
   const { setEditableMessage, setMessage } = useMessage();
 
   const handleMessageDelete = () => {
@@ -27,7 +29,7 @@ const MessageActions = ({ messageId }: MessageActionsProps) => {
   };
 
   const handleMessageEdit = () => {
-    const message = messages.find((m) => m.id === messageId);
+    const message = chatMessages.find((m) => m.id === messageId);
     console.log("Message:", message);
     if (!message) return;
 

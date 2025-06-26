@@ -1,6 +1,5 @@
 export interface CreateMessageRequest {
 	content: string,
-	chatId: string,
 }
 
 export interface GetMessageResponse {

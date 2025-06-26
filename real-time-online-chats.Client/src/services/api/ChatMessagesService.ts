@@ -15,11 +15,12 @@ export abstract class ChatMessagesService {
   }
 
   static async createMessage(
+    chatId: string,
     request: CreateMessageRequest,
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
-      const response = await api.post(ChatMessagesRoutes.byChatId(request.chatId), request, {
+      const response = await api.post(ChatMessagesRoutes.byChatId(chatId), request, {
         signal: config?.signal,
       });
       return response.data;

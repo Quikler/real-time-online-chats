@@ -7,7 +7,8 @@ import UserAvatar from "./UserAvatar";
 import { Link } from "react-router-dom";
 import UserContextMenu from "./UserContextMenu";
 import OwnerContextMenu from "./OwnerContextMenu";
-import { useChat } from "./ChatContext";
+import { useChatUsers } from "./ChatUsersContext";
+import { useChatInfo } from "./ChatInfoContext";
 
 type ChatHeaderProps = {
   onChatLeave?: React.MouseEventHandler<HTMLButtonElement>;
@@ -18,7 +19,8 @@ const ChatHeader = ({ onChatLeave, onChatDelete }: ChatHeaderProps) => {
   console.count("ChatHeader render")
   const { user } = useAuth();
 
-  const { users, chatInfo } = useChat();
+  const { chatUsers } = useChatUsers();
+  const { chatInfo } = useChatInfo();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -94,7 +96,7 @@ const ChatHeader = ({ onChatLeave, onChatDelete }: ChatHeaderProps) => {
         setIsModalOpen={setIsModalOpen}
       >
         <ul className="text-white">
-          {users?.map((userChat, index) => {
+          {chatUsers?.map((userChat, index) => {
             let contextMenu: JSX.Element;
 
             if (userChat.id === user?.id) {
