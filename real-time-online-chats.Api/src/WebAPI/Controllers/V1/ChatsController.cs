@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using real_time_online_chats.Server.Attributes;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Chat;
 using real_time_online_chats.Server.DTOs.Chat;
@@ -19,6 +20,7 @@ public class ChatsController(
     : AuthorizeController
 {
     [HttpGet(ApiRoutes.Chats.GetAll)]
+    [Cached(600)]
     public async Task<IActionResult> GetAll([FromQuery] ChatsPaginationRequest request)
     {
         var result = await chatService.GetChatsAsync(request.PageNumber, request.PageSize);
@@ -30,6 +32,7 @@ public class ChatsController(
     }
 
     [HttpGet(ApiRoutes.Chats.GetInfo)]
+    [Cached(600)]
     public async Task<IActionResult> GetInfo([FromRoute] Guid chatId)
     {
         var result = await chatService.GetChatInfo(chatId);
@@ -40,7 +43,7 @@ public class ChatsController(
         );
     }
 
-    [Obsolete]
+    [Obsolete("This endpoint is deprecated since it returns the info, messages, users of a chat from one request")]
     [HttpGet(ApiRoutes.Chats.Get)]
     public async Task<IActionResult> Get([FromRoute] Guid chatId, [FromQuery] ChatLevel level = ChatLevel.Preview)
     {
@@ -65,6 +68,7 @@ public class ChatsController(
     }
 
     [HttpPost(ApiRoutes.Chats.Create)]
+    [RemoveCache(ApiRoutes.Chats.GetAll)]
     public async Task<IActionResult> Create([FromBody] CreateChatRequest request)
     {
         CreateChatDto createChatDto = request.ToDto(UserId);
@@ -77,6 +81,8 @@ public class ChatsController(
     }
 
     [HttpPatch(ApiRoutes.Chats.UpdateTitle)]
+    [InvalidateCache(ApiRoutes.Chats.GetInfo, 600)]
+    [RemoveCache(ApiRoutes.Chats.GetAll)]
     public async Task<IActionResult> UpdateTitle([FromRoute] Guid chatId, [FromBody] UpdateChatTitleRequest request)
     {
         var result = await chatService.UpdateChatTitleAsync(chatId, request.ToDto(), UserId);
@@ -88,6 +94,7 @@ public class ChatsController(
     }
 
     [HttpPatch(ApiRoutes.Chats.UpdateOwner)]
+    [InvalidateCache(ApiRoutes.Chats.GetInfo, 600)]
     public async Task<IActionResult> UpdateOwner([FromRoute] Guid chatId, [FromBody] UpdateChatOwnerRequest request)
     {
         var result = await chatService.UpdateOwnerAsync(chatId, request.NewOwnerId, UserId);
@@ -103,6 +110,8 @@ public class ChatsController(
     }
 
     [HttpDelete(ApiRoutes.Chats.Delete)]
+    //[InvalidateCache(ApiRoutes.Chats.GetInfo, 600)]
+    [RemoveCache([ApiRoutes.Chats.GetAll, ApiRoutes.Chats.GetInfo])]
     public async Task<IActionResult> Delete([FromRoute] Guid chatId)
     {
         var result = await chatService.DeleteChatAsync(chatId, UserId);

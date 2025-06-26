@@ -36,7 +36,6 @@ public class ChatMessagesController(IChatMessageService messageService, IHubCont
     }
 
     [HttpPost(ApiRoutes.ChatMessages.Create)]
-    [InvalidateCache(ApiRoutes.ChatMessages.Get, 60)]
     [RemoveCache(ApiRoutes.ChatMessages.GetAll)]
     public async Task<IActionResult> Create([FromRoute] Guid chatId, [FromBody] CreateMessageRequest request)
     {
@@ -48,7 +47,7 @@ public class ChatMessagesController(IChatMessageService messageService, IHubCont
                 var response = messageChatDto.ToResponse();
 
                 await messagehub.Clients.Group(chatId.ToString()).SendMessage(response);
-                return CreatedAtAction(nameof(Get), new { chatId = chatId, messageId = response.Id }, response);
+                return CreatedAtAction(nameof(Get), new { chatId, messageId = response.Id }, response);
             },
             failure => failure.ToActionResult()
         );
