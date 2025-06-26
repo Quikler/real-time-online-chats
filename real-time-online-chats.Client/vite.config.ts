@@ -4,7 +4,11 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxImportSource: '@welldone-software/why-did-you-render', // <-----
+    }),
+  ],
   resolve: {
     alias: {
       '@src': path.resolve(__dirname, "./src"),
