@@ -1,5 +1,6 @@
 import { GitHub, LinkedIn, Discord, Reddit } from "@src/components/svg/SVGSocMediaReferences";
 import Logo from "@src/components/ui/Logo";
+import { memo } from "react";
 
 interface FooterItem {
   icon: JSX.Element;
@@ -7,7 +8,7 @@ interface FooterItem {
   href: string;
 }
 
-export default function Footer() {
+const Footer = () => {
   const references: FooterItem[] = [
     { icon: <GitHub />, bgColor: "#333333", href: "https://github.com/Quikler", },
     { icon: <LinkedIn />, bgColor: "#0082ca", href: "https://www.linkedin.com/in/roman-binykow-152895329", },
@@ -63,4 +64,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default memo(Footer);

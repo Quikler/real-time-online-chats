@@ -1,12 +1,12 @@
 import { useAuth } from "@src/hooks/useAuth";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShortArrowDown } from "@src/components/svg/SVGCommon";
 import Button from "@src/components/ui/Button";
 import ButtonLink from "@src/components/ui/ButtonLink";
 import Logo from "@src/components/ui/Logo";
 
-export default function Header() {
+export default memo(function Header() {
   const { user, logoutUser, isUserLoggedIn } = useAuth();
 
   const isLinkActive = (path: string) => location.pathname === path;
@@ -33,6 +33,7 @@ export default function Header() {
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -60,8 +61,8 @@ export default function Header() {
   const menuButtonRef = useRef<HTMLDivElement>(null)
 
   const handleLogout = () => {
-      logoutUser();
-      setIsUserMenuOpen(false);
+    logoutUser();
+    setIsUserMenuOpen(false);
   }
 
   return (
@@ -78,7 +79,7 @@ export default function Header() {
               {isUserLoggedIn() ? (
                 <div ref={menuButtonRef}>
                   <Button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    onClick={toggleUserMenu}
                     type="button"
                   >
                     {user?.email}
@@ -211,4 +212,4 @@ export default function Header() {
       </nav>
     </header>
   );
-}
+});
