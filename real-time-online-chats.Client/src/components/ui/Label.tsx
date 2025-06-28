@@ -1,4 +1,5 @@
 import useVariant from "@src/hooks/useVariant";
+import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 type LabelProps = React.HTMLAttributes<HTMLLabelElement> & {
@@ -20,4 +21,4 @@ const Label = ({ variant = "primary", className, ...rest }: LabelProps) => {
   return <label className={twMerge(v, className)} {...rest} />;
 };
 
-export default Label;
+export default memo(Label);

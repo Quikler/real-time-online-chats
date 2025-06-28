@@ -1,4 +1,5 @@
 import useVariant from "@src/hooks/useVariant";
+import { memo } from "react";
 import { Link, LinkProps } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 
@@ -6,7 +7,7 @@ type CustomLinkProps = LinkProps & {
   variant?: "primary" | "secondary" | "danger";
 };
 
-export default function ButtonLink({ variant = "primary", className, ...rest }: CustomLinkProps) {
+const ButtonLink = ({ variant = "primary", className, ...rest }: CustomLinkProps) => {
   const v = useVariant(
     [
       { key: "primary", style: "bg-slate-600 hover:bg-slate-500" },
@@ -18,4 +19,6 @@ export default function ButtonLink({ variant = "primary", className, ...rest }: 
   );
 
   return <Link {...rest} className={twMerge(`${v} ${className}`)} />;
-}
+};
+
+export default memo(ButtonLink);

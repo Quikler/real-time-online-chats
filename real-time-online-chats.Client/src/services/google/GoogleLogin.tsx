@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { initGoogleAuth, renderGoogleButton, initGoogleGSIScript } from "./googleHelpers";
 import { useAuth } from "@src/hooks/useAuth";
 import { toast } from "react-toastify";
@@ -52,4 +52,4 @@ const GoogleLogin = () => {
   );
 };
 
-export default GoogleLogin;
+export default memo(GoogleLogin);

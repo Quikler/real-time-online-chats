@@ -1,4 +1,5 @@
 import useVariant from "@src/hooks/useVariant";
+import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -21,4 +22,4 @@ const Checkbox = ({
   return <input {...rest} className={twMerge(`${v} ${className}`)} />;
 };
 
-export default Checkbox;
+export default memo(Checkbox);

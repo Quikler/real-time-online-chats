@@ -1,11 +1,12 @@
 import useVariant from "@src/hooks/useVariant";
+import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "danger";
 };
 
-export default function Button({ variant = "primary", className, ...rest }: ButtonProps) {
+const Button = ({ variant = "primary", className, ...rest }: ButtonProps) => {
   const v = useVariant(
     [
       { key: "primary", style: "bg-slate-600 hover:bg-slate-500" },
@@ -17,4 +18,6 @@ export default function Button({ variant = "primary", className, ...rest }: Butt
   );
 
   return <button {...rest} className={twMerge(v, className)} />;
-}
+};
+
+export default memo(Button);

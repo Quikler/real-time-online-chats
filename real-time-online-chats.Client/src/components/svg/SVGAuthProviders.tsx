@@ -1,6 +1,6 @@
-import React from "react";
+import React, { memo } from "react";
 
-export const Google = (props: React.SVGProps<SVGSVGElement>) => (
+export const Google = memo((props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="22px"
@@ -40,9 +40,9 @@ export const Google = (props: React.SVGProps<SVGSVGElement>) => (
       data-original="#eb4132"
     />
   </svg>
-);
+));
 
-export const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
+export const Facebook = memo((props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="22px"
@@ -56,9 +56,9 @@ export const Facebook = (props: React.SVGProps<SVGSVGElement>) => (
       data-original="#010002"
     />
   </svg>
-);
+));
 
-export const Apple = (props: React.SVGProps<SVGSVGElement>) => (
+export const Apple = memo((props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="22px"
@@ -72,4 +72,4 @@ export const Apple = (props: React.SVGProps<SVGSVGElement>) => (
       data-original="#000000"
     />
   </svg>
-);
+));

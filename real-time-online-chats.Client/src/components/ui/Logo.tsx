@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 
 export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -5,7 +6,7 @@ export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   href?: string;
 }
 
-export default function Logo({ scale = 1, href = "", className, ...rest }: LogoProps) {
+const Logo = ({ scale = 1, href = "", className, ...rest }: LogoProps) => {
   return (
     <div className={className} {...rest}>
       <Link
@@ -26,4 +27,6 @@ export default function Logo({ scale = 1, href = "", className, ...rest }: LogoP
       </Link>
     </div>
   );
-}
+};
+
+export default memo(Logo);

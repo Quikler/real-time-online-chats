@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 const ErrorScreen = () => {
   return (
     <div className="bg-transparent w-full flex items-center justify-center flex-grow">
@@ -9,4 +11,4 @@ const ErrorScreen = () => {
   );
 };
 
-export default ErrorScreen;
+export default memo(ErrorScreen);

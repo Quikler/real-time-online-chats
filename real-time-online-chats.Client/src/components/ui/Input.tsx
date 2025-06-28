@@ -1,4 +1,5 @@
 import useVariant from "@src/hooks/useVariant";
+import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -24,4 +25,4 @@ const Input = ({ variant = "primary", className, ...rest }: InputProps) => {
   return <input {...rest} className={twMerge(`${v} ${className}`)} />;
 };
 
-export default Input;
+export default memo(Input);
