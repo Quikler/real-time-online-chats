@@ -46,8 +46,7 @@ const MessageActions = ({ messageId }: MessageActionsProps) => {
         <Edit cursor="pointer" />
       </button>
 
-      <Modal
-        title="Are you sure you want to delete this message?"
+      {isModalOpen && <Modal title="Are you sure you want to delete this message?"
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       >
@@ -57,7 +56,7 @@ const MessageActions = ({ messageId }: MessageActionsProps) => {
           </Button>
           <Button onClick={() => setIsModalOpen(false)}>No</Button>
         </div>
-      </Modal>
+      </Modal>}
     </div>
   );
 };
