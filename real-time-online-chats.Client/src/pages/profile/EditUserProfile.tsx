@@ -63,7 +63,7 @@ const EditUserProfile = () => {
                 <div className="flex gap-8 lg:flex-row flex-col">
                   <div className="w-full flex flex-col gap-6 ">
                     <textarea
-                      value={editUserProfile.aboutMe}
+                      value={editUserProfile.aboutMe ?? ""}
                       name="aboutMe"
                       onChange={(e) => handleInputChange("aboutMe", e.target.value)}
                       placeholder="Write about yourself..."
