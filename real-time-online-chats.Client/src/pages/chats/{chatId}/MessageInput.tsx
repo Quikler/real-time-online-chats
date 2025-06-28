@@ -2,6 +2,7 @@ import { isNullOrWhitespace } from "@src/utils/helpers";
 import { useMessage } from "./MessageContext";
 import { ChatMessagesService } from "@src/services/api/ChatMessagesService";
 import { useChatInfo } from "./ChatInfoContext";
+import { memo } from "react";
 
 const MessageInput = () => {
   console.count("MessageInput render");
@@ -51,4 +52,4 @@ const MessageInput = () => {
   );
 };
 
-export default MessageInput;
+export default memo(MessageInput);

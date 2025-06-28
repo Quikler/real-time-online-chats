@@ -11,7 +11,7 @@ type MessageProps = {
   showUserInfo: boolean;
 };
 
-const Message = memo(({ message, isCurrentUserPrevious, isCurrentUser, showUserInfo }: MessageProps) => {
+const Message = ({ message, isCurrentUserPrevious, isCurrentUser, showUserInfo }: MessageProps) => {
   console.count("Message render");
   const avatarSize = "64px";
 
@@ -59,6 +59,6 @@ const Message = memo(({ message, isCurrentUserPrevious, isCurrentUser, showUserI
       )}
     </li>
   );
-});
+};
 
-export default Message;
+export default memo(Message);

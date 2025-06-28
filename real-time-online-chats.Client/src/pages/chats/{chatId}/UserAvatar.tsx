@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 
 type UserAvatarProps = React.HTMLAttributes<HTMLImageElement> & {
@@ -15,4 +16,4 @@ const UserAvatar = ({ width = "48px", height = "48px", avatarUrl, className, ...
   />
 );
 
-export default UserAvatar;
+export default memo(UserAvatar);
