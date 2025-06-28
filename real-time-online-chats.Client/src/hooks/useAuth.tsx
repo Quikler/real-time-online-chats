@@ -6,7 +6,7 @@ import { AuthRoutes } from "@src/services/api/ApiRoutes";
 import { AuthService } from "@src/services/api/AuthService";
 import { GoogleService } from "@src/services/google/GoogleService";
 import { AxiosRequestConfig } from "axios";
-import { useCustomHook } from "@src/utils/helpers";
+import { handleError, useCustomHook } from "@src/utils/helpers";
 
 export type UserProfile = {
   id: string;
@@ -123,6 +123,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const data = await AuthService.signup(request, config);
       return data;
     } catch (e: any) {
+      handleError(e);
       console.error("Unable to signup:", e.message);
     }
   };
@@ -135,6 +136,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(data.user);
       }
     } catch (e: any) {
+      handleError(e);
       console.error("Unable to login:", e.message);
     }
   };
@@ -148,7 +150,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (e: any) {
       console.error("Unable to signup with google:", e.message);
-      throw e;
+      handleError(e);
     }
   };
 
@@ -161,7 +163,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (e: any) {
       console.error("Unable to login with google:", e.message);
-      throw e;
+      handleError(e);
     }
   };
 
