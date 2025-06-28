@@ -1,26 +1,8 @@
-import { Link } from "react-router-dom";
-import LoginForm, { LoginFormData } from "./LoginForm";
-import { useState } from "react";
 import Logo from "@src/components/ui/Logo";
-import { useAuth } from "@src/hooks/useAuth";
+import { Link } from "react-router";
+import LoginForm from "./LoginForm";
 
 export default function LoginPage() {
-  const { loginUser } = useAuth();
-
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-
-  const [captchaToken, setCaptchaToken] = useState("");
-
-  const handleSubmit = async () => {
-    await loginUser(formData, { headers: { reCAPTCHAToken: captchaToken } });
-  };
-
-  const handleCaptchaResolved = (token: string) => setCaptchaToken(token);
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-8">
       <div className="grid md:grid-cols-2 items-center gap-16 max-w-6xl w-full">
@@ -44,13 +26,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <LoginForm
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={handleSubmit}
-          onCaptchaResolved={handleCaptchaResolved}
-          className="max-w-md lg:mx-16 mt-8 mx-auto"
-        />
+        <LoginForm className="max-w-md lg:mx-16 mt-8 mx-auto" />
       </div>
     </div>
   );

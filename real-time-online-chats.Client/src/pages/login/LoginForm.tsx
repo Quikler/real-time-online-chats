@@ -10,6 +10,7 @@ import Label from "@src/components/ui/Label";
 import Checkbox from "@src/components/ui/Checkbox";
 import { GOOGLE_RECAPTCHA_CLIENT_KEY } from "@src/services/google/googleConstants";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@src/hooks/useAuth";
 
 export interface LoginFormData {
   email: string;
@@ -17,13 +18,9 @@ export interface LoginFormData {
   rememberMe: boolean;
 }
 
-type LoginFormProps = React.HTMLAttributes<HTMLFormElement> & {
-  formData: LoginFormData;
-  setFormData: React.Dispatch<React.SetStateAction<LoginFormData>>;
-  onCaptchaResolved: (token: string) => void;
-};
+type LoginFormProps = React.HTMLAttributes<HTMLFormElement>;
 
-const LoginForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, className, ...rest }: LoginFormProps) => {
+const LoginForm = ({ className }: LoginFormProps) => {
   const { validationErrors, validate, isValid } = useFormValidation<LoginFormData>({
     email: {
       errorMessage: "Email is required",
@@ -35,28 +32,35 @@ const LoginForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, classNa
     },
   });
 
-  const [isCaptchaResolved, setIsCaptchaResolved] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | undefined>(undefined);
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
 
   const reCAPTCHARef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-      if (window.grecaptcha && !window.recaptchaWidgetId) {
-          window.recaptchaWidgetId = 'rendered';
-          window.grecaptcha.ready(() => {
-              window.grecaptcha.render(reCAPTCHARef.current, {
-                  sitekey: GOOGLE_RECAPTCHA_CLIENT_KEY,
-                  callback: (token: string) => {
-                      console.log('Captcha resolved:', token);
-                      onCaptchaResolved?.(token);
-                      setIsCaptchaResolved(true);
-                  }
-              })
-          })
-      }
+  const { loginUser } = useAuth();
 
-      return () => {
-          window.recaptchaWidgetId = '';
-      }
+  useEffect(() => {
+    if (window.grecaptcha && !window.recaptchaWidgetId) {
+      window.recaptchaWidgetId = 'rendered';
+      window.grecaptcha.ready(() => {
+        window.grecaptcha.render(reCAPTCHARef.current, {
+          sitekey: GOOGLE_RECAPTCHA_CLIENT_KEY,
+          callback: (token: string) => {
+            console.log('Captcha resolved:', token);
+            setCaptchaToken(token);
+            reCAPTCHARef.current!.children[0].classList.remove("border", "border-solid", "border-red-500");
+          }
+        })
+      })
+    }
+
+    return () => {
+      window.recaptchaWidgetId = '';
+    }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +73,7 @@ const LoginForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, classNa
     validate(updatedData);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!isValid) {
@@ -79,19 +83,18 @@ const LoginForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, classNa
       return;
     }
 
-    if (!isCaptchaResolved) {
+    if (!captchaToken) {
       reCAPTCHARef.current!.children[0].classList.add("border", "border-solid", "border-red-500");
       return;
     }
 
-    onSubmit?.(e);
-
+    await loginUser(formData, { headers: { reCAPTCHAToken: captchaToken } });
     reCAPTCHARef.current!.children[0].classList.remove("border", "border-solid", "border-red-500");
+    window.grecaptcha.reset();
   };
 
   return (
     <form
-      {...rest}
       className={twMerge(
         "bg-white rounded-2xl px-8 py-10 space-y-8 shadow-2xl border border-gray-100",
         className
