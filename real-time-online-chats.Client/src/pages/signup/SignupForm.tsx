@@ -2,6 +2,7 @@ import Button from "@src/components/ui/Button";
 import Checkbox from "@src/components/ui/Checkbox";
 import Input from "@src/components/ui/Input";
 import Label from "@src/components/ui/Label";
+import { useAuth } from "@src/hooks/useAuth";
 import useFormValidation from "@src/hooks/useFormValidation";
 import { GOOGLE_RECAPTCHA_CLIENT_KEY } from "@src/services/google/googleConstants";
 import { useEffect, useRef, useState } from "react";
@@ -18,13 +19,7 @@ export interface SignupFormData {
   rememberMe: boolean;
 }
 
-type SignupFormProps = React.FormHTMLAttributes<HTMLFormElement> & {
-  formData: SignupFormData;
-  setFormData: React.Dispatch<React.SetStateAction<SignupFormData>>;
-  onCaptchaResolved: (token: string) => void;
-};
-
-const SignupForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, ...rest }: SignupFormProps) => {
+const SignupForm = () => {
   const { validate, isValid, validationErrors } = useFormValidation<SignupFormData>({
     email: {
       errorMessage: "Email is required",
@@ -52,8 +47,8 @@ const SignupForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, ...res
                   sitekey: GOOGLE_RECAPTCHA_CLIENT_KEY,
                   callback: (token: string) => {
                       console.log('Captcha resolved:', token);
-                      onCaptchaResolved?.(token);
-                      setIsCaptchaResolved(true);
+                      setCaptchaToken(token);
+                      reCAPTCHARef.current!.children[0].classList.remove("border", "border-solid", "border-red-500");
                   }
               })
           })
@@ -74,11 +69,10 @@ const SignupForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, ...res
     validate(updatedData);
   };
 
-  const [isCaptchaResolved, setIsCaptchaResolved] = useState(false);
-
+  const [captchaToken, setCaptchaToken] = useState("");
   const reCAPTCHARef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!isValid) {
@@ -88,18 +82,32 @@ const SignupForm = ({ onSubmit, onCaptchaResolved, formData, setFormData, ...res
       return;
     }
 
-    if (!isCaptchaResolved) {
+    if (!captchaToken) {
       reCAPTCHARef.current!.children[0].classList.add("border", "border-solid", "border-red-500");
       return;
     }
 
-    onSubmit?.(e);
+    const message = await signupUser(formData, { headers: { reCAPTCHAToken: captchaToken } });
+    message && toast.success(message);
 
     reCAPTCHARef.current!.children[0].classList.remove("border", "border-solid", "border-red-500");
+    window.grecaptcha.reset();
   };
 
+  const { signupUser } = useAuth();
+
+  const [formData, setFormData] = useState<SignupFormData>({
+    email: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    rememberMe: true,
+  });
+
   return (
-    <form {...rest} className="sm:p-8 p-4 w-full" onSubmit={handleSubmit}>
+    <form className="sm:p-8 p-4 w-full" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-3 mb-12">
         <h3 className="text-black text-4xl font-bold">Registration</h3>
         <p className="text-gray-600 text-sm">
