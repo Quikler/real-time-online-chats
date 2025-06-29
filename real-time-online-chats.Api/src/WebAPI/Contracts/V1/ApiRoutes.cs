@@ -58,7 +58,7 @@ public static class ApiRoutes
         public const string GetProfile = BASE + "/users/{userId}/profile";
         public const string EditProfile = BASE + "/users/{userId}/profile";
 
-        public const string GetOwnerChats = BASE + "/users/me/owner-chats";
-        public const string GetMemberChats = BASE + "/users/me/member-chats";
+        public const string GetOwnerChats = BASE + "/users/{userId}/owner-chats";
+        public const string GetMemberChats = BASE + "/users/{userId}/member-chats";
     }
 }

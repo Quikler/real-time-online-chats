@@ -39,10 +39,8 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpGet(ApiRoutes.Users.GetOwnerChats)]
-    public async Task<IActionResult> GetOwnerChats([FromQuery] PaginationRequest request)
+    public async Task<IActionResult> GetOwnerChats(Guid userId, [FromQuery] PaginationRequest request)
     {
-        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
-
         var result = await userService.GetUserOwnerChatsAsync(request.PageNumber, request.PageSize, userId);
 
         return result.Match(
@@ -52,10 +50,8 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpGet(ApiRoutes.Users.GetMemberChats)]
-    public async Task<IActionResult> GetMemberChats([FromQuery] PaginationRequest request)
+    public async Task<IActionResult> GetMemberChats(Guid userId, [FromQuery] PaginationRequest request)
     {
-        if (!HttpContext.TryGetUserId(out var userId)) return Unauthorized();
-        
         var result = await userService.GetUserMemberChatsAsync(request.PageNumber, request.PageSize, userId);
 
         return result.Match(
