@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import UserProfileCard from "./ProfileUserCard";
 import UserProfileAbout from "./UserProfileAbout";
 import UserProfileFriends from "./UserProfileFriends";
+import UserProfileOwnerInChats from "./UserProfileOwnerInChats";
 
 const UserProfile = () => {
   const [isChatFormOpen, setIsChatFormOpen] = useState(false);
@@ -30,8 +31,12 @@ const UserProfile = () => {
         <div className="relative flex flex-col gap-8 m-16 max-w-4xl mx-auto">
           <div className="flex gap-8 lg:flex-row flex-col">
             <UserProfileCard className="w-full flex-grow" />
-            <UserProfileAbout />
+            {/*<UserProfileAbout />*/}
+            <UserProfileOwnerInChats />
+
           </div>
+
+            <UserProfileAbout />
 
           <div className="bg-slate-700 rounded-2xl shadow-lg p-8">
             <p className="font-semibold text-2xl text-white text-center mb-8">Friends</p>

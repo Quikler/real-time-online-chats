@@ -32,4 +32,16 @@ export abstract class UserService {
       throwIfErrorNotCancelError(e);
     }
   }
+
+  static async getUserOwnerChats(
+    userId: string,
+    config?: AxiosRequestConfig<any>
+  ) {
+    try {
+      const response = await api.get(`${UserRoutes.base}/${userId}/owner-chats`, config);
+      return response.data;
+    } catch (e) {
+      throwIfErrorNotCancelError(e)
+    }
+  }
 }

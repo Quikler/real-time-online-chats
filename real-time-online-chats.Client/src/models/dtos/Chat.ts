@@ -3,3 +3,8 @@ export interface CreateChatResponse {
     ownerId: string;
     title: string;
 }
+
+export interface ChatPreviewResponse {
+  id: string;
+  title: string;
+}

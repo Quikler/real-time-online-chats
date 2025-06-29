@@ -13,17 +13,17 @@ const ChatPreview = ({ id, title, ...rest }: ChatPreviewProps) => {
 
   return (
     <div className="flex flex-col gap-4" {...rest}>
-      <div className="relative bg-slate-700 p-6 rounded-3xl shadow-lg">
+      <div className="relative bg-slate-600 p-6 rounded-3xl shadow-lg">
         <div className="flex flex-col gap-6">
           <Button
-            className="self-start bg-slate-600 text-white hover:bg-slate-500 transition-colors duration-300"
+            className="self-start bg-slate-500 text-white hover:bg-slate-500 transition-colors duration-300"
             onClick={handleJoinChatClick}
             type="submit"
           >
             Join
           </Button>
 
-          <div className="flex flex-col gap-4">
+          {/*<div className="flex flex-col gap-4">
             <div className="flex flex-col items-end gap-2">
               <div className="flex items-center gap-2">
                 <svg viewBox="0 0 2 2" fill="white" xmlns="http://www.w3.org/2000/svg" width={16}>
@@ -55,7 +55,10 @@ const ChatPreview = ({ id, title, ...rest }: ChatPreviewProps) => {
                 </p>
               </div>
             </div>
-          </div>
+          </div>*/}
+         <div className="flex flex-col gap-4">
+         {title}
+         </div>
         </div>
       </div>
       <p className="text-center text-white text-lg font-semibold">{title}</p>
