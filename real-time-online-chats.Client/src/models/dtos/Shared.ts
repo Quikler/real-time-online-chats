@@ -4,3 +4,9 @@ export interface PaginationResponse<T> {
   pageSize: number;
   items: T[];
 }
+
+export interface PaginationRequest {
+  pageNubmer: number;
+  pageSize: number;
+  filter: string;
+}

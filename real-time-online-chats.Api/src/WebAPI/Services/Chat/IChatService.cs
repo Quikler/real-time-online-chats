@@ -8,7 +8,7 @@ namespace real_time_online_chats.Server.Services.Chat;
 public interface IChatService
 {
     // Queries (Read Operations)
-    Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize);
+    Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize, string filter = "");
     Task<Result<ChatDetailedDto, FailureDto>> GetChatDetailedByIdAsync(Guid chatId);
     Task<Result<ChatPreviewDto, FailureDto>> GetChatPreviewByIdAsync(Guid chatId);
     Task<Result<ChatInfoDto, FailureDto>> GetChatInfo(Guid chatId);

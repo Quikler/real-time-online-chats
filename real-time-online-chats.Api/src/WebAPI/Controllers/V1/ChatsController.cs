@@ -20,10 +20,11 @@ public class ChatsController(
     : AuthorizeController
 {
     [HttpGet(ApiRoutes.Chats.GetAll)]
-    [Cached(600)]
+    //[Cached(600)]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll([FromQuery] ChatsPaginationRequest request)
     {
-        var result = await chatService.GetChatsAsync(request.PageNumber, request.PageSize);
+        var result = await chatService.GetChatsAsync(request.PageNumber, request.PageSize, request.TitleFilter);
 
         return result.Match(
             paginationDto => Ok(paginationDto.ToResponse(c => c.ToResponse())),

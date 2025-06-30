@@ -1,9 +1,10 @@
 import api from "@services/axios/instance";
 import { ChatRoutes } from "@src/services/api/ApiRoutes";
 import { AxiosRequestConfig } from "axios";
-import { CreateChatResponse } from "@src/models/dtos/Chat";
 import { throwIfErrorNotCancelError } from "@src/utils/helpers";
 import { CreateChatFormData } from "@src/pages/chats/CreateChatForm";
+import { PaginationRequest } from "@src/models/dtos/Shared";
+import { CreateChatResponse } from "@src/models/dtos/Chat";
 
 export enum ChatLevel {
   Preview,
@@ -43,13 +44,12 @@ export abstract class ChatService {
   }
 
   static async getChats(
-    page: number,
-    pageSize: number,
+    request: PaginationRequest,
     config?: AxiosRequestConfig<any> | undefined
   ) {
     try {
       const response = await api.get(
-        `${ChatRoutes.base}?page=${page}&pageSize=${pageSize}`,
+        `${ChatRoutes.base}?pageNumber=${request.pageNubmer}&pageSize=${request.pageSize}&titleFilter=${request.filter}`,
         config
       );
       return response.data;

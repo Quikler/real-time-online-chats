@@ -15,15 +15,30 @@ public class ChatService(AppDbContext dbContext,
     IChatRepository chatRepository)
     : IChatService
 {
-    public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize)
+    public async Task<Result<PaginationDto<ChatPreviewDto>, FailureDto>> GetChatsAsync(int pageNumber, int pageSize, string filter = "")
     {
-        int totalRecords = await dbContext.Chats.CountAsync();
-        List<ChatEntity> chats = await dbContext.Chats
-            .AsNoTracking()
-            //.OrderBy(c => Guid.NewGuid())
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var query = dbContext.Chats.AsNoTracking();
+
+        int totalRecords = await query.CountAsync();
+        
+        List<ChatEntity> chats = [];
+        query = query.OrderByDescending(c => c.CreationTime);
+
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            chats = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        else
+        {
+            chats = await query
+                .Where(c => c.Title.Contains(filter))
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
 
         return chats.ToPagination(c => c.ToChatPreview(), totalRecords, pageNumber, pageSize);
     }

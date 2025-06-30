@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
+import { memo } from "react";
 
 type ChatPreviewProps = React.HTMLAttributes<HTMLDivElement> & {
   title: string;
@@ -66,4 +67,4 @@ const ChatPreview = ({ id, title, ...rest }: ChatPreviewProps) => {
   );
 };
 
-export default ChatPreview;
+export default memo(ChatPreview);
