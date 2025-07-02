@@ -27,6 +27,11 @@ using real_time_online_chats.Server.Common.Constants;
 using real_time_online_chats.Server.Services.Cache;
 using real_time_online_chats.Server.Data.Seed.User;
 using StackExchange.Redis;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using real_time_online_chats.Server.Contracts.HealthCheck;
+using System.Text.Json;
+using real_time_online_chats.Server.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -62,6 +67,11 @@ builder.Services.AddHttpClient(HttpClientNameConstants.GoogleRecaptchaApi, clien
 });
 
 builder.Services.AddSignalR();
+
+builder.Services
+    .AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>()
+    .AddCheck<RedisHealthCheck>("Redis");
 
 // Get DB_HOST env variable to determine in which host database will run (local - localhost, Docker - see in docker-compose.yml)
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
@@ -103,7 +113,7 @@ var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfig
 
 if (redisConfig.Enabled)
 {
-    var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
+    var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost:6379";
     redisConfig.ConnectionString = redisConfig.ConnectionString.Replace("${REDIS_HOST}", redisHost);
 
     builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConfig.ConnectionString);
@@ -240,6 +250,26 @@ app.UseCors(CORS_POLICY);
 app.MapControllers().RequireCors(CORS_POLICY);
 
 app.MapHub<MessageHub>("/messageHub").RequireCors(CORS_POLICY);
+
+app.UseHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new HealthCheckResponse
+        {
+            Status = report.Status.ToString(),
+            Checks = report.Entries.Select(e => new HealthCheck
+            {
+                Component = e.Key,
+                Status = e.Value.Status.ToString(),
+                Description = e.Value.Description,
+            }),
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    }
+});
 
 app.UseHttpsRedirection();
 
