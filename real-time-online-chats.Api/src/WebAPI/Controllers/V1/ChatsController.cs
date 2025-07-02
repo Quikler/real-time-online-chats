@@ -71,7 +71,7 @@ public class ChatsController(
 
     [HttpPost(ApiRoutes.Chats.Create)]
     //[RemoveCache(ApiRoutes.Chats.GetAll)]
-    [RemoveCacheByTemplate(ApiRoutes.Chats.GetAll)]
+    [RemoveCacheByTemplate(ApiRoutes.Chats.GetAll, "|")]
     public async Task<IActionResult> Create([FromBody] CreateChatRequest request)
     {
         CreateChatDto createChatDto = request.ToDto(UserId);
@@ -86,7 +86,7 @@ public class ChatsController(
     [HttpPatch(ApiRoutes.Chats.UpdateTitle)]
     [InvalidateCache(ApiRoutes.Chats.GetInfo, 600)]
     //[RemoveCache(ApiRoutes.Chats.GetAll)]
-    [RemoveCacheByTemplate(ApiRoutes.Chats.GetAll)]
+    [RemoveCacheByTemplate(ApiRoutes.Chats.GetAll, "|")]
     public async Task<IActionResult> UpdateTitle([FromRoute] Guid chatId, [FromBody] UpdateChatTitleRequest request)
     {
         var result = await chatService.UpdateChatTitleAsync(chatId, request.ToDto(), UserId);
@@ -116,7 +116,7 @@ public class ChatsController(
     [HttpDelete(ApiRoutes.Chats.Delete)]
     //[RemoveCache([ApiRoutes.Chats.GetAll, ApiRoutes.Chats.GetInfo])]
     [RemoveCache(ApiRoutes.Chats.GetInfo)]
-    [RemoveCacheByTemplate(ApiRoutes.Chats.GetAll)]
+    [RemoveCacheByTemplate(ApiRoutes.Chats.GetAll, "|")]
     public async Task<IActionResult> Delete([FromRoute] Guid chatId)
     {
         var result = await chatService.DeleteChatAsync(chatId, UserId);
