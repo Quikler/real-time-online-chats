@@ -1,14 +1,18 @@
+using Microsoft.Extensions.Options;
+using real_time_online_chats.Server.Configurations;
 using StackExchange.Redis;
 using System.Text.Json;
 
 namespace real_time_online_chats.Server.Services.Cache;
 
-public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILogger<RedisCacheService> redisCacheServiceLogger) : IRedisCacheService
+public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILogger<RedisCacheService> redisCacheServiceLogger, IOptions<RedisCacheConfiguration> redisconfigurationOptions) : IRedisCacheService
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
+
+    private readonly RedisCacheConfiguration _redisCacheConfiguration = redisconfigurationOptions.Value;
 
     public async Task CacheResponseAsync(string cacheKey, object response, TimeSpan timeToLive)
     {
@@ -21,7 +25,6 @@ public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILo
 
         var db = connectionMultiplexer.GetDatabase();
 
-        //await db.StringSetAsync(cacheKey, serializedResponse);
         await db.StringSetAsync(cacheKey, serializedResponse, timeToLive);
     }
 
@@ -40,25 +43,13 @@ public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILo
 
     public async Task RemoveCachedByTemplateAsync(string template)
     {
-        var db = connectionMultiplexer.GetDatabase();
+        var server = connectionMultiplexer.GetServer("localhost", 6379); // TODO: Unhardcode this shit. Make separate appsettings.json for Development and Docker.
+        //var server = connectionMultiplexer.GetServer(_redisCacheConfiguration.ConnectionString);
 
-        string script = @"
-        local keys = redis.call('keys', ARGV[1])
-        if #keys > 0 then
-            return redis.call('del', unpack(keys))
-        else
-            return 0
-        end";
-
-        redisCacheServiceLogger.LogInformation("Deleting keys matching: {template}", template);
-
-        // 0 KEYS arguments, 1 ARGV argument
-        var result = await db.ScriptEvaluateAsync(
-            script,
-            keys: [], // no KEYS, template passed as ARGV[1]
-            values: [$"{template}*"]
-        );
-
-        redisCacheServiceLogger.LogInformation("Deleted {result} keys", result);
+        await foreach (RedisKey key in server.KeysAsync(pattern: $"{template}*"))
+        {
+            await RemoveCachedResponseAsync(key.ToString());
+            redisCacheServiceLogger.LogInformation("Key deleted: {key}", key);
+        }
     }
 }
