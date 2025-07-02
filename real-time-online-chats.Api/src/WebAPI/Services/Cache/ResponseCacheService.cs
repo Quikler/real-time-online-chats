@@ -5,6 +5,11 @@ namespace real_time_online_chats.Server.Services.Cache;
 
 public class ResponseCacheService(IDistributedCache distributedCache) : IResponseCacheService
 {
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     public async Task CacheResponseAsync(string cacheKey, object response, TimeSpan timeToLive)
     {
         if (response is null)
@@ -12,11 +17,7 @@ public class ResponseCacheService(IDistributedCache distributedCache) : IRespons
             return;
         }
 
-        var serializedResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        });
-
+        var serializedResponse = JsonSerializer.Serialize(response, s_jsonSerializerOptions);
         await distributedCache.SetStringAsync(cacheKey, serializedResponse, new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = timeToLive,
