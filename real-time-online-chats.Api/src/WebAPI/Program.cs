@@ -26,6 +26,7 @@ using FluentValidation;
 using real_time_online_chats.Server.Common.Constants;
 using real_time_online_chats.Server.Services.Cache;
 using real_time_online_chats.Server.Data.Seed.User;
+using StackExchange.Redis;
 
 const string CORS_POLICY = "MY_CORS";
 
@@ -96,6 +97,7 @@ builder.Services
     .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHAv2"))
     .Configure<RedisCacheConfiguration>(builder.Configuration.GetSection("Redis"));
 
+# region Redis setup
 var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfiguration>()
     ?? throw new InvalidOperationException("Configuration for RedisCacheConfiguration is missing or invalid.");
 
@@ -106,7 +108,11 @@ if (redisConfig.Enabled)
 
     builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConfig.ConnectionString);
     builder.Services.AddSingleton<IResponseCacheService, ResponseCacheService>();
+
+    builder.Services.AddSingleton<IConnectionMultiplexer>(x => ConnectionMultiplexer.Connect(redisConfig.ConnectionString));
+    builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 }
+# endregion
 
 var cloudinary = builder.Configuration.GetSection("Cloudinary");
 CloudinaryConfiguration.CloudName = cloudinary.GetValue<string>("Cloud");
