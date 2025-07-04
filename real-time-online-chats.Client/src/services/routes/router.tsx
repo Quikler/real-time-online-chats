@@ -15,6 +15,7 @@ import EditUserProfile from "@src/pages/profile/EditUserProfile";
 import UserProfile from "@src/pages/profile/UserProfile";
 import MainLayout from "@src/components/layouts/MainLayout/MainLayout";
 import { UserProfileProvider } from "@src/pages/profile/UserProfileContext";
+import ForgotPasswordPage from "@src/pages/login/ForgotPasswordPage";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
             <SignupPage />
           </MainLayout>
         ),
+      },
+      {
+          path: "forgot",
+          element: <ForgotPasswordPage />
       },
       {
         path: "chats",

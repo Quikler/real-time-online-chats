@@ -149,7 +149,7 @@ const LoginForm = ({ className }: LoginFormProps) => {
           <Label>Remember me</Label>
         </div>
         <Link
-          to="javascript:void(0);"
+          to="/forgot"
           className="text-blue-600 text-sm font-semibold hover:underline hover:text-blue-700 transition-colors duration-200"
         >
           Forgot your password?

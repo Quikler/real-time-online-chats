@@ -22,7 +22,7 @@ const Input = ({ variant = "primary", className, ...rest }: InputProps) => {
     "bg-gray-100 text-gray-800 px-4 py-3 rounded-md outline-blue-500"
   );
 
-  return <input {...rest} className={twMerge(`${v} ${className}`)} />;
+  return <input {...rest} className={twMerge(v, className)} />;
 };
 
 export default memo(Input);
