@@ -6,6 +6,8 @@ namespace real_time_online_chats.Server.Services.Identity;
 
 public interface IIdentityService
 {
+    Task<ResultDto<bool>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
+    Task<ResultDto<string>> GeneratePasswordResetTokenAsync(string email);
     Task<Result<bool, FailureDto>> ConfirmEmailAsync(Guid userId, string token);
     Task<Result<EmailConfirmDto, FailureDto>> SignupAsync(SignupUserDto signupUser);
     Task<Result<AuthSuccessDto, FailureDto>> LoginAsync(LoginUserDto loginUser);

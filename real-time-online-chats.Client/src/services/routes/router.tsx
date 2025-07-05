@@ -16,6 +16,7 @@ import UserProfile from "@src/pages/profile/UserProfile";
 import MainLayout from "@src/components/layouts/MainLayout/MainLayout";
 import { UserProfileProvider } from "@src/pages/profile/UserProfileContext";
 import ForgotPasswordPage from "@src/pages/login/ForgotPasswordPage";
+import ResetPasswordPage from "@src/pages/login/ResetPasswordPage";
 
 export const router = createBrowserRouter([
   {
@@ -48,8 +49,12 @@ export const router = createBrowserRouter([
         ),
       },
       {
-          path: "forgot",
-          element: <ForgotPasswordPage />
+        path: "forgot",
+        element: <ForgotPasswordPage />
+      },
+      {
+        path: "reset-password",
+        element: <ResetPasswordPage />
       },
       {
         path: "chats",

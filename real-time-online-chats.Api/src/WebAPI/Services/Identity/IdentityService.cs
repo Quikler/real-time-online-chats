@@ -18,6 +18,35 @@ public class IdentityService(AppDbContext dbContext,
     IOptions<JwtConfiguration> jwtConfiguration)
     : AuthBaseService(userManager, tokenProvider, jwtConfiguration, dbContext), IIdentityService
 {
+    public async Task<ResultDto<bool>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+    {
+        var user = await userManager.FindByEmailAsync(resetPasswordDto.Email);
+        if (user is null)
+        {
+            return FailureDto.NotFound("User not found");
+        }
+
+        var resetPasswordResult = await userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.NewPassword);
+        if (resetPasswordResult.Succeeded)
+        {
+            return true;
+        } 
+
+        return FailureDto.BadRequest(resetPasswordResult.Errors.Select(e => e.Description));
+    }
+
+    public async Task<ResultDto<string>> GeneratePasswordResetTokenAsync(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is not null)
+        {
+            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            return resetToken;
+        }
+
+        return FailureDto.NotFound("User with given email was not found");
+    }
+
     public async Task<Result<bool, FailureDto>> ConfirmEmailAsync(Guid userId, string token)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());

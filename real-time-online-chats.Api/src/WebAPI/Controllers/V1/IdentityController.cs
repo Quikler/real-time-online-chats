@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using real_time_online_chats.Server.Attributes;
 using real_time_online_chats.Server.Contracts.V1;
@@ -12,6 +14,74 @@ namespace real_time_online_chats.Server.Controllers.V1;
 
 public class IdentityController(IIdentityService identityService, IMailService mailService) : ControllerBase
 {
+    [HttpPost(ApiRoutes.Identity.ResetPassword)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await identityService.ResetPasswordAsync(request.ToDto());
+
+        return result.Match(
+            success =>
+            {
+                return Ok("Password was reset successfully. Now you can login with new password");
+            },
+            failure =>
+            {
+                if (failure.FailureCode == Common.FailureCode.NotFound)
+                {
+                    return Ok("Password was reset successfully. Now you can login with new password");
+                }
+
+                return failure.ToActionResult();
+            }
+        );
+    }
+
+    [HttpPost(ApiRoutes.Identity.ForgotPassword)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var result = await identityService.GeneratePasswordResetTokenAsync(request.Email);
+
+        return await result.MatchAsync<IActionResult>(
+            async resetToken =>
+            {
+                //var passwordResetLink = Url.ActionLink(
+                //nameof(ResetPassword),
+                //values: new { email = request.Email, token = resetToken });
+
+                // Redirect to client side
+                // TODO: Unhardcode this shit. Set client url in appsettings.json mb?
+                var encodedEmail = HttpUtility.UrlEncode(request.Email);
+                var encodedToken = HttpUtility.UrlEncode(resetToken);
+                var passwordResetLink = $"http://localhost:5173/reset-password?email={encodedEmail}&token={encodedToken}";
+
+                if (passwordResetLink is null)
+                {
+                    return BadRequest();
+                }
+
+                //var safeLink = HtmlEncoder.Default.Encode(passwordResetLink);
+
+                var sent = await mailService.SendMessageAsync([request.Email], "Reset your password",
+                    $"""
+                    <div style="background: linear-gradient(90deg, black, #3903f9);text-align: center;color: white;padding: 32px;">
+                        <h1 style="margin: 0;">Welcome to <span style="color:cc;background-image: linear-gradient(180deg, #00ffab, #e22bac);color: transparent;background-clip: text;">ROC</span>!</h1>
+                        <p style="margin: 0;">We received a request to reset your passord. If you made this request, please click the link below to reset your password.</p>
+                        <p style="margin: 0;margin-bottom: 16px;">Please reset your password by clicking the link below.</p>
+                        <a href="{passwordResetLink}" style="font-style: italic; color: aquamarine;">Click here to reset password.</a>
+                    </div>
+                    """);
+
+                return sent
+                    ? Ok($"Email sent. Check your email. [Link only for tests]: {passwordResetLink}")
+                    : BadRequest(new FailureResponse(["Failed to send confirmation email."]));
+            },
+            failure =>
+            {
+                return Ok($"Email sent. Check your email. [Failure code for tests]");
+            }
+        );
+    }
+
     [HttpGet(ApiRoutes.Identity.ConfirmEmail)]
     public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request)
     {

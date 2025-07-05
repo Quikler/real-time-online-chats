@@ -26,3 +26,9 @@ export interface UserResponse {
   firstName: string | null;
   lastName: string | null;
 }
+
+export interface ResetPasswordRequest {
+  email: string;
+  newPassword: string;
+  token: string;
+}

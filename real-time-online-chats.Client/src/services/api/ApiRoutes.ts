@@ -1,6 +1,9 @@
 export abstract class AuthRoutes {
   static readonly base = `identity`;
 
+  static readonly forgotPassword = `${this.base}/forgot-password`;
+  static readonly resetPassword = `${this.base}/reset-password`;
+
   static readonly signup = `${this.base}/signup`;
   static readonly login = `${this.base}/login`;
   static readonly refreshToken = `${this.base}/refresh`;

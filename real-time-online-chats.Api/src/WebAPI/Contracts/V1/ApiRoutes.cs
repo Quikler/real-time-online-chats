@@ -9,6 +9,8 @@ public static class ApiRoutes
 
     public static class Identity
     {
+        public const string ResetPassword = BASE + "/identity/reset-password";
+        public const string ForgotPassword = BASE + "/identity/forgot-password";
         public const string ConfirmEmail = BASE + "/identity/email";
         public const string Login = BASE + "/identity/login";
         public const string Signup = BASE + "/identity/signup";

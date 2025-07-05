@@ -82,4 +82,14 @@ public static class ApiContractToDto
             AvatarStream = updateUserProfileRequest.Avatar?.OpenReadStream(),
         };
     }
+
+    public static ResetPasswordDto ToDto(this ResetPasswordRequest request)
+    {
+        return new ResetPasswordDto
+        {
+            Email = request.Email,
+            Token = request.Token,
+            NewPassword = request.NewPassword,
+        };
+    }
 }
