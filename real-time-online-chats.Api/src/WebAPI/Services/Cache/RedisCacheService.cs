@@ -5,14 +5,14 @@ using System.Text.Json;
 
 namespace real_time_online_chats.Server.Services.Cache;
 
-public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILogger<RedisCacheService> redisCacheServiceLogger, IOptions<RedisCacheConfiguration> redisconfigurationOptions) : IRedisCacheService
+public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILogger<RedisCacheService> redisCacheServiceLogger, IOptions<RedisCacheConfiguration> redisCacheConfigurationOptions) : IRedisCacheService
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    private readonly RedisCacheConfiguration _redisCacheConfiguration = redisconfigurationOptions.Value;
+    private readonly RedisCacheConfiguration _redisCacheConfiguration = redisCacheConfigurationOptions.Value;
 
     public async Task CacheResponseAsync(string cacheKey, object response, TimeSpan timeToLive)
     {
@@ -43,9 +43,9 @@ public class RedisCacheService(IConnectionMultiplexer connectionMultiplexer, ILo
 
     public async Task RemoveCachedByTemplateAsync(string template)
     {
-        var server = connectionMultiplexer.GetServer("localhost", 6379); // TODO: Unhardcode this shit. Make separate appsettings.json for Development and Docker.
-        //var server = connectionMultiplexer.GetServer(_redisCacheConfiguration.ConnectionString);
+        var server = connectionMultiplexer.GetServer(_redisCacheConfiguration.ConnectionString);
 
+        // TODO: Maybe change this shit to just db.ScriptEvaluateAsync
         await foreach (RedisKey key in server.KeysAsync(pattern: $"{template}*"))
         {
             await RemoveCachedResponseAsync(key.ToString());

@@ -31,12 +31,16 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using real_time_online_chats.Server.Contracts.HealthCheck;
 using System.Text.Json;
 using real_time_online_chats.Server.HealthChecks;
-using Microsoft.Extensions.DependencyInjection;
 
 const string CORS_POLICY = "MY_CORS";
 
 var builder = WebApplication.CreateBuilder(args);
+if (builder.Environment.IsEnvironment("Docker"))
+{
+    builder.Configuration.AddJsonFile("appsettings.Docker.json");
+}
 
+// Add .env file
 DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 builder.Configuration.AddEnvironmentVariables();
 
@@ -73,12 +77,8 @@ builder.Services
     .AddDbContextCheck<AppDbContext>()
     .AddCheck<RedisHealthCheck>("Redis");
 
-// Get DB_HOST env variable to determine in which host database will run (local - localhost, Docker - see in docker-compose.yml)
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
-connectionString = connectionString.Replace("${DB_HOST}", dbHost);
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
@@ -113,9 +113,6 @@ var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfig
 
 if (redisConfig.Enabled)
 {
-    var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost:6379";
-    redisConfig.ConnectionString = redisConfig.ConnectionString.Replace("${REDIS_HOST}", redisHost);
-
     builder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConfig.ConnectionString);
     builder.Services.AddSingleton<IResponseCacheService, ResponseCacheService>();
 
@@ -279,7 +276,7 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsDocker())
 {
     var swaggerConfig = app.Services.GetRequiredService<IOptions<SwaggerConfiguration>>().Value;
 
