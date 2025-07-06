@@ -44,12 +44,15 @@ if (builder.Environment.IsEnvironment("Docker"))
 DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 builder.Configuration.AddEnvironmentVariables();
 
+var clientConfiguration = builder.Configuration.GetSection("Client").Get<ClientConfiguration>()
+    ?? throw new InvalidOperationException("Configuration for ClientConfiguration is missing or invalid.");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(CORS_POLICY, policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins(clientConfiguration.Origin)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -105,7 +108,8 @@ builder.Services
     .Configure<GoogleConfiguration>(builder.Configuration.GetSection("Google"))
     .Configure<MailConfiguration>(builder.Configuration.GetSection("Mail"))
     .Configure<ReCAPTCHAConfiguration>(builder.Configuration.GetSection("reCAPTCHAv2"))
-    .Configure<RedisCacheConfiguration>(builder.Configuration.GetSection("Redis"));
+    .Configure<RedisCacheConfiguration>(builder.Configuration.GetSection("Redis"))
+    .Configure<ClientConfiguration>(builder.Configuration.GetSection("Client"));
 
 # region Redis setup
 var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisCacheConfiguration>()

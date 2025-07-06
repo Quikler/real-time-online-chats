@@ -1,7 +1,8 @@
-using System.Text.Encodings.Web;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using real_time_online_chats.Server.Attributes;
+using real_time_online_chats.Server.Configurations;
 using real_time_online_chats.Server.Contracts.V1;
 using real_time_online_chats.Server.Contracts.V1.Requests.Auth;
 using real_time_online_chats.Server.Contracts.V1.Responses;
@@ -12,8 +13,10 @@ using real_time_online_chats.Server.Services.Mail;
 
 namespace real_time_online_chats.Server.Controllers.V1;
 
-public class IdentityController(IIdentityService identityService, IMailService mailService) : ControllerBase
+public class IdentityController(IIdentityService identityService, IMailService mailService, IOptions<ClientConfiguration> clientConfigurationOptions) : ControllerBase
 {
+    private readonly ClientConfiguration _clientConfiguration = clientConfigurationOptions.Value;
+
     [HttpPost(ApiRoutes.Identity.ResetPassword)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
@@ -44,15 +47,13 @@ public class IdentityController(IIdentityService identityService, IMailService m
         return await result.MatchAsync<IActionResult>(
             async resetToken =>
             {
-                //var passwordResetLink = Url.ActionLink(
-                //nameof(ResetPassword),
-                //values: new { email = request.Email, token = resetToken });
-
-                // Redirect to client side
-                // TODO: Unhardcode this shit. Set client url in appsettings.json mb?
                 var encodedEmail = HttpUtility.UrlEncode(request.Email);
                 var encodedToken = HttpUtility.UrlEncode(resetToken);
-                var passwordResetLink = $"http://localhost:5173/reset-password?email={encodedEmail}&token={encodedToken}";
+
+                var origin = _clientConfiguration.Origin;
+
+                // Create client side link with email and generated token
+                var passwordResetLink = $"{origin}/reset-password?email={encodedEmail}&token={encodedToken}";
 
                 if (passwordResetLink is null)
                 {
