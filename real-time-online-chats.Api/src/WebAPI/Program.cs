@@ -35,7 +35,7 @@ using real_time_online_chats.Server.HealthChecks;
 const string CORS_POLICY = "MY_CORS";
 
 var builder = WebApplication.CreateBuilder(args);
-if (builder.Environment.IsEnvironment("Docker"))
+if (builder.Environment.IsDocker())
 {
     builder.Configuration.AddJsonFile("appsettings.Docker.json");
 }
