@@ -10,7 +10,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  build-and-test:
 
     runs-on: ubuntu-latest
 
@@ -22,6 +22,19 @@ jobs:
         dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore real-time-online-chats.Api
+    - name: Create env file from GitHub secrets
+      run: |
+        touch real-time-online-chats.Api/src/WebAPI/.env
+        echo CLOUDINARY__APIKEY=${{ secrets.CLOUDINARY__APIKEY }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo CLOUDINARY__APISECRET=${{ secrets.CLOUDINARY__APISECRET }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo CLOUDINARY__CLOUD=${{ secrets.CLOUDINARY__CLOUD }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo GOOGLE__CLIENTID=${{ secrets.GOOGLE__CLIENTID }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo GOOGLE__CLIENTSECRET=${{ secrets.GOOGLE__CLIENTSECRET }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo GOOGLE__PROJECTID=${{ secrets.GOOGLE__PROJECTID }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo MAIL__MAIL=${{ secrets.MAIL__MAIL }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo MAIL__MAILPASSWORD=${{ secrets.MAIL__MAILPASSWORD }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo RECAPTCHAV2__CLIENTKEY=${{ secrets.RECAPTCHAV2__CLIENTKEY }} >> real-time-online-chats.Api/src/WebAPI/.env
+        echo RECAPTCHAV2__SECRET=${{ secrets.RECAPTCHAV2__SECRET }} >> real-time-online-chats.Api/src/WebAPI/.env
     - name: Build
       run: dotnet build real-time-online-chats.Api --no-restore
     - name: Test
