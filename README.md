@@ -6,3 +6,6 @@ Google Auth:
 reCAPTCHA:
 - https://www.google.com/recaptcha/admin/create
 - https://developers.google.com/recaptcha/docs/display
+
+Reset password:
+- https://dotnettutorials.net/lesson/forgot-password-in-asp-net-core-identity/
