@@ -2,7 +2,6 @@ using AutoFixture;
 using MockQueryable.Moq;
 using Moq;
 using real_time_online_chats.Server.Domain;
-using real_time_online_chats.Server.Services.Message;
 using Shouldly;
 
 namespace WebAPI.UnitTests.Message;
@@ -10,12 +9,16 @@ namespace WebAPI.UnitTests.Message;
 public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
 {
     private readonly UserEntity _user;
+    private readonly ChatEntity _chat;
     private readonly MessageEntity _message;
 
     public MessageServiceGetMessageByIdTests()
     {
         _user = Fixture.Create<UserEntity>();
-        _message = Fixture.Create<MessageEntity>();
+        _chat = Fixture.Create<ChatEntity>();
+        _message = Fixture.Build<MessageEntity>()
+            .With(m => m.ChatId, _chat.Id)
+            .Create();
     }
 
     [Fact]
@@ -27,11 +30,11 @@ public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var confirmEmailResult = await MessageService.GetMessageByIdAsync(_message.Id, _user.Id);
+        var message = await MessageService.GetMessageByIdAsync(_chat.Id, _message.Id, _user.Id);
 
         // Assert
-        confirmEmailResult.IsSuccess.ShouldBeFalse();
-        var matchResult = confirmEmailResult.Match(
+        message.IsSuccess.ShouldBeFalse();
+        var matchResult = message.Match(
             success => [],
             failure => failure.Errors
         );
@@ -57,11 +60,11 @@ public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
             .ReturnsAsync(true);
 
         // Act
-        var confirmEmailResult = await MessageService.GetMessageByIdAsync(_message.Id, _user.Id);
+        var message = await MessageService.GetMessageByIdAsync(_chat.Id, _message.Id, _user.Id);
 
         // Assert
-        confirmEmailResult.IsSuccess.ShouldBeFalse();
-        var matchResult = confirmEmailResult.Match(
+        message.IsSuccess.ShouldBeFalse();
+        var matchResult = message.Match(
             success => [],
             failure => failure.Errors
         );
@@ -90,11 +93,11 @@ public class MessageServiceGetMessageByIdTests : BaseMessageServiceTests
             .ReturnsAsync(true);
 
         // Act
-        var confirmEmailResult = await MessageService.GetMessageByIdAsync(_message.Id, _user.Id);
+        var message = await MessageService.GetMessageByIdAsync(_chat.Id, _message.Id, _user.Id);
 
         // Assert
-        confirmEmailResult.IsSuccess.ShouldBeTrue();
-        var matchResult = confirmEmailResult.Match(
+        message.IsSuccess.ShouldBeTrue();
+        var matchResult = message.Match(
             messageChatDto => messageChatDto,
             failure => throw new Exception("Should not be failure.")
         );
