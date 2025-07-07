@@ -35,10 +35,10 @@ public class ChatServiceGetChatsTests : BaseChatServiceTests
         matchResult.TotalCount.ShouldBe(0);
     }
 
-    public static IEnumerable<object[]> Chats => [
-        [Fixture.CreateMany<ChatEntity>(3)],
-        [Fixture.CreateMany<ChatEntity>(4)],
-        [Fixture.CreateMany<ChatEntity>(5)],
+    public static TheoryData<IEnumerable<ChatEntity>> Chats => [
+        Fixture.CreateMany<ChatEntity>(3).OrderByDescending(c => c.CreationTime),
+        Fixture.CreateMany<ChatEntity>(4).OrderByDescending(c => c.CreationTime),
+        Fixture.CreateMany<ChatEntity>(5).OrderByDescending(c => c.CreationTime),
     ];
 
     [Theory]
@@ -99,10 +99,10 @@ public class ChatServiceGetChatsTests : BaseChatServiceTests
         matchResult.TotalCount.ShouldBe(count);
     }
 
-    public static IEnumerable<object[]> ChatsFrom4 => [
-        [Fixture.CreateMany<ChatEntity>(4)],
-        [Fixture.CreateMany<ChatEntity>(5)],
-        [Fixture.CreateMany<ChatEntity>(6)],
+    public static TheoryData<IEnumerable<ChatEntity>> ChatsFrom4 => [
+        Fixture.CreateMany<ChatEntity>(4).OrderByDescending(c => c.CreationTime),
+        Fixture.CreateMany<ChatEntity>(5).OrderByDescending(c => c.CreationTime),
+        Fixture.CreateMany<ChatEntity>(6).OrderByDescending(c => c.CreationTime),
     ];
 
     [Theory]
