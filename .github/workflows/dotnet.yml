@@ -21,8 +21,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore real-time-online-chats.Api
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build real-time-online-chats.Api --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test real-time-online-chats.Api --no-build --verbosity normal
