@@ -101,29 +101,48 @@ git clone https://github.com/Quikler/real-time-online-chats.git
 cd real-time-online-chats
 ```
 
-### 2. Install .NET dependencies:
+### 2. Change .NET .env file like so:
+```
+Google__ClientId=YOUR_VALUE
+Google__ClientSecret=YOUR_VALUE
+Google__ProjectId=YOUR_VALUE
+Mail__Mail=YOUR_VALUE
+Mail__MailPassword=YOUR_VALUE
+Cloudinary__Cloud=YOUR_VALUE
+Cloudinary__ApiKey=YOUR_VALUE
+Cloudinary__ApiSecret=YOUR_VALUE
+reCAPTCHAv3__ClientKey=YOUR_VALUE
+reCAPTCHAv3__Secret=YOUR_VALUE
+#reCAPTCHAv2__ClientKey=YOUR_VALUE
+#reCAPTCHAv2__Secret=YOUR_VALUE
+#OR YOU CAN USE VALUES BELOW SINCE THEY ARE FOR TESTING (SEE IN DOCS: https://developers.google.com/recaptcha/docs/faq#automated_test)
+reCAPTCHAv2__ClientKey=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+reCAPTCHAv2__Secret=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+```
+
+### 3. Install .NET dependencies:
 Restore the necessary packages by running:
 ```
 dotnet restore real-time-online-chats.Api
 ```
 
-### 3. Test .NET project (Docker is required):
+### 4. Test .NET project (Docker is required):
 ```
 dotnet test real-time-online-chats.Api
 ```
 
-### 3. Install React dependencies (vite is required):
+### 5. Install React dependencies (vite is required):
 ```
 cd real-time-online-chats.Client && npm i
 ```
 
-### 4. Run project via Make (Make and Docker are required on Unix):
+### 6. Run project via Make (Make and Docker are required on Unix):
 ```
 make start
 ```
 ### OR
 
-### 4. Run project via Docker (Docker is required):
+### 6. Run project via Docker (Docker is required):
 ```
 docker-compose up --build
 ```
