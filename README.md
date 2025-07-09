@@ -101,7 +101,7 @@ git clone https://github.com/Quikler/real-time-online-chats.git
 cd real-time-online-chats
 ```
 
-### 2. Change .NET .env file like so:
+### 2. Create env file in real-time-online-chats.Api/src/WebAPI/.env like below:
 ```
 Google__ClientId=YOUR_VALUE
 Google__ClientSecret=YOUR_VALUE
